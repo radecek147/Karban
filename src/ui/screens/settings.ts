@@ -28,6 +28,7 @@ import { backButton, button } from '../components/button';
 import type { ModalHandle } from '../components/modal';
 import { confirmModal, openModal } from '../components/modal';
 import { toast } from '../components/toast';
+import { isDesktopApp, isDesktopFullscreen, saveExportFile, setDesktopFullscreen } from '../desktop';
 import { h } from '../dom';
 import type { Settings } from '../settings';
 import { DEFAULT_SETTINGS, PROFILE_BACKUP_PREFIX, sanitizeSettings, writeProfileBackup } from '../settings';
@@ -307,18 +308,23 @@ function exportFilename(now: Date): string {
   return t('settings.export.filename', { date });
 }
 
-/** Stáhne export jako soubor JSON (Blob + odkaz s atributem download — žádná síť). */
-export function downloadExport(app: App): void {
+/**
+ * Uloží export jako soubor JSON: na webu stažením (Blob + odkaz s atributem download — žádná síť), v desktopové
+ * aplikaci nativním dialogem „Uložit“ (src/ui/desktop.ts). Vrací false, když hráč dialog zavřel.
+ */
+export async function downloadExport(app: App): Promise<boolean> {
   if (app.controller && app.controller.state.phase !== 'game_over') app.controller.save();
   app.profiles.save();
   const now = new Date();
   const json = JSON.stringify(buildExport(app.store, app.settings, now), null, 2);
+  if (isDesktopApp()) return (await saveExportFile(exportFilename(now), json)) !== null;
   const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
   const a = h('a', { href: url, download: exportFilename(now), class: 'visually-hidden' });
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  return true;
 }
 
 // ─────────────────────────── Ovládací prvky ───────────────────────────
@@ -482,6 +488,7 @@ interface Panel {
 }
 
 function fullscreenSupported(): boolean {
+  if (isDesktopApp()) return true;
   return (
     typeof document.documentElement.requestFullscreen === 'function' && document.fullscreenEnabled !== false
   );
@@ -491,8 +498,10 @@ function settingsPanel(app: App, opts: PanelOptions): Panel {
   const s = app.settings;
   const pct = (v: number): string => t('settings.percent', { value: v });
 
-  // ── Celá obrazovka (Fullscreen API; stav se nesyncuje do nastavení — prohlížeč ho po reloadu stejně zruší) ──
+  // ── Celá obrazovka (Fullscreen API, v desktopové aplikaci okno aplikace; stav se nesyncuje do nastavení —
+  // prohlížeč ho po reloadu stejně zruší) ──
   const fsOk = fullscreenSupported();
+  const desktop = isDesktopApp();
   const fullscreen = toggleControl({
     id: 'settings-fullscreen',
     label: t('settings.fullscreen'),
@@ -502,8 +511,15 @@ function settingsPanel(app: App, opts: PanelOptions): Panel {
     onChange: (on, input) => {
       const fail = (): void => {
         toast(t('settings.fullscreenFailed'), { kind: 'warning' });
-        input.checked = Boolean(document.fullscreenElement);
+        if (desktop) syncFullscreen();
+        else input.checked = Boolean(document.fullscreenElement);
       };
+      if (desktop) {
+        setDesktopFullscreen(on).then((state) => {
+          input.checked = state;
+        }, fail);
+        return;
+      }
       try {
         if (on && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(fail);
         else if (!on && document.fullscreenElement) document.exitFullscreen().catch(fail);
@@ -513,9 +529,21 @@ function settingsPanel(app: App, opts: PanelOptions): Panel {
     },
   });
   const syncFullscreen = (): void => {
-    fullscreen.input.checked = Boolean(document.fullscreenElement);
+    if (!desktop) {
+      fullscreen.input.checked = Boolean(document.fullscreenElement);
+      return;
+    }
+    // Okno jde přepnout i zeleným tlačítkem macOS — stav se čte z aplikace.
+    isDesktopFullscreen().then(
+      (state) => {
+        fullscreen.input.checked = state;
+      },
+      () => undefined,
+    );
   };
+  if (desktop) syncFullscreen();
   document.addEventListener('fullscreenchange', syncFullscreen);
+  if (desktop) window.addEventListener('resize', syncFullscreen);
 
   // ── Import ──
   const fileInput = h('input', {
@@ -739,8 +767,18 @@ function settingsPanel(app: App, opts: PanelOptions): Panel {
           testId: 'settings-export',
           describedBy: 'settings-export-hint',
           onClick: () => {
-            downloadExport(app);
-            toast(t('settings.export.done'), { kind: 'success' });
+            downloadExport(app).then(
+              (saved) => {
+                if (saved)
+                  toast(t(isDesktopApp() ? 'settings.export.doneDesktop' : 'settings.export.done'), {
+                    kind: 'success',
+                  });
+              },
+              (err: unknown) => {
+                console.error('[settings] Export se nepodařil', err);
+                toast(t('settings.export.failed'), { kind: 'error' });
+              },
+            );
           },
         }),
         h('p', { id: 'settings-export-hint', class: 'setting__hint' }, t('settings.export.hint')),
@@ -777,6 +815,7 @@ function settingsPanel(app: App, opts: PanelOptions): Panel {
     el: h('div', { class: 'settings__panel', 'data-testid': 'settings-panel' }, left, right),
     dispose: () => {
       document.removeEventListener('fullscreenchange', syncFullscreen);
+      window.removeEventListener('resize', syncFullscreen);
       offSettings();
     },
   };

@@ -3607,3 +3607,31 @@ na `Number.MAX_VALUE` v patře 295 (dřív 393).
 
 **Proč:** CLAUDE.md kap. 3 (patro 8 řádově statisíce, 4 ruce), kap. 8 (Desítka 25–35 %, Imperial < 3 %, žádný
 bezcenný ani „auto-win“ obsah) a pásma DESIGN 12.1.
+
+## 2026-10-04 — Desktopová aplikace pro macOS (Tauri, .dmg)
+
+**Co:** Karban jde nainstalovat jako aplikace pro macOS z `.dmg` (Apple Silicon i Intel, macOS 11+). Obal je
+**Tauri 2** (`src-tauri/`): nativní okno se systémovým WebView, do kterého se přibalí webový build. Hra je beze
+změn; tři rozdíly proti webu řeší `src/ui/desktop.ts`:
+
+- export uložení přes nativní dialog „Uložit“ (příkaz `save_export`, `tauri-plugin-dialog`), protože stažení přes
+  `<a download>` ve WebView nefunguje;
+- celá obrazovka přes okno aplikace místo Fullscreen API;
+- service worker se v aplikaci neregistruje.
+
+`.dmg` sestavuje workflow `.github/workflows/desktop.yml` na `macos-latest`. Spouští se ručně (artefakt běhu)
+a po zveřejnění vydání, kdy `.dmg` přiloží k vydání. Ikona je vlastní SVG (`src-tauri/icon.svg`, motiv faviconu)
+a výstupy pro aplikaci generuje `npm run desktop:icon`. Aplikace se lokálně přeložila (`cargo check`) a ladicí
+build běžel na Linuxu (WebKitGTK pod Xvfb): menu, písmo i čeština se vykreslily správně. Samotné `.dmg` a běh na
+macOS ověřuje až workflow a první spuštění u hráče.
+
+**Proč Tauri, ne Electron:** aplikace má kolem 10 MB místo ~150 MB, používá engine Safari, na který je hra už
+odladěná (WebKit), a nativní kód je pár řádků. Hra nepotřebuje Node.js za běhu ani síť.
+
+**Podpis:** bez účtu Apple Developer (99 USD ročně) je aplikace podepsaná jen ad hoc (`signingIdentity: "-"`, nutné
+pro Apple Silicon). Gatekeeper ji proto při prvním spuštění neověří a hráč ji jednou povolí v Nastavení systému →
+Soukromí a zabezpečení → Přesto otevřít (postup v README). S účtem by stačilo doplnit do workflow certifikát
+a notarizaci.
+
+**`csp: null`:** aplikace načítá jen vlastní přibalené soubory a nemá žádný vzdálený obsah, takže CSP by jen
+riskovala rozbití (fonty skládané za běhu, inline styly) bez přínosu pro bezpečnost.

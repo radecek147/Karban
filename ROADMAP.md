@@ -455,6 +455,17 @@ simulacemi. Seřazeno podle priority.
 
 ---
 
+## Desktopová aplikace (macOS .dmg)
+
+- [x] Obal Tauri 2 (`src-tauri/`), okno 1366 × 820, ikona z vlastního SVG, ad hoc podpis, macOS 11+
+- [x] Rozdíly proti webu v `src/ui/desktop.ts`: export přes nativní dialog (`save_export`), celá obrazovka přes okno,
+      bez service workeru; test `tests/unit/ui-desktop.test.ts`
+- [x] Workflow `.github/workflows/desktop.yml`: univerzální `.dmg` (Apple Silicon + Intel) jako artefakt a příloha
+      vydání; README „Hra pro macOS (.dmg)“ s postupem prvního spuštění
+- [ ] První `.dmg` z workflow vyzkoušené na Macu (instalace, uložení, export, celá obrazovka)
+
+---
+
 ## Obsahové patche (po 1.0)
 
 Po vydání 1.0 pokračuj patchi. Každý patch: obsah podle `docs/CONTENT-GUIDE.md`, testy, simulace,

@@ -9,12 +9,14 @@
  */
 import { t } from '../i18n/cs';
 import { toast } from './components/toast';
+import { isDesktopApp } from './desktop';
 
 /** Soubor workeru vedle index.html (musí odpovídat `SW_FILE` ve vite.config.ts). */
 export const SW_FILE = 'sw.js';
 
 export function registerServiceWorker(): void {
-  if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return;
+  // Desktopová aplikace má hru přibalenou — offline cache tam není potřeba (src/ui/desktop.ts).
+  if (!import.meta.env.PROD || !('serviceWorker' in navigator) || isDesktopApp()) return;
   navigator.serviceWorker
     .register(`${import.meta.env.BASE_URL}${SW_FILE}`)
     .then((reg) => {

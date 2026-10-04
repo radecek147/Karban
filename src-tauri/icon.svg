@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Ikona desktopové aplikace (vlastní kresba, licence projektu): sukno a karta s korunou jako favicon hry.
+       Zaoblený čtverec 824 × 824 s okrajem 100 px odpovídá mřížce ikon macOS. PNG/ICNS: npm run desktop:icon -->
+  <defs>
+    <radialGradient id="felt" cx="50%" cy="38%" r="72%">
+      <stop offset="0" stop-color="#2f7d57" />
+      <stop offset="0.7" stop-color="#1f5c40" />
+      <stop offset="1" stop-color="#143d2a" />
+    </radialGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbf5e6" />
+      <stop offset="1" stop-color="#eadfc4" />
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="20" stdDeviation="24" flood-color="#000000" flood-opacity="0.38" />
+    </filter>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="186" fill="url(#felt)" />
+  <rect x="106" y="106" width="812" height="812" rx="180" fill="none" stroke="#e8a92a" stroke-width="8" opacity="0.55" />
+  <g transform="translate(512 528) rotate(-8) translate(-210 -290)" filter="url(#shadow)">
+    <rect x="0" y="0" width="420" height="580" rx="56" fill="url(#paper)" stroke="#1e1b16" stroke-width="18" />
+    <path d="M80 420 120 220 210 320 300 220 340 420Z" fill="#c8372d" stroke="#1e1b16" stroke-width="16" stroke-linejoin="round" />
+    <circle cx="120" cy="196" r="34" fill="#e8a92a" stroke="#1e1b16" stroke-width="10" />
+    <circle cx="300" cy="196" r="34" fill="#e8a92a" stroke="#1e1b16" stroke-width="10" />
+    <circle cx="210" cy="290" r="34" fill="#e8a92a" stroke="#1e1b16" stroke-width="10" />
+    <rect x="80" y="420" width="260" height="62" rx="18" fill="#1f5c40" stroke="#1e1b16" stroke-width="12" />
+  </g>
+</svg>

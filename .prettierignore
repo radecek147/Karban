@@ -8,3 +8,5 @@ src/assets/**/*.svg
 CLAUDE.md
 docs/PROMPTS.md
 .claude/worktrees
+src-tauri/target
+src-tauri/gen

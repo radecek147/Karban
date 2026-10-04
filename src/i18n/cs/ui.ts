@@ -197,6 +197,8 @@ export const settings = {
     label: 'Exportovat uložení',
     hint: 'Stáhne soubor JSON s profilem, nastavením a rozehranou hrou.',
     done: 'Uložení staženo. Schovej ho líp než účtenky.',
+    doneDesktop: 'Uložení zapsané do souboru. Schovej ho líp než účtenky.',
+    failed: 'Uložení se nepodařilo zapsat. Zkus jiné místo, třeba Plochu.',
     filename: 'karban-ulozeni-{date}.json',
   },
   import: {

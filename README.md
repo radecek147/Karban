@@ -20,6 +20,7 @@ jakmile se v repozitáři zapnou GitHub Pages (viz [Nasazení](#nasazení)). Po 
 - [Jak hrát](#jak-hrát)
 - [Ovládání](#ovládání)
 - [Co ve hře najdeš](#co-ve-hře-najdeš)
+- [Hra pro macOS (.dmg)](#hra-pro-macos-dmg)
 - [Spuštění](#spuštění)
 - [Vývoj](#vývoj)
 - [Nasazení](#nasazení)
@@ -140,6 +141,31 @@ Počty jsou spočítané z registru obsahu (`src/content`):
 Figury jsou Kluk, Dáma a Král; žádný text, obrázek ani číslo není převzaté z Balatra ani jiné komerční
 hry.
 
+## Hra pro macOS (.dmg)
+
+Karban jde hrát i jako běžná aplikace pro macOS (Apple Silicon i Intel, macOS 11 a novější) — bez prohlížeče,
+Node.js a Terminálu. Aplikace je hra zabalená přes [Tauri](https://tauri.app/) do okna se systémovým WebView.
+
+**Stažení:** `.dmg` sestavuje GitHub Actions ([.github/workflows/desktop.yml](.github/workflows/desktop.yml)).
+Je přiložený k [vydání (Releases)](https://github.com/radecek147/FM/releases), a když vydání ještě není, najdeš ho
+v záložce **Actions → Desktop (macOS .dmg)** u posledního běhu v části **Artifacts** („Karban-macOS“, stáhne se
+jako ZIP s `.dmg` uvnitř; vyžaduje přihlášení na GitHub).
+
+**Instalace:** otevři `.dmg` a přetáhni **Karban** do složky **Aplikace**.
+
+**První spuštění:** aplikace není podepsaná účtem Apple Developer, takže ji macOS napoprvé odmítne s hláškou, že
+nemůže ověřit vývojáře. Stačí jednou:
+
+1. Zkus Karban spustit (dvojklik) a hlášku zavři.
+2. Otevři **Nastavení systému → Soukromí a zabezpečení**, sjeď dolů a u zprávy o Karbanu klikni na
+   **Přesto otevřít** a potvrď heslem.
+
+Pak už se spouští normálně. Kdyby macOS hlásil, že je aplikace „poškozená“, pomůže v Terminálu
+`xattr -dr com.apple.quarantine /Applications/Karban.app`.
+
+Uložené hry aplikace drží zvlášť od prohlížeče; přenést je jde přes **Nastavení → Exportovat / Importovat
+uložení** (v aplikaci se otevře normální dialog pro uložení souboru).
+
 ## Spuštění
 
 Potřebuješ [Node.js](https://nodejs.org/) **20 nebo novější** (s ním přijde i `npm`) a Git.
@@ -225,6 +251,13 @@ nasazovat i tagy, povol je v **Settings → Environments → github-pages → De
 (pravidlo `v*`). Hra pak poběží na <https://radecek147.github.io/FM/>.
 
 Lokální náhled se stejnou cestou jako na Pages: `BASE_PATH=/FM/ npm run build && npm run preview`.
+
+### Desktopová aplikace
+
+`npm run desktop:dev` otevře hru v okně aplikace (potřebuje [Rust](https://rustup.rs/) a na Linuxu knihovny
+WebKitGTK), `npm run desktop:build` sestaví aplikaci pro aktuální systém. `.dmg` pro macOS sestavuje workflow
+**Desktop (macOS .dmg)** — ručně v záložce Actions, nebo samo po zveřejnění vydání (pak `.dmg` přiloží k vydání).
+Ikony aplikace se generují z `src-tauri/icon.svg` příkazem `npm run desktop:icon`.
 
 ## Licence a atribuce
 

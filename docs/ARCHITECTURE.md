@@ -473,3 +473,26 @@ game.modifiers() })` a uložit profil i run; po pitvě / výhře / opuštění `
 - Testy: `tests/unit/service-worker.test.ts` (plugin + chování nad falešnými `caches`/`fetch`),
   e2e `tests/e2e/offline.spec.ts` (načíst, `context.setOffline(true)`, reload → menu, sbírka, nový run); stejný test
   projde i proti buildu s `BASE_PATH=/FM/` servírovanému pod `/FM/`.
+
+## 9. Desktopová aplikace (`src-tauri/`, `src/ui/desktop.ts`)
+
+- Hra jako aplikace pro macOS (a v principu Windows / Linux) přes **Tauri 2**: nativní okno se systémovým WebView
+  (na macOS WKWebView, stejný engine jako Safari), do kterého se přibalí webový build (`dist/`, `base: './'`).
+  Nativní kód je tenký obal (`src-tauri/src/lib.rs`), hra sama je beze změn.
+- Konfigurace `src-tauri/tauri.conf.json`: verze z `package.json`, okno 1366 × 820 (min. 1024 × 680), pozadí
+  barvy sukna, `withGlobalTauri` (API na `window.__TAURI__`, žádný JS balíček navíc), `csp: null` (načítá se jen
+  přibalený obsah), balíčky `app` + `dmg`, ad hoc podpis (`signingIdentity: "-"`), macOS 11+.
+- Rozdíly proti webu řeší `src/ui/desktop.ts` (`isDesktopApp()` = existuje `window.__TAURI__`):
+  - export uložení: `<a download>` ve WebView nefunguje → příkaz `save_export` (nativní dialog „Uložit“ přes
+    `tauri-plugin-dialog`, zápis souboru v Rustu); import zůstává přes `<input type="file">`,
+  - celá obrazovka: místo Fullscreen API okno aplikace (`setFullscreen`, oprávnění
+    `core:window:allow-set-fullscreen` v `src-tauri/capabilities/default.json`); přepínač v Nastavení se
+    synchronizuje i se zeleným tlačítkem macOS (`resize`),
+  - service worker se v aplikaci neregistruje (hra je přibalená).
+- Uložení: `localStorage` WebView aplikace (vlastní úložiště aplikace, oddělené od prohlížeče).
+- Build: workflow `.github/workflows/desktop.yml` na `macos-latest` — `npm test`, `tauri build --target
+universal-apple-darwin --bundles app,dmg`, kontrola architektur (`lipo`) a podpisu (`codesign --verify`),
+  `.dmg` jako artefakt běhu; po zveřejnění release ho přiloží k vydání (`gh release upload`).
+- Ikony: `src-tauri/icon.svg` → `npm run desktop:icon` (`scripts/desktop-icon.ts`: Chromium vykreslí PNG
+  1024 × 1024, `tauri icon` vygeneruje PNG / ICNS / ICO).
+- Testy: `tests/unit/ui-desktop.test.ts` (export přes `save_export`, celá obrazovka) s falešným `window.__TAURI__`.

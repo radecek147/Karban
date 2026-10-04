@@ -704,6 +704,13 @@ function renderAssetsMd(
       'přebarvení na `currentColor`, kompozice do procedurálních obrázků karet (`src/ui/art`)',
     ]),
     row([
+      'Ikona desktopové aplikace: `src-tauri/icon.svg`, `src-tauri/icons/*` (PNG, ICNS, ICO)',
+      'vlastní SVG, ikony vygenerované příkazem `npm run desktop:icon` (`scripts/desktop-icon.ts`, `tauri icon`)',
+      'autoři projektu Karban',
+      'licence projektu',
+      '— (motiv karty s korunou jako favicon hry)',
+    ]),
+    row([
       'Hrací karty, obrázky žolíků, šéfů, spotřebek, kupónů, štítků, pozadí a UI grafika',
       'vlastní procedurální SVG, kód v `src/ui/art`',
       'autoři projektu Karban',

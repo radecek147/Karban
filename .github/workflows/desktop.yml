@@ -1,0 +1,72 @@
+name: Desktop (macOS .dmg)
+
+# Desktopová aplikace pro macOS (Tauri, docs/ARCHITECTURE.md „Desktopová aplikace“).
+# - Ručně (Actions → Desktop (macOS .dmg) → Run workflow): .dmg ke stažení v artefaktech běhu.
+# - Po zveřejnění release na GitHubu: .dmg se navíc přiloží k release.
+# Aplikace je univerzální (Apple Silicon i Intel), podepsaná jen ad hoc — bez účtu Apple Developer ji macOS při
+# prvním spuštění neověří (README: „Hra pro macOS“).
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    name: macOS .dmg (universal)
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Rust (Apple Silicon + Intel)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build app and .dmg
+        run: npx tauri build --target universal-apple-darwin --bundles app,dmg
+
+      - name: Check the app bundle
+        run: |
+          APP="src-tauri/target/universal-apple-darwin/release/bundle/macos/Karban.app"
+          for bin in "$APP"/Contents/MacOS/*; do lipo -info "$bin"; done
+          codesign --verify --deep --verbose=2 "$APP"
+          ls -la src-tauri/target/universal-apple-darwin/release/bundle/dmg/
+
+      - name: Upload .dmg
+        uses: actions/upload-artifact@v4
+        with:
+          name: Karban-macOS
+          path: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Attach .dmg to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg --clobber
