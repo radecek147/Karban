@@ -455,6 +455,15 @@ simulacemi. Seřazeno podle priority.
 
 ---
 
+## Šťáva 2 (viditelné efekty)
+
+- [x] Efekty karet při skórování výrazně viditelné (poskočení zdroje, záblesk pečeti / vylepšení / edice, velký nápis
+      s popiskem zdroje, mince k panelu Peníze, min. ~0,5 s při 1×); spotřebky na kartách (otočení s popisem změny,
+      přílet / rozpad karet); nová úroveň v levém panelu; efekty konce kola na kartách a žolících
+      (DECISIONS 2026-10-04 „Viditelné efekty karet a spotřebek (šťáva 2)“)
+
+---
+
 ## Desktopová aplikace (macOS .dmg)
 
 - [x] Obal Tauri 2 (`src-tauri/`), okno 1366 × 820, ikona z vlastního SVG, ad hoc podpis, macOS 11+

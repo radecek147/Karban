@@ -3635,3 +3635,26 @@ a notarizaci.
 
 **`csp: null`:** aplikace načítá jen vlastní přibalené soubory a nemá žádný vzdálený obsah, takže CSP by jen
 riskovala rozbití (fonty skládané za běhu, inline styly) bez přínosu pro bezpečnost.
+
+## 2026-10-04 — Viditelné efekty karet a spotřebek (šťáva 2)
+
+**Co:** Hráč si stěžoval, že efekty upravených karet (zlatá pečeť +2 Kč při skórování) vypadají, „jako by se nic
+nestalo“. Skutečně: bubliny byly malé, karta se skoro nehnula a krok trval ~0,2 s. Změna karty spotřebkou
+(`cardChanged`, `cardAdded`) se nepřehrávala vůbec a nová úroveň kombinace byla jen hláška.
+
+- **Engine (jen nepovinná data pro UI, pravidla ani simulace se nemění):** `ScoreStep.origin` (`rank` /
+  `enhancement` / `edition` / `seal`) u kroků hrací karty a edice žolíka. `cardChanged` nese, co se změnilo (z → na
+  po polích), `cardAdded` kartu, kterou kopíruje, a `roundRewards.held` efekty karet v ruce na konci kola (zlatá
+  karta, modrá pečeť). Události během skórování nesou index kroku, u kterého nastaly.
+- **Skórování:** zdroj (karta, karta v ruce, žolík) výrazně poskočí (`is-triggered`) a blikne pečeť, vylepšení nebo
+  edice, která efekt dala. Nad zdrojem se objeví velký obrysový nápis v barvě typu (čipy modře, mult červeně, ×mult
+  větší, peníze zlatě) s popiskem zdroje („Zlatá pečeť“, „Prémiová“). Mince letí k panelu Peníze, opakování má vlastní
+  nápis. Kroky efektů trvají při 1× aspoň ~0,5 s.
+- **Spotřebky:** spotřebka odletí ze slotu k cílům. Změněné karty se zvednou, otočí (uprostřed se překreslí)
+  a dostanou popis změny („Zlatá pečeť!“, „♠ → ♥“, „9 → 10“), jedna po druhé. Přidané karty přiletí, zničené se
+  rozpadnou.
+- **Další:** nová úroveň kombinace se ukáže v levém panelu („Barva úr. 3!“, jiskry), s vypnutými animacemi jako
+  hláška. Konec kola ukáže zlaté karty, modré pečetě a peníze žolíků na nich, než se otevře rozpis.
+
+**Proč:** zpětná vazba hráče. Pocitem se hra inspiruje u žánru (čitelné spouštění efektů), grafika i texty jsou
+vlastní. Údaje v enginu jsou nepovinné, takže starší uložení i simulace fungují beze změny.

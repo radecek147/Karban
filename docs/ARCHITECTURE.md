@@ -313,6 +313,13 @@ flavor a že texty dodržují typografii.
   chráněné úložiště zahodí (před každým zápisem ověří vlastníka); „Hrát tady“ hru převezme a znovu načte profil
   i run z úložiště (`App.reloadFromStorage`).
 - Obrazovky v `src/ui/screens/*`, komponenty v `src/ui/components/*`.
+- Přehrávání událostí: `src/ui/present.ts` (ruka, skórování, události), `src/ui/presentEffects.ts` (viditelné efekty:
+  spotřebka odletí ze slotu, změněné karty se otočí s popisem změny z `CardChange` — „Zlatá pečeť!“, „♠ → ♥“ —,
+  přidané karty přiletí, zničené se rozpadnou, nová úroveň kombinace v levém panelu, efekty konce kola na kartách
+  v ruce a žolících podle `roundRewards.held`), `src/ui/presentKit.ts` (sdílené bubliny a měření) a
+  `src/ui/fx/cardFx.ts` (poskočení zdroje `is-triggered`, záblesk pečeti / vylepšení / edice podle
+  `ScoreStep.origin`, let mincí k panelu Peníze). Kroky efektů trvají při 1× aspoň ~0,5 s (`stepTiming`); vše
+  respektuje rychlost, vypnuté animace (jen hlášky), omezený pohyb a přeskočení.
 - Animace: CSS transform/opacity + `src/ui/fx/` („šťáva“, DESIGN 13.6):
   - `motion.ts` — jediné místo pro pohybové předvolby (animace, rychlost, screen shake, `prefers-reduced-motion`),
   - `particles.ts` — částice na jediném `<canvas id="fx">` (pevný bazén, rAF jen když něco žije, pojmenované efekty

@@ -19,6 +19,7 @@ import { t } from '../i18n/cs';
 import { soundForEvent } from './audio/hooks';
 import { createCardView, holdCardVisual, releaseCardVisual, updateCardView } from './components/card';
 import { createConsumableCard } from './components/consumableCard';
+import { toast } from './components/toast';
 import { cardChangeTexts, cardChangeVisible } from './describe';
 import {
   crumble,
@@ -387,6 +388,12 @@ export async function presentLevelUp(
   const name = t(`hands.${e.hand}.name`);
   const text = t(e.delta > 0 ? 'game.fx.levelUp' : 'game.fx.levelDown', { hand: name, level: e.level });
   view.announce(t('game.events.leveled', { hand: name, level: e.level }));
+  // Bez animací (vypnuté / přeskočené) by nová úroveň nebyla nikde vidět jinak než číslem v panelu — hláška.
+  if (anim.instant)
+    toast(t('game.events.leveled', { hand: name, level: e.level }), {
+      kind: 'success',
+      testId: 'toast-game-success',
+    });
   const many = batch.levelCount > 2;
   showLevel(view, e.hand, e.level - e.delta, batch);
   if (!anim.instant) await anim.wait(many ? 60 : 160);
