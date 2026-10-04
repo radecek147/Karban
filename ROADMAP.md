@@ -462,6 +462,8 @@ simulacemi. Seřazeno podle priority.
       bez service workeru; test `tests/unit/ui-desktop.test.ts`
 - [x] Workflow `.github/workflows/desktop.yml`: univerzální `.dmg` (Apple Silicon + Intel) jako artefakt a příloha
       vydání; README „Hra pro macOS (.dmg)“ s postupem prvního spuštění
+- [x] První sestavení workflow (2026-10-04, běh 37209959381): `Karban_1.0.1_universal.dmg` 6,45 MiB, `lipo` x86_64 + arm64,
+      `codesign --verify` platný (ad hoc)
 - [ ] První `.dmg` z workflow vyzkoušené na Macu (instalace, uložení, export, celá obrazovka)
 
 ---
