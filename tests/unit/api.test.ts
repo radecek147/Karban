@@ -843,7 +843,12 @@ describe('api.addCard / copyCard', () => {
     expect(copy.id).not.toBe(src!.id);
     expect({ ...copy, id: 0 }).toEqual({ ...src!, id: 0 });
     expect(game.state.round!.drawPile).toContain(copy.id);
-    expect(core.takeEvents()).toContainEqual({ type: 'cardAdded', cardId: copy.id, source: 'copy' });
+    expect(core.takeEvents()).toContainEqual({
+      type: 'cardAdded',
+      cardId: copy.id,
+      source: 'copy',
+      copyOf: src!.id,
+    });
     const inHand = core.api.copyCard(src!.id, { toHand: true })!;
     expect(game.state.round!.hand).toContain(inHand.id);
     expect(core.api.copyCard(99999)).toBeNull();
@@ -911,9 +916,25 @@ describe('api.modifyCard', () => {
       edition: 'holo',
       bonusChips: 4,
     });
-    expect(core.takeEvents()).toEqual([{ type: 'cardChanged', cardId: c!.id }]);
+    // Událost nese, co se změnilo (hodnoty před a po) — UI z toho ukáže „♠ → ♦“, „Zlatá pečeť!“…
+    expect(core.takeEvents()).toEqual([
+      {
+        type: 'cardChanged',
+        cardId: c!.id,
+        change: {
+          rank: { from: 2, to: 14 },
+          suit: { from: 'S', to: 'D' },
+          enhancement: { from: null, to: 'lucky' },
+          seal: { from: null, to: 'gold' },
+          edition: { from: null, to: 'holo' },
+          bonusChips: { from: 0, to: 4 },
+        },
+      },
+    ]);
     core.api.modifyCard(c!.id, { suit: undefined, id: 12345 } as never);
     expect(c).toMatchObject({ id: c!.id, suit: 'D' });
+    // Nic se nezměnilo: událost bez popisu změny.
+    expect(core.takeEvents()).toEqual([{ type: 'cardChanged', cardId: c!.id }]);
     core.api.modifyCard(99999, { rank: 2 });
   });
 

@@ -462,7 +462,9 @@ export function play(game: Game, cards: readonly (Card | number)[]): PlayOutcome
 
 /** Zjednodušený krok pro porovnání pořadí (bez undefined polí). */
 export function stepSummary(step: ScoreResult['steps'][number]): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(step).filter(([, v]) => v !== undefined));
+  // `origin` (původ kroku karty pro animaci) testuje vlastní sada (tests/unit/score-origin.test.ts); tady se hlídá
+  // pořadí a čísla kroků.
+  return Object.fromEntries(Object.entries(step).filter(([k, v]) => v !== undefined && k !== 'origin'));
 }
 
 /** Kolo vyhraje příští zahraná ruka (cíl 1). */

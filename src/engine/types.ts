@@ -41,6 +41,27 @@ export interface Card {
   faceDown: boolean;
 }
 
+/** Jedna změněná vlastnost karty: hodnota před změnou a po ní. */
+export interface FieldChange<T> {
+  from: T;
+  to: T;
+}
+
+/**
+ * Co se na kartě změnilo (jen pole, která se opravdu změnila) — událost `cardChanged`. Jen pro UI („Zlatá pečeť!“,
+ * „♠ → ♥“, „9 → 10“); pravidla na tom nezávisí.
+ */
+export interface CardChange {
+  suit?: FieldChange<Suit>;
+  rank?: FieldChange<Rank>;
+  enhancement?: FieldChange<EnhancementId | null>;
+  seal?: FieldChange<SealId | null>;
+  edition?: FieldChange<EditionId | null>;
+  bonusChips?: FieldChange<number>;
+  faceDown?: FieldChange<boolean>;
+  debuffed?: FieldChange<boolean>;
+}
+
 // ─────────────────────────── Kombinace ───────────────────────────
 
 export type HandType =
@@ -420,6 +441,16 @@ export interface RunStats {
   maxMoney: number;
 }
 
+/**
+ * Co jedna karta držená v ruce udělala na konci kola (zlatá karta: peníze do rozpisu, modrá pečeť: nové spotřebky
+ * `consumables` = uid). Jen v události `roundRewards` (UI to ukáže na kartě), ne ve stavu.
+ */
+export interface HeldCardReward {
+  cardId: number;
+  money?: number;
+  consumables?: number[];
+}
+
 /** Rozpis odměn za vyhrané kolo (čeká na „Vyúčtovat“). */
 export interface RoundRewards {
   blindReward: number;
@@ -565,6 +596,12 @@ export type ScoreSourceKind =
   | 'stake'
   | 'challenge';
 
+/**
+ * Odkud krok hrací karty pochází: čipy hodnoty karty (`rank`, i trvalé bonusové čipy), vylepšení, edice, nebo pečeť
+ * (u opakování „Znovu!“ z červené pečeti). UI podle něj zvýrazní příslušnou část karty.
+ */
+export type ScoreStepOrigin = 'rank' | 'enhancement' | 'edition' | 'seal';
+
 export interface ScoreStep {
   source: ScoreSourceKind;
   /** defId zdroje (žolík, šéf…) nebo id kombinace. */
@@ -577,6 +614,11 @@ export interface ScoreStep {
   money?: number;
   /** i18n klíč zvláštní hlášky (např. 'score.retrigger', 'score.glassBreak'). */
   message?: string;
+  /**
+   * Původ kroku u hrací karty (`card`, `held`) a u edice žolíka (`edition`) — nepovinné, jen pro animaci (zvýraznění
+   * pečeti, vylepšení, edice). Pravidla na něm nezávisí.
+   */
+  origin?: ScoreStepOrigin;
   /** Průběžný stav po aplikaci kroku (pro animaci počítadla). */
   chipsAfter: number;
   multAfter: number;
@@ -639,10 +681,17 @@ export type GameEvent =
   /** Pořadí karet v ruce se změnilo efektem (zamíchání). */
   | { type: 'handShuffled'; cardIds: number[] }
   | { type: 'cardDestroyed'; cardId: number; reason: string }
-  | { type: 'cardAdded'; cardId: number; source: string }
-  | { type: 'cardChanged'; cardId: number }
+  /** Nová karta v balíčku (nebo rovnou v ruce); `copyOf` = karta, ze které je kopie (UI z ní kopii „vytáhne“). */
+  | { type: 'cardAdded'; cardId: number; source: string; copyOf?: number }
+  /**
+   * Karta se změnila. `change` = co přesně (hodnoty před a po; chybí, když se nezměnilo nic viditelného).
+   * `scoreStep` = změna nastala během vyhodnocení zahrané ruky: kolik kroků `ScoreResult.steps` bylo do té chvíle
+   * zapsáno (UI ji ukáže před krokem s tímto indexem; počet všech kroků = až po skórování).
+   */
+  | { type: 'cardChanged'; cardId: number; change?: CardChange; scoreStep?: number }
   | { type: 'roundWon'; ante: number; blind: BlindKind; score: number; target: number }
-  | ({ type: 'roundRewards' } & RoundRewards)
+  /** Rozpis odměn; `heldCards` = co udělaly jednotlivé karty v ruce (jen když něco udělaly). */
+  | ({ type: 'roundRewards'; heldCards?: HeldCardReward[] } & RoundRewards)
   | { type: 'cashedOut'; amount: number }
   | { type: 'moneyChanged'; delta: number; money: number; reason: string }
   | { type: 'shopEntered' }
@@ -675,7 +724,8 @@ export type GameEvent =
   | { type: 'voucherRedeemed'; voucherId: string }
   | { type: 'tagAdded'; uid: number; defId: string }
   | { type: 'tagTriggered'; uid: number; defId: string }
-  | { type: 'handLeveled'; hand: HandType; level: number; delta: number }
+  /** Změna úrovně kombinace; `scoreStep` jako u `cardChanged` (úroveň zvýšená během skórování ruky). */
+  | { type: 'handLeveled'; hand: HandType; level: number; delta: number; scoreStep?: number }
   | { type: 'handDiscovered'; hand: HandType }
   | { type: 'anteChanged'; ante: number }
   | { type: 'bossDefeated'; bossId: string }

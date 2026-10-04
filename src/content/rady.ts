@@ -295,7 +295,7 @@ export const RADY: ConsumableDef[] = [
           edition: null,
           bonusChips: src.bonusChips,
         },
-        { toHand: true, source: 'rada' },
+        { toHand: true, source: 'rada', copyOf: src.id },
       );
     },
     art: { icon: 'shiny-apple', bg: '#4c1d1d', fg: '#ffecec', accent: '#84cc16', pattern: 'dots' },

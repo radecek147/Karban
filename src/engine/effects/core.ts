@@ -109,6 +109,12 @@ export class GameCore {
   /** Aktuální hloubka vnoření jednotlivých hooků žolíků (`eachJoker`). */
   private hookDepth: Partial<Record<JokerHookName, number>> = {};
   /**
+   * Kroky právě vyhodnocované ruky (`scoreHand`, `afterScoredCards`), jinak null. Změna karty nebo úrovně
+   * kombinace během skórování si podle nich zapíše `scoreStep` (po kolika krocích nastala), aby ji UI přehrálo
+   * ve správnou chvíli. Na pravidla ani stav nemá vliv.
+   */
+  scoringSteps: readonly unknown[] | null = null;
+  /**
    * Společný prototyp všech kontextů hooků: živé `state` a `mods` (gettery) a `api`. Kontext je pak jen
    * `Object.create` + pár vlastních polí (`rng`, `chance`, `self`…), bez kopírování getterů pro každé volání.
    */
@@ -161,6 +167,22 @@ export class GameCore {
     const out = this.takeEvents();
     for (const e of out) this.bus.emit(e);
     return out;
+  }
+
+  /** `scoreStep` pro událost vzniklou během skórování ruky (počet zapsaných kroků), jinak nic. */
+  scoreStepField(): { scoreStep: number } | Record<string, never> {
+    return this.scoringSteps ? { scoreStep: this.scoringSteps.length } : {};
+  }
+
+  /** Spustí `fn` s kroky `steps` jako právě vyhodnocovanou rukou (viz `scoringSteps`) a pak vrátí předchozí. */
+  withScoringSteps<T>(steps: readonly unknown[], fn: () => T): T {
+    const prev = this.scoringSteps;
+    this.scoringSteps = steps;
+    try {
+      return fn();
+    } finally {
+      this.scoringSteps = prev;
+    }
   }
 
   // ── RNG ──

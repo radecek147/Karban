@@ -27,7 +27,7 @@ interface Acc {
   destroy: Set<number>;
 }
 
-type StepMeta = Pick<ScoreStep, 'source' | 'defId' | 'cardId' | 'jokerUid'>;
+type StepMeta = Pick<ScoreStep, 'source' | 'defId' | 'cardId' | 'jokerUid' | 'origin'>;
 
 /** Příznaky ruky pro `ScoringInfo` (první/poslední ruka kola). */
 export interface HandFlags {
@@ -63,6 +63,16 @@ function withoutXmult(results: EffectResult[]): EffectResult[] {
   return results
     .map((r) => (r.xmult === undefined ? r : { ...r, xmult: undefined }))
     .filter((r) => r.chips || r.mult || r.money || r.message || r.destroyCard);
+}
+
+/**
+ * Krok „Znovu!“ před opakovanou aktivací karty (`activation` ≥ 1). Prvních `sealRetriggers` opakování patří pečeti
+ * (červená) — krok pak nese `origin: 'seal'`, UI pečeť zvýrazní; opakování od žolíků původ nemají.
+ */
+function againStep(meta: StepMeta, activation: number, sealRetriggers: number, acc: Acc): ScoreStep {
+  const step: ScoreStep = { ...meta, message: MSG.again, chipsAfter: acc.chips, multAfter: acc.mult };
+  if (activation <= sealRetriggers) step.origin = 'seal';
+  return step;
 }
 
 /** Použitelné číslo efektu (ne NaN; nekonečno ořízne `safe`). */
@@ -215,11 +225,17 @@ function makeInfo(
  * (run loop je přesune až potom), `round.handsLeft` ještě nebyl snížen.
  */
 export function scoreHand(core: GameCore, playedIds: readonly number[]): ScoreResult {
+  const acc: Acc = { chips: 0, mult: 0, steps: [], money: 0, destroy: new Set() };
+  // Změny karet a úrovní během vyhodnocení si zapíšou, po kolika krocích nastaly (`scoreStep` v událostech).
+  return core.withScoringSteps(acc.steps, () => scoreInto(core, playedIds, acc));
+}
+
+/** Tělo `scoreHand`: kroky se zapisují do `acc`. */
+function scoreInto(core: GameCore, playedIds: readonly number[], acc: Acc): ScoreResult {
   const reg = core.registry;
   const played = playedIds.map((id) => core.mustCard(id));
   const hand = detectFor(core, played);
   if (!hand) throw new Error('scoreHand: no cards');
-  const acc: Acc = { chips: 0, mult: 0, steps: [], money: 0, destroy: new Set() };
   const info = makeInfo(core, hand, played, acc);
   // Sdílená vrstva kontextů: každý hook této ruky ji zdědí (gettery chips/mult zůstávají živé) — bez kopírování.
   const layer = core.ctxLayer(info);
@@ -309,21 +325,34 @@ export function scoreHand(core: GameCore, playedIds: readonly number[]): ScoreRe
     const enhDef = card.enhancement ? enh[card.enhancement] : undefined;
     const sealDef = card.seal ? reg.seals[card.seal] : undefined;
     const edDef = card.edition ? reg.editions[card.edition] : undefined;
+    const sealRetriggers = sealDef?.retriggers ?? 0;
     const activations = activationCount(
-      (sealDef?.retriggers ?? 0) + core.sumJokers('retriggerScored', { card, isRetrigger: false }, layer),
+      sealRetriggers + core.sumJokers('retriggerScored', { card, isRetrigger: false }, layer),
     );
     for (let a = 0; a < activations; a++) {
       const meta: StepMeta = { source: 'card', cardId: card.id };
-      if (a > 0) acc.steps.push({ ...meta, message: MSG.again, chipsAfter: acc.chips, multAfter: acc.mult });
+      if (a > 0) acc.steps.push(againStep(meta, a, sealRetriggers, acc));
       // Opakování nad strop ×mult: efekty karty i žolíků dají jen čipy, +mult a peníze.
       const cap = xmultAllowed(a) ? (r: EffectResult[]) => r : withoutXmult;
       const chips = cardChips(card, enh, core.mods());
-      if (chips) applyResult(core, acc, { chips }, meta, card.id);
+      if (chips) applyResult(core, acc, { chips }, { ...meta, origin: 'rank' }, card.id);
       if (enhDef?.onScored)
-        applyAll(core, acc, cap(toResults(enhDef.onScored(core.cardCtx(card, layer)))), meta, card.id);
-      if (edDef?.effect) applyAll(core, acc, cap([edDef.effect()]), meta, card.id);
+        applyAll(
+          core,
+          acc,
+          cap(toResults(enhDef.onScored(core.cardCtx(card, layer)))),
+          { ...meta, origin: 'enhancement' },
+          card.id,
+        );
+      if (edDef?.effect) applyAll(core, acc, cap([edDef.effect()]), { ...meta, origin: 'edition' }, card.id);
       if (sealDef?.onScored)
-        applyAll(core, acc, cap(toResults(sealDef.onScored(core.cardCtx(card, layer)))), meta, card.id);
+        applyAll(
+          core,
+          acc,
+          cap(toResults(sealDef.onScored(core.cardCtx(card, layer)))),
+          { ...meta, origin: 'seal' },
+          card.id,
+        );
       core.eachJoker(
         'onCardScored',
         { card, isRetrigger: a > 0 },
@@ -346,18 +375,23 @@ export function scoreHand(core: GameCore, playedIds: readonly number[]): ScoreRe
     if (card.debuffed) continue;
     const enhDef = card.enhancement ? enh[card.enhancement] : undefined;
     const sealDef = card.seal ? reg.seals[card.seal] : undefined;
+    const sealRetriggers = sealDef?.retriggers ?? 0;
     const activations = activationCount(
-      (sealDef?.retriggers ?? 0) + core.sumJokers('retriggerHeld', { card, isRetrigger: false }, layer),
+      sealRetriggers + core.sumJokers('retriggerHeld', { card, isRetrigger: false }, layer),
     );
     for (let a = 0; a < activations; a++) {
       const meta: StepMeta = { source: 'held', cardId: card.id };
       const startLen = acc.steps.length;
-      if (a > 0) acc.steps.push({ ...meta, message: MSG.again, chipsAfter: acc.chips, multAfter: acc.mult });
+      if (a > 0) acc.steps.push(againStep(meta, a, sealRetriggers, acc));
       const cap = xmultAllowed(a) ? (r: EffectResult[]) => r : withoutXmult;
       let any = false;
       // Bez `cardId`: `destroyCard` platí jen pro efekty skórující karty (EffectResult), ne pro kartu v ruce.
       if (enhDef?.onHeld)
-        any = applyAll(core, acc, cap(toResults(enhDef.onHeld(core.cardCtx(card, layer)))), meta) || any;
+        any =
+          applyAll(core, acc, cap(toResults(enhDef.onHeld(core.cardCtx(card, layer)))), {
+            ...meta,
+            origin: 'enhancement',
+          }) || any;
       core.eachJoker(
         'onCardHeld',
         { card, isRetrigger: a > 0 },
@@ -388,8 +422,9 @@ export function scoreHand(core: GameCore, playedIds: readonly number[]): ScoreRe
     // Debuffnutý nebo během kroku 4 zničený žolík (efekt jiného žolíka) nic nedává.
     if (owner.debuffed || index < 0) return;
     const meta: StepMeta = { source: 'joker', jokerUid: owner.uid, defId: owner.defId };
+    const edMeta: StepMeta = { ...meta, origin: 'edition' };
     const ed = owner.edition ? reg.editions[owner.edition] : undefined;
-    if (ed?.effect && ed.jokerTiming !== 'after') applyResult(core, acc, ed.effect(), meta);
+    if (ed?.effect && ed.jokerTiming !== 'after') applyResult(core, acc, ed.effect(), edMeta);
     const resolved = core.resolveCopy(owner, index);
     if (resolved?.def.hooks.onHandPlayed) {
       const ctx = core.jokerCtx(
@@ -404,7 +439,7 @@ export function scoreHand(core: GameCore, playedIds: readonly number[]): ScoreRe
       core.invalidate();
       applyAll(core, acc, results, meta);
     }
-    if (ed?.effect && ed.jokerTiming === 'after') applyResult(core, acc, ed.effect(), meta);
+    if (ed?.effect && ed.jokerTiming === 'after') applyResult(core, acc, ed.effect(), edMeta);
   });
   core.invalidate();
 
@@ -448,16 +483,18 @@ export function afterScoredCards(core: GameCore, result: ScoreResult, flags: Han
   };
   const info = makeInfo(core, result.hand, played, acc, flags);
   const layer = core.ctxLayer(info);
-  for (const card of info.scoring) {
-    if (card.debuffed) continue;
-    const def = card.enhancement ? enh[card.enhancement] : undefined;
-    if (!def?.afterScored) continue;
-    const results = toResults(def.afterScored(core.cardCtx(card, layer)));
-    for (const r of results) {
-      const limited: EffectResult = { message: r.message, money: r.money, destroyCard: r.destroyCard };
-      applyResult(core, acc, limited, { source: 'card', cardId: card.id }, card.id);
+  core.withScoringSteps(acc.steps, () => {
+    for (const card of info.scoring) {
+      if (card.debuffed) continue;
+      const def = card.enhancement ? enh[card.enhancement] : undefined;
+      if (!def?.afterScored) continue;
+      const results = toResults(def.afterScored(core.cardCtx(card, layer)));
+      for (const r of results) {
+        const limited: EffectResult = { message: r.message, money: r.money, destroyCard: r.destroyCard };
+        applyResult(core, acc, limited, { source: 'card', cardId: card.id, origin: 'enhancement' }, card.id);
+      }
     }
-  }
+  });
   result.destroyedCardIds = [...acc.destroy];
   result.moneyEarned = acc.money;
 }

@@ -109,8 +109,11 @@ export interface EngineApi {
     edition?: EditionId | null;
     ignoreSlots?: boolean;
   }): ConsumableInstance | null;
-  /** Přidá kartu do balíčku runu; volitelně rovnou do ruky. */
-  addCard(spec: CardSpec, opts?: { toHand?: boolean; source?: string }): Card;
+  /**
+   * Přidá kartu do balíčku runu; volitelně rovnou do ruky. `copyOf` = karta, ze které je kopie (jen pro UI
+   * v události `cardAdded`).
+   */
+  addCard(spec: CardSpec, opts?: { toHand?: boolean; source?: string; copyOf?: number }): Card;
   copyCard(cardId: number, opts?: { toHand?: boolean }): Card | null;
   destroyCard(cardId: number, reason: string): void;
   modifyCard(

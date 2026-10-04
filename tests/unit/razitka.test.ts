@@ -201,7 +201,11 @@ describe('razítka s pečetí (Ověřeno notářem, Kolek, Modrý formulář, Do
     const events = use(g, id, [a!]);
     expect(card(g, a!.id)).toMatchObject({ seal, enhancement: 'bonus', rank: 13, suit: 'H' });
     expect(card(g, b!.id).seal).toBeNull();
-    expect(events).toContainEqual({ type: 'cardChanged', cardId: a!.id });
+    expect(events).toContainEqual({
+      type: 'cardChanged',
+      cardId: a!.id,
+      change: { seal: { from: null, to: seal } },
+    });
   });
 
   it('pečeť přepíše dosavadní pečeť karty', () => {

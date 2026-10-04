@@ -47,6 +47,7 @@ import type {
   GameEvent,
   HandPreview,
   HandSortMode,
+  HeldCardReward,
   Modifiers,
   RoundRewards,
   RoundState,
@@ -840,7 +841,15 @@ export class Game {
    * bonusy (zlaté karty, žolíci, balíček), nakonec poplatky za zapůjčené žolíky. Poplatek, který nejde
    * zaplatit ani do dluhového limitu, se nestrhne a žolík se při výplatě vrátí do půjčovny.
    */
-  private computeRewards(moneyAtWin: number, opts: { noBlindReward?: boolean } = {}): RoundRewards {
+  /**
+   * Rozpis odměn kola. Do `held` (nepovinné) zapíše, co udělaly jednotlivé karty v ruce (zlatá karta, modrá pečeť)
+   * — jen pro událost `roundRewards` (UI to ukáže na kartách), na výpočet nemá vliv.
+   */
+  private computeRewards(
+    moneyAtWin: number,
+    opts: { noBlindReward?: boolean } = {},
+    held: HeldCardReward[] = [],
+  ): RoundRewards {
     const core = this.core;
     const s = core.state;
     const m = core.mods();
@@ -864,11 +873,21 @@ export class Game {
     for (const id of round.hand) {
       const c = core.mustCard(id);
       if (c.debuffed) continue;
+      const entry: HeldCardReward = { cardId: id };
       const enh = c.enhancement ? enhancements[c.enhancement] : undefined;
-      if (enh?.roundEndHeldMoney)
-        heldMoney += rewardAmount(enh.roundEndHeldMoney(extend(core.baseCtx('card'), { card: c })));
+      if (enh?.roundEndHeldMoney) {
+        const amount = rewardAmount(enh.roundEndHeldMoney(extend(core.baseCtx('card'), { card: c })));
+        heldMoney += amount;
+        if (amount) entry.money = amount;
+      }
       const seal = c.seal ? reg.seals[c.seal] : undefined;
-      seal?.onRoundEndHeld?.(extend(core.baseCtx('card'), { card: c, lastHand }));
+      if (seal?.onRoundEndHeld) {
+        const before = new Set(s.consumables.map((x) => x.uid));
+        seal.onRoundEndHeld(extend(core.baseCtx('card'), { card: c, lastHand }));
+        const created = s.consumables.filter((x) => !before.has(x.uid)).map((x) => x.uid);
+        if (created.length > 0) entry.consumables = created;
+      }
+      if (entry.money !== undefined || entry.consumables) held.push(entry);
     }
     // Bonusy v pořadí DESIGN 2.4.2: zlaté karty v ruce, žolíci (`roundEndMoney`), balíček.
     heldMoney = Math.floor(heldMoney);
@@ -933,10 +952,16 @@ export class Game {
       }
     }
     core.eachJoker('onRoundEnd', { blind: round.blind, bossId: round.bossId });
-    const rewards = this.computeRewards(moneyAtWin, opts);
+    const heldCards: HeldCardReward[] = [];
+    const rewards = this.computeRewards(moneyAtWin, opts, heldCards);
     s.rewards = rewards;
     // Události nesdílí objekty se stavem (posluchač si je smí upravit, např. seřadit rozpis).
-    core.emit({ type: 'roundRewards', ...rewards, extra: rewards.extra.map((e) => ({ ...e })) });
+    core.emit({
+      type: 'roundRewards',
+      ...rewards,
+      extra: rewards.extra.map((e) => ({ ...e })),
+      ...(heldCards.length > 0 ? { heldCards } : {}),
+    });
     // Štítky až po rozpisu: štítek, který vyplácí v rozpisu (`roundEndMoney`), se tu smí spotřebovat.
     core.eachTag('onRoundEnd');
 

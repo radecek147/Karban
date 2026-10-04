@@ -16,6 +16,7 @@ import { addShopJoker, addShopVoucher, boosterInRun, setShopJokerEdition } from 
 import { jokerSellValue } from '../shop/prices';
 import type {
   Card,
+  CardChange,
   ConsumableInstance,
   ConsumableKind,
   EditionId,
@@ -103,6 +104,19 @@ export function addConsumableInstance(core: GameCore, c: ConsumableInstance, ign
 
 /** Pole karty, která smí měnit `EngineApi.modifyCard`. */
 const CARD_PATCH_KEYS = ['suit', 'rank', 'enhancement', 'seal', 'edition', 'bonusChips'] as const;
+
+/**
+ * Událost `cardChanged` s popisem změny (`change`, jen když se něco změnilo) a během skórování i `scoreStep` —
+ * UI z toho pozná, co ukázat a kdy.
+ */
+function emitCardChanged(core: GameCore, cardId: number, change: CardChange): void {
+  core.emit({
+    type: 'cardChanged',
+    cardId,
+    ...(Object.keys(change).length > 0 ? { change } : {}),
+    ...core.scoreStepField(),
+  });
+}
 
 /** Odebere kartu ze všech hromádek kola. */
 function removeFromPiles(core: GameCore, cardId: number): void {
@@ -193,7 +207,13 @@ export function createApi(core: GameCore): EngineApi {
       const before = hl.level;
       hl.level = Math.max(1, hl.level + d);
       if (hl.level !== before)
-        core.emit({ type: 'handLeveled', hand, level: hl.level, delta: hl.level - before });
+        core.emit({
+          type: 'handLeveled',
+          hand,
+          level: hl.level,
+          delta: hl.level - before,
+          ...core.scoreStepField(),
+        });
     },
 
     levelUpAll(levels) {
@@ -299,7 +319,12 @@ export function createApi(core: GameCore): EngineApi {
       } else if (opts.toHand && s.booster) {
         s.booster.hand.push(card.id);
       }
-      core.emit({ type: 'cardAdded', cardId: card.id, source: opts.source ?? 'effect' });
+      core.emit({
+        type: 'cardAdded',
+        cardId: card.id,
+        source: opts.source ?? 'effect',
+        ...(opts.copyOf !== undefined ? { copyOf: opts.copyOf } : {}),
+      });
       core.eachJoker('onCardAdded', { card });
       return card;
     },
@@ -316,7 +341,7 @@ export function createApi(core: GameCore): EngineApi {
           edition: src.edition,
           bonusChips: src.bonusChips,
         },
-        { toHand: opts.toHand ?? false, source: 'copy' },
+        { toHand: opts.toHand ?? false, source: 'copy', copyOf: cardId },
       );
     },
 
@@ -333,13 +358,20 @@ export function createApi(core: GameCore): EngineApi {
     modifyCard(cardId, patch) {
       const card = core.card(cardId);
       if (!card) return;
+      const change: CardChange = {};
       // Jen povolená pole a jen definované hodnoty (`{ suit: undefined }` kartu nerozbije, `id` nejde změnit).
       for (const key of CARD_PATCH_KEYS) {
         const value = patch[key];
-        if (value !== undefined) Object.assign(card, { [key]: value });
+        if (value === undefined) continue;
+        if (card[key] !== value) Object.assign(change, { [key]: { from: card[key], to: value } });
+        Object.assign(card, { [key]: value });
       }
-      if (core.state.round) card.debuffed = bossDebuffs(core, card);
-      core.emit({ type: 'cardChanged', cardId });
+      if (core.state.round) {
+        const debuffed = bossDebuffs(core, card);
+        if (debuffed !== card.debuffed) change.debuffed = { from: card.debuffed, to: debuffed };
+        card.debuffed = debuffed;
+      }
+      emitCardChanged(core, cardId, change);
     },
 
     discardFromHand(cardId) {
@@ -355,7 +387,7 @@ export function createApi(core: GameCore): EngineApi {
       const card = core.card(cardId);
       if (!card || card.faceDown === on) return;
       card.faceDown = on;
-      core.emit({ type: 'cardChanged', cardId });
+      emitCardChanged(core, cardId, { faceDown: { from: !on, to: on } });
     },
 
     shuffleHand() {
@@ -472,10 +504,12 @@ export function createApi(core: GameCore): EngineApi {
       if (!r || !card) return;
       const cleansed = r.cleansedCards ?? [];
       if (!cleansed.includes(cardId)) r.cleansedCards = [...cleansed, cardId];
-      const changed = card.debuffed || card.faceDown;
+      const change: CardChange = {};
+      if (card.debuffed) change.debuffed = { from: true, to: false };
+      if (card.faceDown) change.faceDown = { from: true, to: false };
       card.debuffed = false;
       card.faceDown = false;
-      if (changed) core.emit({ type: 'cardChanged', cardId });
+      if (change.debuffed || change.faceDown) emitCardChanged(core, cardId, change);
     },
 
     addTag(defId) {

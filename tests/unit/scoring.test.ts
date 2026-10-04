@@ -205,7 +205,14 @@ describe('krok 1 — základ kombinace', () => {
     const first = play(game, [a!, b!]);
     expect(first.result.steps[0]).toMatchObject({ source: 'hand', chips: 40, mult: 4 });
     expect(first.result.score).toBe((40 + 18) * 4);
-    expect(first.events).toContainEqual({ type: 'handLeveled', hand: 'pair', level: 2, delta: 1 });
+    // `scoreStep: 0` = zvýšení nastalo během skórování, ještě před prvním krokem (UI ho ukáže před základem).
+    expect(first.events).toContainEqual({
+      type: 'handLeveled',
+      hand: 'pair',
+      level: 2,
+      delta: 1,
+      scoreStep: 0,
+    });
     const [c, d] = setupRound(game, '8S 8H');
     const second = play(game, [c!, d!]);
     expect(second.result.steps[0]).toMatchObject({ chips: 40, mult: 4 });
