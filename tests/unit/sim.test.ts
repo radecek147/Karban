@@ -868,7 +868,8 @@ describe('scripts/simulate – volby a výstup', () => {
     expect(text).toContain('Nejlepší rozumná strategie');
     // Obsah už má žolíky → poznámka o odložené kalibraci se nezobrazuje.
     expect(text).not.toContain(t('cli.sim.calibration'));
-  });
+    // Dvě celé simulace (s měřením pokrytí v CI přes 5 s).
+  }, 60_000);
 
   it('výstup se žolíky ukáže nejsilnější žolíky (testovací obsah)', () => {
     const report = runSimulation(
@@ -879,5 +880,5 @@ describe('scripts/simulate – volby a výstup', () => {
     expect(text).not.toMatch(/⟦/);
     expect(text).toContain(t('cli.sim.jokersTitle'));
     expect(text).not.toContain(t('cli.sim.calibration'));
-  });
+  }, 60_000);
 });
