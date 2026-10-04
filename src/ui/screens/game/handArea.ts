@@ -19,13 +19,15 @@ import { toast } from '../../components/toast';
 import { hideTooltip } from '../../components/tooltip';
 import { activeBossId, blindName, bossReasonText, cardLabel } from '../../describe';
 import { h } from '../../dom';
-import { animate } from '../../present';
+import { animate } from '../../anim/animate';
 import type { GameCtx } from './shared';
 import { syncOrder } from './topRow';
 
 export interface HandArea {
   el: HTMLElement;
   deckEl: HTMLElement;
+  /** Řada karet v ruce (presenter: kam přiletí nová karta). */
+  rowEl: HTMLElement;
   update(): void;
   /** Prvek karty v ruce. */
   cardEl(id: number): HTMLElement | null;
@@ -426,6 +428,7 @@ export function createHandArea(ctx: GameCtx, actions: HandAreaActions): HandArea
   return {
     el,
     deckEl,
+    rowEl: handRow,
     update,
     cardEl(id) {
       const n = cards.get(id);

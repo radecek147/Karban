@@ -16,7 +16,7 @@ import { createJokerCard, updateJokerCard } from '../../components/jokerCard';
 import { hideTooltip } from '../../components/tooltip';
 import { copyTargetUid } from '../../describe';
 import { h } from '../../dom';
-import { animate } from '../../present';
+import { animate } from '../../anim/animate';
 import type { GameCtx } from './shared';
 import { consumableSlots, jokerSlots } from './shared';
 
@@ -25,6 +25,11 @@ export interface TopRow {
   update(): void;
   jokerEl(uid: number): HTMLElement | null;
   consumableEl(uid: number): HTMLElement | null;
+  /** Překreslí jednoho žolíka podle stavu (presenter: proměna / nová edice uprostřed otočení). */
+  redrawJoker(uid: number): void;
+  /** Řada žolíků a kapsa spotřebek (cíl letu nových položek). */
+  jokerRow: HTMLElement;
+  consumableRow: HTMLElement;
 }
 
 export interface TopRowActions {
@@ -241,6 +246,20 @@ export function createTopRow(ctx: GameCtx, actions: TopRowActions): TopRow {
     },
     jokerEl: (uid) => jokers.get(uid)?.card ?? null,
     consumableEl: (uid) => consumables.get(uid)?.card ?? null,
+    redrawJoker(uid) {
+      const item = jokers.get(uid);
+      const j = c.state.jokers.find((x) => x.uid === uid);
+      if (!item || !j) return;
+      updateJokerCard(item.card, j, {
+        debuffed: (c.state.round?.jokerDebuffs ?? []).includes(uid),
+        sellValue: c.engine.sellValue(uid),
+        mods: c.engine.modifiers(),
+      });
+      item.card.dataset.jokerUid = String(uid);
+      // Podpis se nechá starý — další překreslení řady žolíka srovná se vším ostatním (kopírování, nálepky).
+    },
+    jokerRow: jokerList,
+    consumableRow: consList,
   };
 }
 

@@ -44,7 +44,13 @@ export interface CardViewOptions {
   className?: string;
 }
 
-type CardEl = HTMLElement & { __card?: Readonly<Card>; __opts?: CardViewOptions; __detach?: () => void };
+type CardEl = HTMLElement & {
+  __card?: Readonly<Card>;
+  __opts?: CardViewOptions;
+  __detach?: () => void;
+  /** Vzhled podržený presenterem (stav před změnou, kterou teprve ukáže animace) — viz `holdCardVisual`. */
+  __hold?: Readonly<Card>;
+};
 
 function visualKey(card: Readonly<Card>): string {
   return `${cardFaceKey(card)}|${card.faceDown ? 'down' : 'up'}`;
@@ -146,13 +152,40 @@ export function updateCardView(
   const merged: CardViewOptions = { ...(cel.__opts ?? {}), ...opts };
   cel.__card = card;
   cel.__opts = merged;
+  // Podržený vzhled (presenter teprve ukáže změnu): obrázek, edice a vylepšení zůstávají podle podrženého stavu,
+  // výběr, zkratka a klik podle skutečné karty.
+  const shown = cel.__hold ?? card;
   const before = cel.dataset.visual;
-  if (before !== visualKey(card)) {
-    renderArt(cel, card, merged);
+  if (before !== visualKey(shown)) {
+    renderArt(cel, shown, merged);
     // Karta se otočila (Bílá paní, odkrytí zahrané karty lícem dolů) — krátké „překlopení“ (jen transform).
-    if (before !== undefined && before.endsWith('|down') !== card.faceDown) flipCard(cel);
+    if (before !== undefined && before.endsWith('|down') !== shown.faceDown) flipCard(cel);
   }
-  applyState(cel, card, merged);
+  applyState(cel, shown, merged);
+}
+
+/**
+ * Podrží vzhled karty (`shown`) i přes překreslení obrazovky — presenter tak ukáže změnu karty (babská rada,
+ * razítko, žolík) až animací, i když se mezitím obrazovka překreslí podle hotového stavu enginu. Volání s novým
+ * `shown` vzhled hned překreslí (odhalení změny uprostřed otočení karty).
+ */
+export function holdCardVisual(el: HTMLElement, shown: Readonly<Card>): void {
+  const cel = el as CardEl;
+  cel.__hold = shown;
+  updateCardView(cel, cel.__card ?? shown);
+}
+
+/** Uvolní podržený vzhled — karta se překreslí podle skutečného stavu. */
+export function releaseCardVisual(el: HTMLElement): void {
+  const cel = el as CardEl;
+  if (!cel.__hold) return;
+  cel.__hold = undefined;
+  if (cel.__card) updateCardView(cel, cel.__card);
+}
+
+/** Drží presenter vzhled karty? (testy) */
+export function isCardVisualHeld(el: HTMLElement): boolean {
+  return (el as CardEl).__hold !== undefined;
 }
 
 /** Překlopení karty: CSS animace `pcard-flip` na vnitřku (styles/cards.css; vypnuté animace ji ruší). */

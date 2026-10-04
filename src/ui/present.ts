@@ -15,107 +15,52 @@
  * prach, konfety), screen shake (src/ui/fx/shake.ts — od poloviny cíle lehce, od cíle podle převýšení, šéf, sklo)
  * a efekt velkého skóre (ruka ≥ cíl kola: obří bublina, zlatý záblesk, jiskry, záře počítadla). Každý krok
  * nejdřív změří, co potřebuje (obdélník zdroje), a teprve pak zapisuje — žádné vynucené přepočty layoutu ve smyčce.
+ *
+ * Šťáva 2 (DECISIONS 2026-10-04): každý efekt je čitelný — zdroj (karta, žolík) výrazně poskočí, nad ním velký
+ * nápis s obrysem v barvě typu (čipy modře, mult červeně, ×mult výrazněji, peníze zlatě), záblesk části karty,
+ * která efekt způsobila (`ScoreStep.origin`: pečeť, vylepšení, edice), mince letí k panelu Peníze a efekty
+ * vylepšení / pečetí / edic / žolíků mají při 1× aspoň ~0,5 s. Změny karet, nové a zničené karty, nové úrovně,
+ * konec kola a nové položky ukazuje src/ui/presentEffects.ts.
  */
-import type { BlindKind, GameEvent, HandType, ScoreResult, ScoreStep } from '../engine';
-import { hasKey, t } from '../i18n/cs';
+import type { GameEvent, ScoreResult, ScoreStep } from '../engine';
+import { MSG } from '../engine/constants';
+import { t } from '../i18n/cs';
 import { formatNumber } from '../i18n/format';
+import { animate } from './anim/animate';
 import type { AnimQueue } from './anim/queue';
 import { blindArt } from './art/art';
 import { sound, soundForEvent, soundScoreStep } from './audio/hooks';
 import { updateCardView } from './components/card';
 import { createContentCard } from './components/consumableCard';
-import { toast, type ToastKind } from './components/toast';
+import { toast } from './components/toast';
 import { bossTexts, tagTexts } from './describe';
-import type { GameController, Presenter } from './controller';
-import { h } from './dom';
-import type { Particles, RectLike } from './fx/particles';
+import type { Presenter } from './controller';
+import { COIN_FLIGHT_MS, crumble, flashOrigin, flyCoins, trigger } from './fx/cardFx';
+import type { RectLike } from './fx/particles';
 import { SHAKE, shakeForScore } from './fx/shake';
+import {
+  finishBatch,
+  hasVisibleEffect,
+  noteConsumableAdded,
+  noteJokerAdded,
+  originColor,
+  prepareBatch,
+  presentCardAdded,
+  presentCardChange,
+  presentCardDestroyed,
+  presentConsumableUse,
+  presentJokerChanged,
+  presentLevelUp,
+  presentRoundRewards,
+  releaseHolds,
+  shownCard,
+} from './presentEffects';
+import { FX_LINE, bubble, measure, messageText, say, type Batch, type PresentView } from './presentKit';
 
-export type BubbleTone = 'chips' | 'mult' | 'xmult' | 'money' | 'message' | 'score' | 'bad';
-
-/** Co presenter potřebuje od herní obrazovky. */
-export interface PresentView {
-  readonly anim: AnimQueue;
-  readonly controller: GameController;
-  readonly particles: Particles;
-  /** Překreslí obrazovku podle aktuálního stavu enginu. */
-  refresh(): void;
-  /** Hrací karta podle id — nejdřív na stole, pak v ruce. */
-  cardEl(id: number): HTMLElement | null;
-  jokerEl(uid: number): HTMLElement | null;
-  consumableEl(uid: number): HTMLElement | null;
-  /** Rámeček kombinace v levém panelu (zdroj kroků `hand` a `boss`). */
-  handInfoEl(): HTMLElement | null;
-  /** Stůl se zahranými kartami. */
-  tableEl(): HTMLElement | null;
-  /** Balíček vpravo dole (odtud se rozdává). */
-  deckEl(): HTMLElement | null;
-  moneyEl(): HTMLElement | null;
-  roundScoreEl(): HTMLElement | null;
-  /** Vrstva pro bubliny (position: fixed přes obrazovku). */
-  fxLayer(): HTMLElement | null;
-  /** Kombinace a čipy × mult v levém panelu během skórování; null = zpět na živý náhled. */
-  showScoring(s: { hand: HandType; level: number; chips: number; mult: number } | null): void;
-  setChipsMult(chips: number, mult: number): void;
-  setRoundScore(n: number): void;
-  setMoney(n: number): void;
-  /** Zatřese hrou s intenzitou 0–1 (src/ui/fx/shake.ts), pokud to nastavení dovolí. */
-  shake(intensity?: number): void;
-  /** Velké skóre: zlatý záblesk přes obrazovku a záře počítadla skóre kola (síla 0–1; nepovinné — testy). */
-  bigScore?(strength: number): void;
-  /** Čísla čipů a multu v levém panelu (krátké „povyskočení“ při změně; nepovinné). */
-  chipsEl?(): HTMLElement | null;
-  multEl?(): HTMLElement | null;
-  /** Hlášení pro čtečky obrazovky (živá oblast). */
-  announce(text: string): void;
-  /** Příchod šéfa: plakát se jménem, pravidlem a hláškou nad stolem (nepovinné — testy bez DOM). */
-  showBossIntro?(bossId: string, kind: BlindKind): void;
-  /** Schová plakát šéfa (hráč zahrál nebo zahodil). */
-  hideBossIntro?(): void;
-}
+export { animate } from './anim/animate';
+export { bubble, type BubbleTone, type PresentView } from './presentKit';
 
 // ─────────────────────────── Pomocné animace ───────────────────────────
-
-const EASE_OUT = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
-
-/** `prefers-reduced-motion`: pohybové animace (Web Animations) se vynechají, čekání zůstává podle AnimQueue. */
-const reducedMotion: MediaQueryList | null =
-  typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
-
-/**
- * Web Animation (jen transform/opacity) se zohledněním rychlosti, vypnutých animací a přeskočení.
- * Prostředí bez `Element.animate` (testy) = nic.
- */
-export async function animate(
-  anim: AnimQueue,
-  el: Element | null | undefined,
-  frames: Keyframe[],
-  ms: number,
-  opts: { easing?: string; delay?: number } = {},
-): Promise<void> {
-  if (!el || anim.instant || reducedMotion?.matches || typeof (el as HTMLElement).animate !== 'function')
-    return;
-  const duration = anim.duration(ms);
-  if (duration <= 0) return;
-  const delay = anim.duration(opts.delay ?? 0);
-  let a: Animation;
-  try {
-    a = el.animate(frames, { duration, delay, easing: opts.easing ?? EASE_OUT, fill: 'backwards' });
-  } catch {
-    return;
-  }
-  await Promise.race([a.finished.then(noop, noop), anim.wait((opts.delay ?? 0) + ms)]);
-  // Přeskočení (mezerník): animace doběhne hned do konce.
-  if (a.playState === 'running' || a.playState === 'paused') {
-    try {
-      a.finish();
-    } catch {
-      a.cancel();
-    }
-  }
-}
-
-function noop(): void {}
 
 /** Krátké „povyskočení“ zdroje efektu. */
 function pop(anim: AnimQueue, el: Element | null | undefined, scale = 1.12): Promise<void> {
@@ -185,71 +130,24 @@ export function tickNumber(
   });
 }
 
-/** Nejmenší odstup kotvy bubliny od horního okraje okna (výška bubliny + rezerva, px). */
-const BUBBLE_MIN_TOP = 44;
+// ─────────────────────────── Skórování ───────────────────────────
 
-/** Obdélník prvku (jedno čtení layoutu), nebo null pro chybějící / neviditelný prvek. */
-function measure(el: Element | null | undefined): RectLike | null {
-  if (!el) return null;
-  const r = el.getBoundingClientRect();
-  return r.width === 0 && r.height === 0 ? null : r;
+/** Délka rychlého kroku skórování (ms při 1×: základ kombinace, čipy hodnoty karty) — dlouhé řetězy se zrychlují. */
+export function stepDuration(steps: number): number {
+  return Math.max(150, Math.min(380, 520 - steps * 15));
 }
 
 /**
- * Bublina nad prvkem nebo už změřeným obdélníkem (+čipy, +mult, hláška…). Bez animací se nevytváří.
- * `huge` = obří zlatá bublina velkého skóre.
+ * Délka kroku efektu (vylepšení, pečeť, edice, žolík, opakování; ms při 1×): aspoň ~0,5 s, ať se dá zaznamenat,
+ * co se stalo — u dlouhých řetězů (víc než 10 efektů) se postupně zkracuje až na 0,3 s.
  */
-export function bubble(
-  view: PresentView,
-  target: Element | RectLike | null | undefined,
-  text: string,
-  tone: BubbleTone,
-  opts: { offset?: number; big?: boolean; huge?: boolean } = {},
-): void {
-  const layer = view.fxLayer();
-  if (!layer || !target || view.anim.instant || !text) return;
-  const r = 'getBoundingClientRect' in target ? target.getBoundingClientRect() : target;
-  if (r.width === 0 && r.height === 0) return;
-  const x = Math.round(r.left + r.width / 2);
-  const offset = opts.offset ?? 0;
-  let y = Math.round(r.top + (opts.big ? r.height / 2 : 0) - offset);
-  // Nad zdrojem není místo (žolíci u horního okraje okna) — bublina se ukáže pod ním, ať ji okraj neořízne.
-  if (!opts.big && y < BUBBLE_MIN_TOP) y = Math.round(r.top + r.height + BUBBLE_MIN_TOP - 8 + offset);
-  const el = h(
-    'div',
-    {
-      class: [
-        'game-bubble',
-        `game-bubble--${tone}`,
-        opts.big || opts.huge ? 'game-bubble--big' : '',
-        opts.huge ? 'game-bubble--huge' : '',
-      ],
-      style: { transform: `translate(${x}px, ${y}px)` },
-    },
-    h('span', { class: 'game-bubble__text' }, text),
-  );
-  layer.appendChild(el);
-  const remove = (): void => el.remove();
-  el.addEventListener('animationend', remove, { once: true });
-  // Pojistka (vypnuté CSS animace, přeskočení): bublina zmizí nejpozději po 2 s.
-  window.setTimeout(remove, 2000);
+export function effectStepDuration(effects: number): number {
+  return Math.round(Math.max(300, Math.min(480, 480 - (effects - 10) * 12)));
 }
 
-/** Text hlášky z i18n klíče, nebo null (neznámý klíč nesmí do konzole sypat varování). */
-function messageText(key: string | undefined, params?: Record<string, string | number>): string | null {
-  if (!key || !hasKey(key)) return null;
-  return t(key, params);
-}
-
-function say(message: string, kind: ToastKind = 'info'): void {
-  toast(message, { kind, testId: `toast-game-${kind}` });
-}
-
-// ─────────────────────────── Skórování ───────────────────────────
-
-/** Délka jednoho kroku skórování (ms při rychlosti 1×) — dlouhé řetězy se zrychlují. */
-export function stepDuration(steps: number): number {
-  return Math.max(150, Math.min(380, 520 - steps * 15));
+/** Rychlý krok: čipy hodnoty karty bez hlášky (ostatní kroky jsou efekty s delší prodlevou). */
+export function isQuickStep(step: ScoreStep): boolean {
+  return step.source === 'card' && step.origin === 'rank' && !step.message;
 }
 
 function stepTarget(view: PresentView, step: ScoreStep): Element | null {
@@ -259,48 +157,135 @@ function stepTarget(view: PresentView, step: ScoreStep): Element | null {
   return view.handInfoEl();
 }
 
-async function presentStep(view: PresentView, step: ScoreStep, per: number, money: { value: number }) {
+/** Klíč zdroje kroku pro bubliny (nový nápis u stejného zdroje odsune starší). */
+function stepAnchor(step: ScoreStep): string {
+  if (step.source === 'joker') return `joker:${step.jokerUid ?? ''}`;
+  if (step.cardId !== undefined) return `card:${step.cardId}`;
+  return step.source;
+}
+
+/** Popisek zdroje efektu karty pod nápisem: název vylepšení, pečeti nebo edice („Zlatá pečeť“). */
+function originCaption(view: PresentView, batch: Batch, step: ScoreStep): string | undefined {
+  if (step.cardId === undefined || (step.source !== 'card' && step.source !== 'held')) return undefined;
+  const card = shownCard(view, batch, step.cardId);
+  if (!card) return undefined;
+  if (step.origin === 'enhancement' && card.enhancement) return t(`enhancements.${card.enhancement}.name`);
+  if (step.origin === 'seal' && card.seal) return t(`seals.${card.seal}.name`);
+  if (step.origin === 'edition' && card.edition) return t(`editions.${card.edition}.name`);
+  return undefined;
+}
+
+/** Časování kroků jedné ruky. */
+interface StepTiming {
+  quick: number;
+  effect: number;
+}
+
+function stepTiming(steps: readonly ScoreStep[]): StepTiming {
+  const effects = steps.filter((s) => s.source !== 'hand' && !isQuickStep(s)).length;
+  return { quick: stepDuration(steps.length), effect: effectStepDuration(effects) };
+}
+
+async function presentStep(
+  view: PresentView,
+  step: ScoreStep,
+  timing: StepTiming,
+  batch: Batch,
+): Promise<void> {
   const anim = view.anim;
+  const money = batch.money;
   soundScoreStep(step, anim);
   if (step.source === 'hand') {
     view.setChipsMult(step.chipsAfter, step.multAfter);
     void pop(anim, view.handInfoEl(), 1.05);
-    await anim.wait(per);
+    await anim.wait(timing.quick);
     return;
   }
   // Šéf přepočítal výsledek (Pan starosta): hláška uprostřed stolu u zahraných karet — nad náhledem kombinace v levém
   // panelu by zakryla číslo Skóre kola.
   const bossStep = step.source === 'boss';
   const target = bossStep ? (view.tableEl() ?? stepTarget(view, step)) : stepTarget(view, step);
-  // Nejdřív změřit (zdroj kroku), pak zapisovat — bubliny i částice použijí stejný obdélník.
+  const quick = isQuickStep(step);
+  const again = step.message === MSG.again;
+  // Nejdřív změřit (zdroj kroku, peníze), pak zapisovat — bubliny, mince i částice použijí stejné obdélníky.
   const rect = anim.instant ? null : measure(target);
-  if (!bossStep) void pop(anim, target);
-  let offset = 0;
-  const add = (text: string, tone: BubbleTone): void => {
-    bubble(view, rect, text, tone, { offset, big: bossStep });
-    offset += 26;
-  };
-  const msg = messageText(step.message);
-  if (msg) add(msg, step.source === 'boss' ? 'bad' : 'message');
-  if (step.chips) add(t('game.bubble.chips', { n: step.chips }), 'chips');
-  if (step.mult) add(t('game.bubble.mult', { n: step.mult }), 'mult');
-  if (step.xmult) add(t('game.bubble.xmult', { n: step.xmult }), 'xmult');
-  if (step.money) {
-    add(t('game.bubble.money', { n: step.money }), 'money');
-    money.value += step.money;
-    view.setMoney(money.value);
-    view.particles.coins(rect, step.money > 0 ? 5 : 3, step.money > 0 ? 'up' : 'down');
+  const moneyRect = step.money && !anim.instant ? measure(view.moneyEl()) : null;
+  const cardOfJoker = step.source === 'joker' && step.cardId !== undefined ? view.cardEl(step.cardId) : null;
+  if (bossStep) {
+    const msg = messageText(step.message);
+    if (msg) bubble(view, rect, msg, 'bad', { big: true });
+  } else {
+    // Zdroj výrazně poskočí (×mult a opakování ještě víc); čipy hodnoty karty jen lehce.
+    void trigger(anim, target, step.xmult || again ? 'strong' : quick ? 'soft' : 'normal');
+    if (cardOfJoker) void trigger(anim, cardOfJoker, 'soft');
+    if (step.origin && step.origin !== 'rank') {
+      const card = step.cardId !== undefined ? shownCard(view, batch, step.cardId) : undefined;
+      flashOrigin(anim, target, step.origin, originColor(view, card, step.origin));
+    }
+    const anchor = stepAnchor(step);
+    let caption = originCaption(view, batch, step);
+    let offset = 0;
+    const add = (text: string, tone: Parameters<typeof bubble>[3]): void => {
+      bubble(view, rect, text, tone, {
+        fx: true,
+        quick,
+        caption,
+        offset,
+        anchor: offset ? undefined : anchor,
+      });
+      caption = undefined;
+      offset += FX_LINE;
+    };
+    const msg = messageText(step.message);
+    if (msg) {
+      if (again) add(msg, 'again');
+      else {
+        bubble(view, rect, msg, 'message', { offset });
+        offset += 26;
+      }
+    }
+    if (step.chips) add(t('game.bubble.chips', { n: step.chips }), 'chips');
+    if (step.mult) add(t('game.bubble.mult', { n: step.mult }), 'mult');
+    if (step.xmult) add(t('game.bubble.xmult', { n: step.xmult }), 'xmult');
+    if (step.money) add(t('game.bubble.money', { n: step.money }), step.money > 0 ? 'money' : 'bad');
   }
-  if (rect) {
+  if (step.money) {
+    money.value += step.money;
+    view.particles.coins(rect, 3, step.money > 0 ? 'up' : 'down');
+    // Mince letí k panelu Peníze; když doletí, panel poskočí a číslo se přičte.
+    const landed =
+      step.money > 0 ? flyCoins(view.fxLayer(), anim, rect, moneyRect, Math.min(6, 2 + step.money)) : null;
+    if (!landed || anim.instant) view.setMoney(money.value);
+    else
+      void landed.then(() => {
+        view.setMoney(money.value);
+        void trigger(anim, view.moneyEl(), 'normal');
+      });
+  }
+  if (rect && !bossStep) {
     // ×mult = plamínky (síla podle násobku), +čipy / +mult = obláček v barvě.
     if (step.xmult) view.particles.xmult(rect, Math.min(2, 0.7 + (step.xmult - 1) * 0.6));
     else if (step.mult) view.particles.puff(rect, 'mult');
-    if (step.chips) view.particles.puff(rect, 'chips');
+    if (step.chips) view.particles.puff(rect, 'chips', quick ? 5 : 9);
+    if (again) view.particles.sparkle(rect, 0, 12);
   }
   view.setChipsMult(step.chipsAfter, step.multAfter);
   if (step.chips) void pop(anim, view.chipsEl?.(), 1.25);
   if (step.mult || step.xmult) void pop(anim, view.multEl?.(), step.xmult ? 1.4 : 1.25);
-  await anim.wait(per);
+  // Peníze: krok počká, než mince doletí (aspoň zčásti), ať se nepřekrývá s dalším efektem.
+  const wait = quick ? timing.quick : timing.effect;
+  await anim.wait(step.money ? Math.max(wait, COIN_FLIGHT_MS * 0.8) : wait);
+}
+
+/** Události, které zahraná ruka přehraje v okamžiku, kdy nastaly (změny karet a úrovně během skórování). */
+function handDeferred(batch: Batch, events: readonly GameEvent[]): (GameEvent & { scoreStep?: number })[] {
+  return events.filter((e) => batch.deferred.has(e)) as (GameEvent & { scoreStep?: number })[];
+}
+
+async function presentDeferred(view: PresentView, e: GameEvent, batch: Batch): Promise<void> {
+  soundForEvent(e, view.anim);
+  if (e.type === 'cardChanged') await presentCardChange(view, e, batch);
+  else if (e.type === 'handLeveled') await presentLevelUp(view, e, batch, { keep: true });
 }
 
 /** Zahraná ruka: karty na stůl, kroky skórování, výsledek, přičtení ke skóre kola, úklid stolu. */
@@ -308,7 +293,8 @@ async function presentHand(
   view: PresentView,
   result: ScoreResult,
   roundScore: number,
-  money: { value: number },
+  batch: Batch,
+  events: readonly GameEvent[],
 ): Promise<void> {
   const anim = view.anim;
   const c = view.controller;
@@ -340,12 +326,42 @@ async function presentHand(
     }),
   );
 
-  // 2) Kombinace a kroky skórování.
-  const level = c.state.handLevels[result.hand.type]?.level ?? 1;
-  view.showScoring({ hand: result.hand.type, level, chips: 0, mult: 0 });
+  // 2) Kombinace a kroky skórování. Změny karet a úrovní během skórování (žolíci) se ukážou ve chvíli, kdy nastaly
+  // (`scoreStep`), ostatní (kupón po ruce) až po skórování.
+  const deferred = handDeferred(batch, events);
+  const type = result.hand.type;
+  const levelDelta = deferred.reduce(
+    (n, e) => (e.type === 'handLeveled' && e.hand === type ? n + e.delta : n),
+    0,
+  );
+  const level = (c.state.handLevels[type]?.level ?? 1) - levelDelta;
+  view.showScoring({ hand: type, level, chips: 0, mult: 0 });
   await anim.wait(180);
-  const per = stepDuration(result.steps.length);
-  for (const step of result.steps) await presentStep(view, step, per, money);
+  const timing = stepTiming(result.steps);
+  let shownLevel = level;
+  for (let i = 0; i < result.steps.length; i++) {
+    const now = deferred.filter((e) => e.scoreStep === i);
+    for (const e of now) await presentDeferred(view, e, batch);
+    const leveled = now.filter(
+      (e): e is Extract<GameEvent, { type: 'handLeveled' }> => e.type === 'handLeveled',
+    );
+    if (leveled.length > 0) {
+      // Levý panel zase patří zahrané ruce (na nové úrovni) s průběžnými čipy a multem.
+      shownLevel += leveled.reduce((n, e) => (e.hand === type ? n + e.delta : n), 0);
+      const prev = result.steps[i - 1];
+      view.showScoring({
+        hand: type,
+        level: shownLevel,
+        chips: prev?.chipsAfter ?? 0,
+        mult: prev?.multAfter ?? 0,
+      });
+    }
+    await presentStep(view, result.steps[i]!, timing, batch);
+  }
+  for (const e of deferred)
+    if (e.scoreStep === undefined || e.scoreStep >= result.steps.length)
+      await presentDeferred(view, e, batch);
+  batch.levelShown = false;
 
   // 3) Výsledek ruky.
   const target = c.state.round?.target ?? Infinity;
@@ -481,49 +497,41 @@ function shatter(view: PresentView, el: Element, rect: RectLike | null): void {
   else view.particles.dust(rect);
 }
 
-/** Karta zničená mimo skórování (efekt, spotřebka). */
-async function presentDestroyed(view: PresentView, id: number): Promise<void> {
-  const el = view.cardEl(id);
-  if (!el) return;
-  shatter(view, el, view.anim.instant ? null : measure(el));
-  await animate(view.anim, el, [{ opacity: 1 }, { opacity: 0, transform: 'scale(0.6)' }], 260);
-  el.remove();
-}
-
 // ─────────────────────────── Presenter ───────────────────────────
 
 /** Vytvoří presenter pro herní obrazovku. */
 export function createPresenter(view: PresentView): Presenter {
-  return (events, controller) =>
+  return (events) =>
     view.anim.sequence(async () => {
-      const s = controller.state;
-      // Peníze před akcí = konečný stav − všechny změny v dávce; krok skórování s penězi je přičte postupně.
-      const money = {
-        value: events.reduce((m, e) => (e.type === 'moneyChanged' ? m - e.delta : m), s.money),
-      };
-      // Štítky použité hned v téže dávce (Drobné v kabátě, obálky) — ohlásí je jejich vlastní hláška.
-      const batch: Batch = {
-        money,
-        tagsTriggered: new Set(events.flatMap((e) => (e.type === 'tagTriggered' ? [e.defId] : []))),
-        announced: new Set(),
-      };
-      for (const e of events) await presentEvent(view, e, batch);
+      const batch = prepareBatch(view, events);
+      try {
+        // Použitá spotřebka odletí ze slotu hned (její událost přijde až za efekty).
+        await presentConsumableUse(view, events, batch);
+        for (let i = 0; i < events.length; i++) {
+          const e = events[i]!;
+          if (batch.deferred.has(e)) continue;
+          await presentEvent(view, e, batch, events);
+          // Animace nové úrovně v levém panelu skončila — zpátky na živý náhled (další úroveň ho ukáže znovu).
+          if (batch.levelShown && events[i + 1]?.type !== 'handLeveled') {
+            view.showScoring(null);
+            batch.levelShown = false;
+          }
+        }
+        await finishBatch(view, batch);
+      } finally {
+        releaseHolds(batch);
+      }
     });
 }
 
-/** Kontext jedné dávky událostí (jedna akce hráče). */
-interface Batch {
-  /** Peníze, jak je ukazuje levý panel během přehrávání. */
-  money: { value: number };
-  /** Štítky, které se v dávce spotřebovaly (`tagTriggered`). */
-  tagsTriggered: ReadonlySet<string>;
-  /** Štítky už ohlášené při přeskočení — jejich `tagTriggered` se v dávce neopakuje. */
-  announced: Set<string>;
-}
-
-async function presentEvent(view: PresentView, e: GameEvent, batch: Batch): Promise<void> {
+async function presentEvent(
+  view: PresentView,
+  e: GameEvent,
+  batch: Batch,
+  events: readonly GameEvent[],
+): Promise<void> {
   const anim = view.anim;
-  soundForEvent(e, anim);
+  if (!batch.silenced.has(e)) soundForEvent(e, anim);
   const money = batch.money;
   switch (e.type) {
     case 'blindSelected': {
@@ -577,11 +585,15 @@ async function presentEvent(view: PresentView, e: GameEvent, batch: Batch): Prom
     case 'cardsDrawn':
       return presentDraw(view, e.cardIds);
     case 'handPlayed':
-      return presentHand(view, e.result, e.roundScore, money);
+      return presentHand(view, e.result, e.roundScore, batch, events);
     case 'cardsDiscarded':
       return presentDiscard(view, e.cardIds);
     case 'cardDestroyed':
-      return presentDestroyed(view, e.cardId);
+      return presentCardDestroyed(view, e);
+    case 'cardChanged':
+      return presentCardChange(view, e, batch);
+    case 'cardAdded':
+      return presentCardAdded(view, e, batch, events);
     case 'handShuffled':
       view.refresh();
       return;
@@ -592,6 +604,8 @@ async function presentEvent(view: PresentView, e: GameEvent, batch: Batch): Prom
       await anim.wait(700);
       return;
     }
+    case 'roundRewards':
+      return presentRoundRewards(view, e, batch);
     case 'gameOver':
       await anim.wait(500);
       return;
@@ -601,25 +615,33 @@ async function presentEvent(view: PresentView, e: GameEvent, batch: Batch): Prom
       await anim.wait(400);
       return;
     case 'moneyChanged': {
-      // Peníze ze skórování ukazují kroky (bublina + počítadlo); ostatní změny tady.
+      // Peníze ze skórování ukazují kroky (bublina + mince k panelu); ostatní změny tady.
       if (e.reason === 'score') return;
       const el = view.moneyEl();
+      const rect = anim.instant ? null : measure(el);
       // Výplata / prodej = mince vyletí, placení (Večerka, šéf, úrok dluhu) = mince padají. Změřit před zápisem.
       if (e.delta !== 0)
         view.particles.coins(
-          el,
+          rect,
           e.delta > 0 ? Math.min(18, 4 + e.delta) : Math.min(8, 2 - e.delta),
           e.delta > 0 ? 'up' : 'down',
         );
+      // Peníze z efektu (spotřebka, žolík, šéf): nápis u panelu Peníze; nákup a prodej ukazuje Večerka sama.
+      if (e.delta !== 0 && e.reason !== 'purchase' && e.reason !== 'sell')
+        bubble(view, rect, t('game.bubble.money', { n: e.delta }), e.delta > 0 ? 'money' : 'bad', {
+          fx: true,
+          quick: true,
+          anchor: 'money',
+        });
       money.value = e.money;
       view.setMoney(e.money);
-      void pop(anim, el, 1.2);
+      void trigger(anim, el, e.delta > 0 ? 'normal' : 'soft');
       return;
     }
     case 'jokerTriggered': {
       const text = messageText(e.message);
       const el = view.jokerEl(e.uid);
-      void pop(anim, el);
+      void trigger(anim, el, 'normal');
       if (text) bubble(view, el, text, 'message');
       await anim.wait(text ? 450 : 200);
       return;
@@ -631,15 +653,24 @@ async function presentEvent(view: PresentView, e: GameEvent, batch: Batch): Prom
     case 'jokerDestroyed': {
       const el = view.jokerEl(e.uid);
       view.particles.dust(el);
-      await animate(anim, el, [{ opacity: 1 }, { opacity: 0, transform: 'scale(0.7) rotate(-6deg)' }], 320);
+      await crumble(anim, el);
       return;
     }
+    case 'jokerChanged':
+      return presentJokerChanged(view, e);
+    case 'jokerAdded':
+      noteJokerAdded(e, batch, events);
+      return;
+    case 'consumableAdded':
+      noteConsumableAdded(view, e, batch, events);
+      return;
     case 'consumableUsed':
-      say(t('game.consumable.used', { name: t(`consumables.${e.defId}.name`) }), 'success');
+      // Hláška jen u spotřebky bez viditelného efektu (peníze, nový žolík…); změny karet a úrovní jsou vidět samy.
+      if (!hasVisibleEffect(events) || anim.instant)
+        say(t('game.consumable.used', { name: t(`consumables.${e.defId}.name`) }), 'success');
       return;
     case 'handLeveled':
-      say(t('game.events.leveled', { hand: t(`hands.${e.hand}.name`), level: e.level }), 'success');
-      return;
+      return presentLevelUp(view, e, batch);
     case 'handDiscovered':
       say(t('game.events.discovered', { hand: t(`hands.${e.hand}.name`) }), 'success');
       return;

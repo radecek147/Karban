@@ -282,6 +282,32 @@ class GameView implements PresentView {
     return this.topRow.consumableEl(uid);
   }
 
+  itemEl(uid: number): HTMLElement | null {
+    return this.el.querySelector<HTMLElement>(`.kcard[data-uid="${uid}"]`);
+  }
+
+  boosterOptionEl(index: number): HTMLElement | null {
+    return this.panelHost.querySelector<HTMLElement>(
+      `[data-testid="booster-option-${index}"] .booster-option__card > *`,
+    );
+  }
+
+  redrawJoker(uid: number): void {
+    this.topRow.redrawJoker(uid);
+  }
+
+  handRowEl(): HTMLElement | null {
+    return this.handArea.rowEl;
+  }
+
+  jokerRowEl(): HTMLElement | null {
+    return this.topRow.jokerRow;
+  }
+
+  consumableRowEl(): HTMLElement | null {
+    return this.topRow.consumableRow;
+  }
+
   handInfoEl(): HTMLElement | null {
     return this.sidebar.handInfoEl;
   }

@@ -316,3 +316,468 @@
     content: '';
   }
 }
+
+/* ─────────────────────────── Šťáva 2: viditelné efekty ─────────────────────────── */
+
+/*
+ * Velké nápisy s obrysem nad zdrojem efektu (src/ui/presentKit.ts `bubble(…, { fx: true })`): čipy modře, mult
+ * červeně, ×mult větší, peníze zlatě, opakování, změna karty, nová úroveň. Objeví se s přestřelem, chvíli drží
+ * a odplují; nový nápis u stejného zdroje starší odsune (`is-superseded`). `--bx` = vodorovné zarovnání (střed,
+ * u levého panelu od levého okraje).
+ */
+.game-bubble--fx {
+  --bx: -50%;
+  --fx-fill: #fff;
+  --fx-stroke: #1e1b16;
+
+  z-index: 2;
+  animation-duration: calc(1150ms / var(--speed));
+}
+
+.game-bubble--start {
+  --bx: 0%;
+}
+
+.game-bubble--fx .game-bubble__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--fx-fill);
+  letter-spacing: 0.03em;
+  text-shadow:
+    -3px -3px 0 var(--fx-stroke),
+    3px -3px 0 var(--fx-stroke),
+    -3px 3px 0 var(--fx-stroke),
+    3px 3px 0 var(--fx-stroke),
+    0 -3.5px 0 var(--fx-stroke),
+    0 3.5px 0 var(--fx-stroke),
+    -3.5px 0 0 var(--fx-stroke),
+    3.5px 0 0 var(--fx-stroke),
+    0 7px 0 rgb(0 0 0 / 35%);
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  transform: translate(var(--bx), 0);
+  animation-name: bubble-fx;
+  animation-duration: calc(1150ms / var(--speed));
+  animation-timing-function: linear;
+}
+
+.game-bubble--start .game-bubble__text {
+  align-items: flex-start;
+}
+
+/* Rychlá varianta (čipy hodnoty karty, peníze u panelu, nová položka). */
+.game-bubble--fx.game-bubble--quick,
+.game-bubble--quick .game-bubble__text {
+  animation-duration: calc(820ms / var(--speed));
+}
+
+.game-bubble--quick .game-bubble__text {
+  font-size: 1.45rem;
+}
+
+.game-bubble--fx.game-bubble--chips {
+  --fx-fill: #8ecbff;
+  --fx-stroke: #0d2a52;
+}
+
+.game-bubble--fx.game-bubble--mult {
+  --fx-fill: #ff8a73;
+  --fx-stroke: #4a0f08;
+}
+
+.game-bubble--fx.game-bubble--xmult {
+  --fx-fill: #fff3c4;
+  --fx-stroke: #8f1d14;
+}
+
+.game-bubble--fx.game-bubble--xmult .game-bubble__text {
+  font-size: 2.55rem;
+  animation-name: bubble-fx-strong;
+}
+
+.game-bubble--fx.game-bubble--money {
+  --fx-fill: #ffd75e;
+  --fx-stroke: #4d3200;
+}
+
+.game-bubble--fx.game-bubble--bad {
+  --fx-fill: #ffb3a8;
+  --fx-stroke: #5a0d06;
+}
+
+.game-bubble--fx.game-bubble--again {
+  --fx-fill: #ffe08a;
+  --fx-stroke: #5b2a00;
+}
+
+.game-bubble--fx.game-bubble--again .game-bubble__text {
+  font-size: 2.2rem;
+  animation-name: bubble-fx-strong;
+}
+
+.game-bubble--fx.game-bubble--change {
+  --fx-fill: #fffaf0;
+  --fx-stroke: #3a2412;
+}
+
+.game-bubble--fx.game-bubble--change .game-bubble__text {
+  font-size: 1.6rem;
+}
+
+.game-bubble--fx.game-bubble--level {
+  --fx-fill: #ffe58a;
+  --fx-stroke: #5b3a00;
+}
+
+.game-bubble--fx.game-bubble--level .game-bubble__text {
+  font-size: 1.55rem;
+}
+
+.game-bubble--fx.game-bubble--quick .game-bubble__text {
+  font-size: 1.45rem;
+}
+
+/* Popisek zdroje pod nápisem („Zlatá pečeť“). */
+.game-bubble__caption {
+  padding: 0.12em 0.55em;
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--paper);
+  letter-spacing: 0.02em;
+  text-shadow: none;
+  white-space: nowrap;
+  background: rgb(30 27 22 / 88%);
+  border-radius: 999px;
+}
+
+/* Starší nápis u stejného zdroje rychle odpluje (nový název animace = nový běh od začátku). */
+.game-bubble--fx.is-superseded {
+  animation-name: bubble-life-out;
+  animation-duration: calc(240ms / var(--speed));
+}
+
+.game-bubble--fx.is-superseded .game-bubble__text {
+  animation-name: bubble-fx-out;
+  animation-duration: calc(240ms / var(--speed));
+}
+
+@keyframes bubble-fx {
+  0% {
+    opacity: 0;
+    transform: translate(var(--bx), 14px) scale(0.3) rotate(-10deg);
+  }
+
+  12% {
+    opacity: 1;
+    transform: translate(var(--bx), -4px) scale(1.3) rotate(4deg);
+  }
+
+  22% {
+    transform: translate(var(--bx), 0) scale(0.92) rotate(-2deg);
+  }
+
+  30% {
+    transform: translate(var(--bx), 0) scale(1.05) rotate(1deg);
+  }
+
+  38% {
+    transform: translate(var(--bx), 0) scale(1) rotate(0deg);
+  }
+
+  72% {
+    opacity: 1;
+    transform: translate(var(--bx), -8px) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(var(--bx), -38px) scale(0.92);
+  }
+}
+
+@keyframes bubble-fx-strong {
+  0% {
+    opacity: 0;
+    transform: translate(var(--bx), 18px) scale(0.2) rotate(-14deg);
+  }
+
+  12% {
+    opacity: 1;
+    transform: translate(var(--bx), -6px) scale(1.45) rotate(6deg);
+  }
+
+  22% {
+    transform: translate(var(--bx), 0) scale(0.9) rotate(-3deg);
+  }
+
+  31% {
+    transform: translate(var(--bx), 0) scale(1.08) rotate(1.5deg);
+  }
+
+  40% {
+    transform: translate(var(--bx), 0) scale(1) rotate(0deg);
+  }
+
+  72% {
+    opacity: 1;
+    transform: translate(var(--bx), -8px) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(var(--bx), -40px) scale(0.92);
+  }
+}
+
+@keyframes bubble-fx-out {
+  from {
+    opacity: 1;
+    transform: translate(var(--bx), -6px) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(var(--bx), -40px) scale(0.8);
+  }
+}
+
+@keyframes bubble-life-out {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Zdroj efektu právě poskočil (src/ui/fx/cardFx.ts → trigger): nad sousedy, ať zvětšení nic nezakryje. */
+.pcard.is-triggered,
+.kcard.is-triggered,
+.gt-item.is-triggered {
+  z-index: 4;
+}
+
+.gs-hand.is-triggered,
+.gs-stat__value.is-triggered,
+.gb-deck.is-triggered {
+  position: relative;
+  z-index: 2;
+}
+
+/*
+ * Záblesk části karty, která efekt způsobila (cardFx.ts → flashOrigin): pečeť vlevo dole a odznak vylepšení
+ * vpravo nahoře (pozice podle viewBoxu karty 250 × 350, src/ui/art/cards.ts), lesk edice přes celou kartu.
+ * Barva z obsahu v `--flash-color`.
+ */
+.fx-flash {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.fx-flash--seal,
+.fx-flash--enhancement {
+  width: 84%;
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle,
+    rgb(255 255 255 / 95%) 0%,
+    var(--flash-color, #ffd75e) 24%,
+    color-mix(in srgb, var(--flash-color, #ffd75e) 45%, transparent) 44%,
+    transparent 68%
+  );
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.2);
+  animation: fx-flash-burst calc(680ms / var(--speed)) ease-out forwards;
+}
+
+.fx-flash--seal {
+  top: 91.4%;
+  left: 12%;
+}
+
+.fx-flash--enhancement {
+  top: 8%;
+  left: 88.8%;
+}
+
+/* Rázová vlna kolem pečeti / odznaku. */
+.fx-flash--seal::after,
+.fx-flash--enhancement::after {
+  position: absolute;
+  inset: 24%;
+  content: '';
+  border: 3px solid #fff;
+  border-radius: 50%;
+  opacity: 0;
+  animation: fx-flash-ring calc(680ms / var(--speed)) ease-out forwards;
+}
+
+.fx-flash--edition {
+  inset: -10% -90%;
+  background: linear-gradient(
+    100deg,
+    transparent 38%,
+    rgb(255 255 255 / 85%) 47%,
+    rgb(200 230 255 / 55%) 52%,
+    transparent 62%
+  );
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform: translateX(-42%);
+  animation: fx-flash-sweep calc(620ms / var(--speed)) ease-in-out forwards;
+}
+
+@keyframes fx-flash-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+  }
+
+  22% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+
+  60% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+}
+
+@keyframes fx-flash-ring {
+  0% {
+    opacity: 1;
+    transform: scale(0.4);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+@keyframes fx-flash-sweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-42%);
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.4;
+    transform: translateX(42%);
+  }
+}
+
+@keyframes fx-flash-fade {
+  0% {
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Mince letící k panelu Peníze (cardFx.ts → flyCoins; pohyb dělá Web Animation). */
+.fx-coin {
+  position: absolute;
+  top: -9px;
+  left: -9px;
+  z-index: 3;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  background: radial-gradient(circle at 35% 30%, #fff3c4 0 16%, #f0c94a 30%, #c99a1f 72%);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 2px #a8780f,
+    0 2px 0 rgb(0 0 0 / 35%);
+  opacity: 0;
+}
+
+/* „Duch“ prvku: spotřebka odlétá ze slotu, kopie karty, karta do balíčku (cardFx.ts → ghostFly). */
+.fx-ghost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.fx-ghost > .pcard,
+.fx-ghost > .kcard {
+  width: 100%;
+  height: 100%;
+}
+
+.fx-ghost .price-tag,
+.fx-ghost .kcard__name,
+.fx-ghost .pcard__key {
+  display: none;
+}
+
+.no-anim .fx-flash,
+.no-anim .fx-coin,
+.no-anim .fx-ghost {
+  display: none;
+}
+
+/*
+ * Omezený pohyb: nápisy a záblesky zůstanou (hráč musí vidět, co se stalo), jen kratší, bez přestřelu a houpání —
+ * prolnou se na místě. Přebíjí globální zkrácení animací z base.css (vyšší specifičnost, !important).
+ */
+@media (prefers-reduced-motion: reduce) {
+  .game-bubble,
+  .game-bubble .game-bubble__text {
+    animation-duration: calc(650ms / var(--speed)) !important;
+  }
+
+  .game-bubble .game-bubble__text {
+    animation-name: bubble-calm !important;
+  }
+
+  .fx-flash,
+  .fx-flash::after {
+    animation-duration: calc(380ms / var(--speed)) !important;
+  }
+
+  .fx-flash--edition {
+    animation-name: fx-flash-fade !important;
+  }
+}
+
+@keyframes bubble-calm {
+  0% {
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}

@@ -282,6 +282,28 @@ export class Particles {
     this.burstAt(target, tone, { count });
   }
 
+  /**
+   * Jiskry po ploše prvku a kruh (změna karty spotřebkou, zvýraznění pečeti / vylepšení, nová úroveň kombinace).
+   * `tone`: 0 zlatá, 1 rudá, 2 modrá, 3 bílá.
+   */
+  sparkle(target: FxTarget, tone = 0, count = 14): void {
+    if (!this.ready) return;
+    const r = rectOf(target);
+    if (!r) return;
+    // Jiskry mají jen zlatou a bílou paletu — modrá / rudá jiskřička = pixely čipů / multu a k nim bílé jiskry.
+    if (tone === 1 || tone === 2) {
+      this.emit(tone === 2 ? K_CHIPS : K_MULT, r.left, r.top, r.width, r.height, { count, speed: 200 });
+      this.emit(K_SPARK, r.left, r.top, r.width, r.height, {
+        count: Math.ceil(count / 2),
+        tone: 3,
+        speed: 260,
+      });
+    } else {
+      this.emit(K_SPARK, r.left, r.top, r.width, r.height, { count, tone, speed: 260 });
+    }
+    this.emit(K_RING, r.left + r.width / 2, r.top + r.height / 2, 0, 0, { tone, scale: 0.9 });
+  }
+
   /** Zničená karta / žolík: prach po ploše. */
   dust(target: FxTarget): void {
     if (!this.ready) return;

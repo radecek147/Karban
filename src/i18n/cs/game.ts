@@ -393,5 +393,40 @@ export const game = {
     jokerOn: 'Zase jede!',
   },
 
+  /**
+   * Viditelné efekty (šťáva 2): co se stalo na kartě, žolíkovi nebo kombinaci. Krátké nápisy nad zdrojem —
+   * nejvýš pár slov, ať se dají přečíst během animace.
+   */
+  fx: {
+    /** Změna karty spotřebkou nebo žolíkem (bubliny při otočení karty). */
+    change: {
+      enhancement: '{name} karta!',
+      enhancementLost: 'Bez vylepšení',
+      seal: '{name}!',
+      sealLost: 'Pečeť je pryč',
+      edition: '{name}!',
+      editionLost: 'Bez edice',
+      suit: '{from} → {to}',
+      rank: '{from} → {to}',
+      bonusChips: '+{n|plural:čip,čipy,čipů} navíc',
+      bonusChipsLost: '{n|plural:čip,čipy,čipů} méně',
+      cleansed: 'Zase v provozu!',
+    },
+    copy: 'Kopie!',
+    newCard: 'Nová karta!',
+    toDeck: 'Do balíčku!',
+    destroyed: 'Rozsypala se!',
+    /** Nová úroveň kombinace (pranostika, žolík, kupón): „Barva úr. 3!“ */
+    levelUp: '{hand} úr. {level}!',
+    levelDown: '{hand} úr. {level}',
+    /** Nová spotřebka (modrá pečeť, fialová pečeť, žolík): „+ Pranostika“ */
+    newConsumable: '+ {kind}',
+    newJoker: 'Nový žolík!',
+    jokerTransform: 'Proměna!',
+    jokerStickers: 'Bez nálepek!',
+    /** Peníze zlaté karty / žolíka / balíčku do rozpisu na konci kola (vyplatí se tlačítkem Vyplatit). */
+    roundMoney: '{n|signed} Kč',
+  },
+
   death: DEATH_QUOTES,
 };

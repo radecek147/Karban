@@ -24,6 +24,7 @@ import type {
 import type {
   BlindKind,
   Card,
+  CardChange,
   ConsumableKind,
   HandType,
   JokerInstance,
@@ -502,4 +503,63 @@ export function cardLabel(
   if (card.seal) extras.push(t(`seals.${card.seal}.name`));
   if (card.debuffed) extras.push(t('art.card.debuffed'));
   return extras.length === 0 ? name : t('art.card.withExtras', { name, extras: extras.join(', ') });
+}
+
+/**
+ * Krátké nápisy, co se na kartě změnilo (bubliny při otočení karty — babská rada, razítko, žolík): „Prémiová
+ * karta!“, „Zlatá pečeť!“, „Holografická!“, „♠ → ♥“, „9 → 10“, „+15 čipů navíc“, „Zase v provozu!“. Otočení lícem
+ * dolů nic neprozradí (prázdný seznam), stejně jako změna, která nic viditelného nezměnila.
+ */
+export function cardChangeTexts(
+  change: CardChange | undefined,
+  r: ContentRegistry = defaultRegistry(),
+): string[] {
+  if (!change) return [];
+  const out: string[] = [];
+  const known = (kind: 'enhancements' | 'seals' | 'editions', id: string | null): id is string =>
+    id !== null && r[kind][id] !== undefined && hasKey(`${kind}.${id}.name`);
+  if (change.enhancement) {
+    const to = change.enhancement.to;
+    if (known('enhancements', to))
+      out.push(t('game.fx.change.enhancement', { name: t(`enhancements.${to}.name`) }));
+    else if (to === null) out.push(t('game.fx.change.enhancementLost'));
+  }
+  if (change.seal) {
+    const to = change.seal.to;
+    if (known('seals', to)) out.push(t('game.fx.change.seal', { name: t(`seals.${to}.name`) }));
+    else if (to === null) out.push(t('game.fx.change.sealLost'));
+  }
+  if (change.edition) {
+    const to = change.edition.to;
+    if (known('editions', to)) out.push(t('game.fx.change.edition', { name: t(`editions.${to}.name`) }));
+    else if (to === null) out.push(t('game.fx.change.editionLost'));
+  }
+  if (change.suit)
+    out.push(
+      t('game.fx.change.suit', {
+        from: t(`suits.${change.suit.from}.symbol`),
+        to: t(`suits.${change.suit.to}.symbol`),
+      }),
+    );
+  if (change.rank)
+    out.push(
+      t('game.fx.change.rank', {
+        from: t(`ranks.${change.rank.from}.short`),
+        to: t(`ranks.${change.rank.to}.short`),
+      }),
+    );
+  if (change.bonusChips) {
+    const d = change.bonusChips.to - change.bonusChips.from;
+    if (d > 0) out.push(t('game.fx.change.bonusChips', { n: d }));
+    else if (d < 0) out.push(t('game.fx.change.bonusChipsLost', { n: -d }));
+  }
+  // Očista (Česnek na krk): karta je zase v provozu / lícem nahoru. Otočení lícem dolů (šéf) se neohlašuje.
+  if ((change.debuffed && !change.debuffed.to) || (change.faceDown && !change.faceDown.to))
+    out.push(t('game.fx.change.cleansed'));
+  return out;
+}
+
+/** Změnilo se na kartě něco, co je vidět na jejím obrázku (hodnota, barva, vylepšení, pečeť, edice)? */
+export function cardChangeVisible(change: CardChange | undefined): boolean {
+  return !!change && !!(change.suit || change.rank || change.enhancement || change.seal || change.edition);
 }
