@@ -364,7 +364,7 @@ describe('sbírka', () => {
         }
       }
     }
-  });
+  }, 30_000); // sbírka vykreslí stovky akvarelových SVG — v happy-dom pomalé
 
   it('stavy žolíků: zamčený (podmínka), neobjevený (???), objevený (mechanika, cena, statistika)', () => {
     const ids = Object.keys(REG.jokers);
@@ -464,7 +464,7 @@ describe('sbírka', () => {
       .filter((e) => e.dataset.state === 'discovered')
       .map((e) => e.querySelector('.codex-item__name')?.textContent ?? '');
     expect(names).toEqual([...names].sort((x, y) => x.localeCompare(y, 'cs')));
-  });
+  }, 30_000); // sbírka vykreslí stovky akvarelových SVG — v happy-dom pomalé
 
   it('arrangeEntries: neobjevené na konec při řazení podle názvu, četnost sestupně', () => {
     const p = createProfile(NOW.toISOString());

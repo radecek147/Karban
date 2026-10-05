@@ -1,14 +1,15 @@
 /**
- * SVG hrací karty — líc a rub (vlastní procedurální grafika, CLAUDE.md kap. 7).
+ * SVG hrací karty — líc a rub ve výtvarném stylu E1 „Pohádková knížka“ (tuš a akvarel, src/ui/art/watercolor.ts;
+ * vlastní procedurální grafika, CLAUDE.md kap. 7).
  *
- *  - viewBox 250 × 350 (poměr 5 : 7), ostré a čitelné při šířce ~70–110 px,
+ *  - viewBox 250 × 350 (poměr 5 : 7), čitelné při šířce ~70–110 px,
  *  - rohové indexy 2–10, J, Q, K, A + symbol barvy **vždy** (kvůli barvoslepým),
- *  - pipy 2–10 v klasickém rozložení, eso s velkým symbolem,
+ *  - pipy 2–10 v klasickém rozložení lavírované vodovkou s obrysem tuší, eso s velkým symbolem,
  *  - figury stylizované česky: Kluk s čepicí a peřím, Dáma v šátku na puntíky s korálemi, Král s korunou,
  *    knírem a hermelínem — dvouhlavé (zrcadlené) jako skutečné karty,
- *  - barva karty = `currentColor` z CSS proměnných `--suit-spades|hearts|diamonds|clubs`
- *    (barvoslepý režim je přepne třídou `.colorblind`, viz styles/cards.css),
- *  - vylepšení mění podklad/rámeček (kamenná nemá index ani barvu), pečeť je odznak vlevo dole,
+ *  - barvy karet jsou v obrázku zapečené (bitmapová keš, raster.ts): klasické (♥♦ červená, ♠♣ tmavá), nebo
+ *    čtyřbarevné pro barvoslepé (♦ modrá, ♣ zelená) — podle třídy `.colorblind` na <html>,
+ *  - vylepšení mění papír/rámeček (kamenná nemá index ani barvu), pečeť je vosková pečeť vlevo dole,
  *    edice a stav „mimo provoz“ řeší CSS na obalu (components/card.ts).
  *
  * Markup se skládá jako řetězec (rychlé, kešovatelné); id ve `<defs>` jsou pro každou instanci unikátní.
@@ -17,7 +18,24 @@ import type { ArtSpec, ContentRegistry } from '../../engine/content-types';
 import type { Card, Rank, Suit } from '../../engine/types';
 import { registry as defaultRegistry } from '../../content';
 import { t } from '../../i18n/cs';
-import { SUIT_PATH_D, escapeXml, iconMarkup, iconsLoaded, safeColor } from './icons';
+import { SUIT_PATH_D, escapeXml, iconsLoaded, safeColor } from './icons';
+import { rasterSvg } from './raster';
+import {
+  WC,
+  WC_PAL,
+  beginArt,
+  grainOver,
+  iconShape,
+  ink,
+  inkFill,
+  knock,
+  mixColor,
+  paint,
+  paintIcon,
+  shp,
+  wash,
+  wcDefs,
+} from './watercolor';
 
 export const CARD_WIDTH = 250;
 export const CARD_HEIGHT = 350;
@@ -36,39 +54,63 @@ export const SUIT_VARS: Readonly<Record<Suit, { cssVar: string; fallback: string
   C: { cssVar: '--suit-clubs', fallback: '#1e1b16', name: 'clubs' },
 };
 
-const C = {
-  paper: '#fbf6e9',
-  paperEdge: '#cdbf9c',
-  ink: '#1e1b16',
-  skin: '#f2d2ab',
-  cheek: '#e58e7a',
-  hair: '#6b4423',
-  hairDark: '#3b2a1a',
-  gold: '#d9a521',
-  goldDark: '#8a6410',
-  white: '#fffaf0',
-  red: '#c8372d',
-  frameTint: '#f4ead0',
+/** Barevné schéma karet: klasické, nebo čtyřbarevné (barvoslepý režim). */
+export type SuitScheme = 'classic' | 'four';
+
+interface SuitInk {
+  /** Tuš indexu (hodnota). */
+  ink: string;
+  /** Vodovka symbolů. */
+  wash: string;
+  /** Oblečení figur. */
+  cloth: string;
+}
+
+const SUIT_INKS: Readonly<Record<SuitScheme, Readonly<Record<Suit, SuitInk>>>> = {
+  classic: {
+    S: { ink: '#262b38', wash: '#2f3542', cloth: '#3d4a66' },
+    H: { ink: '#b8392e', wash: '#c8463a', cloth: '#c8463a' },
+    D: { ink: '#b8392e', wash: '#c8463a', cloth: '#c8463a' },
+    C: { ink: '#262b38', wash: '#2f3542', cloth: '#3d4a66' },
+  },
+  four: {
+    S: { ink: '#262b38', wash: '#2f3542', cloth: '#3d4a66' },
+    H: { ink: '#b8392e', wash: '#c8463a', cloth: '#c8463a' },
+    D: { ink: '#1f55a8', wash: '#2f62b8', cloth: '#2f62b8' },
+    C: { ink: '#1d6e38', wash: '#2f8a4a', cloth: '#2f8a4a' },
+  },
 };
 
+/** Aktuální schéma podle třídy `.colorblind` na <html> (bez dokumentu klasické). */
+export function currentSuitScheme(): SuitScheme {
+  return typeof document !== 'undefined' && document.documentElement?.classList.contains('colorblind')
+    ? 'four'
+    : 'classic';
+}
+
 const ID = '%ID%';
+const PAPER_RX = 18;
 
 // ─────────────────────────── Pomocné kreslení ───────────────────────────
 
 const r1 = (n: number): string => String(Math.round(n * 100) / 100);
 const r3 = (n: number): string => String(Math.round(n * 1000) / 1000);
 
-/** Symbol barvy se středem v (cx, cy), velikost `size`; `flip` = otočený o 180° (spodní polovina karty). */
-function suitGlyph(suit: Suit, cx: number, cy: number, size: number, flip = false, extra = ''): string {
+/** Transformace symbolu barvy (cesta v boxu 512 × 512) na střed (cx, cy) a velikost; `flip` = otočený o 180°. */
+function suitTransform(cx: number, cy: number, size: number, flip = false): string {
   const s = size / 512;
   const move = `translate(${r1(cx - size / 2)} ${r1(cy - size / 2)}) scale(${r3(s)})`;
-  const tr = flip ? `rotate(180 ${r1(cx)} ${r1(cy)}) ${move}` : move;
-  return `<path d="${SUIT_PATH_D[suit]}" transform="${tr}" fill="currentColor"${extra ? ` ${extra}` : ''}/>`;
+  return flip ? `rotate(180 ${r1(cx)} ${r1(cy)}) ${move}` : move;
+}
+
+/** Symbol barvy jako tvar bez barvy (pro lavírování / tuš). */
+function suitShape(suit: Suit, cx: number, cy: number, size: number, flip = false): string {
+  return `<path d="${SUIT_PATH_D[suit]}" transform="${suitTransform(cx, cy, size, flip)}"/>`;
 }
 
 /**
  * Tahy znaků rohového indexu (box 26 × 40, tah 5,5) — kreslené cestami, ne písmem, aby byl index ostrý a stejný
- * všude (pixelový font je v malé velikosti nečitelný). Znaky, které tu nejsou, se vykreslí textem.
+ * všude (i v bitmapě, kde webové písmo není). Znaky, které tu nejsou, se vykreslí textem.
  */
 const INDEX_GLYPHS: Readonly<Record<string, { d: string; w: number }>> = {
   '0': { d: 'M13 0C6 0 3 9 3 20s3 20 10 20s10-9 10-20s-3-20-10-20z', w: 26 },
@@ -100,10 +142,10 @@ const INDEX_GLYPHS: Readonly<Record<string, { d: string; w: number }>> = {
 };
 
 /** Hodnota v rohu: tahy znaků vycentrované na x = 30, výška 44 od y = 18. Širší popisky (10) se zúží. */
-function rankGlyphs(label: string): string {
+function rankGlyphs(label: string, color: string): string {
   const chars = [...label];
   if (chars.length === 0 || chars.some((ch) => !INDEX_GLYPHS[ch])) {
-    return `<text x="30" y="60" text-anchor="middle" class="pc-rank" font-size="46" font-weight="700" fill="currentColor">${escapeXml(label)}</text>`;
+    return `<text x="30" y="60" text-anchor="middle" class="pc-rank" font-size="46" font-weight="700" fill="${color}">${escapeXml(label)}</text>`;
   }
   const scale = 1.1;
   const maxWidth = 38;
@@ -119,12 +161,18 @@ function rankGlyphs(label: string): string {
     x += g.w + gap;
   }
   const tx = 30 - (width * sx) / 2;
-  return `<g class="pc-rank" transform="translate(${r1(tx)} 18) scale(${r3(sx)} ${scale})" fill="none" stroke="currentColor" stroke-width="6.2" stroke-linecap="round" stroke-linejoin="round">${d}</g>`;
+  return (
+    `<g class="pc-rank" transform="translate(${r1(tx)} 18) scale(${r3(sx)} ${scale})" fill="none" stroke="${color}" ` +
+    `stroke-width="6" stroke-linecap="round" stroke-linejoin="round" filter="url(#${ID}-wi)">${d}</g>`
+  );
 }
 
 /** Rohový index (hodnota + barva) v levém horním rohu; druhý roh je otočený o 180°. */
-function cornerIndex(suit: Suit, rank: Rank): string {
-  const one = `<g class="pc-corner">${rankGlyphs(t(`ranks.${rank}.short`))}${suitGlyph(suit, 30, 89, 28)}</g>`;
+function cornerIndex(suit: Suit, rank: Rank, si: SuitInk): string {
+  const glyph = suitShape(suit, 30, 89, 28);
+  const one =
+    `<g class="pc-corner">${rankGlyphs(t(`ranks.${rank}.short`), si.ink)}` +
+    `<g class="pc-csuit">${wash(glyph, si.wash, { op: 0.85, dx: 0.8, dy: 0.6 })}${ink(glyph, 1, { scale: 28 / 512, op: 0.7 })}</g></g>`;
   return `${one}<g transform="rotate(180 125 175)">${one}</g>`;
 }
 
@@ -212,65 +260,81 @@ const PIP_LAYOUT: Readonly<Record<number, readonly (readonly [number, number])[]
   ],
 };
 
-function pips(suit: Suit, rank: Rank): string {
+/** Pipy: jedna cesta na pip ve `.pc-pips` (lavírování), obrysy tuší zvlášť. */
+function pips(suit: Suit, rank: Rank, si: SuitInk): string {
   const layout = PIP_LAYOUT[rank] ?? [];
   const size = rank >= 9 ? 46 : 50;
-  return `<g class="pc-pips">${layout.map(([x, y]) => suitGlyph(suit, x, y, size, y > YM + 0.5)).join('')}</g>`;
+  const shapes = layout.map(([x, y]) => suitShape(suit, x, y, size, y > YM + 0.5)).join('');
+  return (
+    `<g class="pc-pips">${wash(shapes, si.wash, { op: 0.72 })}</g>` +
+    `<g class="pc-pips-ink">${ink(shapes, 1.25, { scale: size / 512, op: 0.75 })}</g>`
+  );
 }
 
-function ace(suit: Suit): string {
+function ace(suit: Suit, si: SuitInk): string {
+  const big = suitShape(suit, 125, 175, 116);
   return (
     `<g class="pc-ace">` +
-    `<circle cx="125" cy="175" r="84" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 7" opacity="0.35"/>` +
-    `<circle cx="125" cy="175" r="92" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.2"/>` +
-    suitGlyph(suit, 125, 175, 116) +
+    ink(shp.circle(125, 175, 84), 1.6, { op: 0.35, extra: 'stroke-dasharray="3 7"' }) +
+    ink(shp.circle(125, 175, 92), 1.2, { op: 0.25 }) +
+    wash(big, si.wash, { op: 0.74 }) +
+    ink(big, 1.6, { scale: 116 / 512, op: 0.85 }) +
     `</g>`
   );
 }
 
 // ─────────────────────────── Figury ───────────────────────────
 
-const stroke = (w = 2): string => `stroke="${C.ink}" stroke-width="${w}" stroke-linejoin="round"`;
+const P = WC_PAL;
 
 /** Obličej (společný pro všechny figury); `lips` = rtěnka (Dáma). */
 function face(lips: boolean): string {
   return (
-    `<rect x="115" y="110" width="20" height="20" fill="${C.skin}" ${stroke(1.5)}/>` +
-    `<ellipse cx="125" cy="94" rx="20" ry="23" fill="${C.skin}" ${stroke()}/>` +
-    `<circle cx="113" cy="103" r="4.2" fill="${C.cheek}" opacity="0.55"/>` +
-    `<circle cx="137" cy="103" r="4.2" fill="${C.cheek}" opacity="0.55"/>` +
-    `<circle cx="117" cy="92" r="2.4" fill="${C.ink}"/><circle cx="133" cy="92" r="2.4" fill="${C.ink}"/>` +
-    `<path d="M112 86q5-3 9 0M129 86q5-3 9 0" fill="none" ${stroke(1.4)} stroke-linecap="round"/>` +
-    `<path d="M125 94q-3 6 1 8" fill="none" ${stroke(1.4)} stroke-linecap="round"/>` +
+    paint(shp.rect(115, 110, 20, 20), P.skin, 1.5) +
+    paint(shp.ellipse(125, 94, 20, 23), P.skin, 2) +
+    wash(shp.circle(113, 103, 4.4) + shp.circle(137, 103, 4.4), P.cheek, { op: 0.42 }) +
+    inkFill(shp.circle(117, 92, 2.3) + shp.circle(133, 92, 2.3)) +
+    ink(shp.path('M112 86q5-3 9 0M129 86q5-3 9 0'), 1.6) +
+    ink(shp.path('M125 94q-3 6 1 8'), 1.5) +
     (lips
-      ? `<path d="M119.5 108.5q5.5 3.5 11 0q-5.5 5-11 0z" fill="${C.red}"/>`
-      : `<path d="M120 108q5 3.5 10 0" fill="none" ${stroke(1.5)} stroke-linecap="round"/>`)
+      ? wash(shp.path('M119.5 108.5q5.5 3.5 11 0q-5.5 5-11 0z'), P.red, { op: 0.85, dx: 0.4, dy: 0.3 })
+      : ink(shp.path('M120 108q5 3.5 10 0'), 1.6))
+  );
+}
+
+/** Lidový kvítek (výšivka): pět lístků kolem středu. */
+function folkFlower(cx: number, cy: number, r: number): string {
+  let petals = '';
+  for (let i = 0; i < 5; i++) {
+    const a = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+    petals += shp.circle(cx + Math.cos(a) * r, cy + Math.sin(a) * r, r * 0.62);
+  }
+  return (
+    wash(petals, P.gold, { op: 0.8, dx: 0.5, dy: 0.4 }) +
+    wash(shp.circle(cx, cy, r * 0.5), P.red, { op: 0.85, dx: 0.5, dy: 0.4 })
   );
 }
 
 /** Kluk: sametová čepice s peřím, vesta s knoflíky a výšivkou. */
-function jackHalf(): string {
+function jackHalf(cloth: string): string {
   return (
-    // vesta (barva karty) a košile
-    `<path d="M60 175V157c0-17 20-28 42-30h46c22 2 42 13 42 30v18z" fill="currentColor" ${stroke()}/>` +
-    `<path d="M108 126l17 22l17-22z" fill="${C.white}" ${stroke(1.5)}/>` +
-    `<circle cx="125" cy="156" r="2.8" fill="${C.gold}"/><circle cx="125" cy="167" r="2.8" fill="${C.gold}"/>` +
+    paint(shp.path('M60 175V157c0-17 20-28 42-30h46c22 2 42 13 42 30v18z'), cloth, 2) +
+    paint(shp.path('M108 126l17 22l17-22z'), null, 1.5) +
+    paint(shp.circle(125, 156, 2.8) + shp.circle(125, 167, 2.8), P.gold, 0.8) +
     folkFlower(84, 152, 5) +
     folkFlower(166, 152, 5) +
     face(false) +
-    // vlasy pod čepicí
-    `<path d="M105 92c-2-12 4-18 8-20h24c4 2 10 8 8 20c-3-7-10-11-20-11s-17 4-20 11z" fill="${C.hair}"/>` +
-    // čepice s páskem a peřím
-    `<path d="M97 80c-2-20 18-30 36-27c20 3 26 16 22 27z" fill="currentColor" ${stroke()}/>` +
-    `<rect x="98" y="75" width="57" height="8" rx="3" fill="${C.gold}" ${stroke(1.4)}/>` +
-    `<path d="M147 77c10-16 22-28 40-37c-5 17-17 31-36 40z" fill="${C.white}" ${stroke(1.4)}/>` +
-    `<path d="M150 78c11-13 22-25 34-34" fill="none" ${stroke(1)}/>` +
-    `<circle cx="104" cy="79" r="3.2" fill="${C.red}" ${stroke(1)}/>`
+    paint(shp.path('M105 92c-2-12 4-18 8-20h24c4 2 10 8 8 20c-3-7-10-11-20-11s-17 4-20 11z'), P.hair, 0) +
+    paint(shp.path('M97 80c-2-20 18-30 36-27c20 3 26 16 22 27z'), cloth, 2) +
+    paint(shp.rect(98, 75, 57, 8, 3), P.gold, 1.4) +
+    paint(shp.path('M147 77c10-16 22-28 40-37c-5 17-17 31-36 40z'), null, 1.4) +
+    ink(shp.path('M150 78c11-13 22-25 34-34'), 1) +
+    paint(shp.circle(104, 79, 3.2), P.red, 1)
   );
 }
 
 /** Dáma: šátek na puntíky (barva karty) uvázaný pod bradou, korále, kroj s bílými rukávci. */
-function queenHalf(): string {
+function queenHalf(cloth: string): string {
   const dots = [
     [106, 62],
     [118, 55],
@@ -281,96 +345,98 @@ function queenHalf(): string {
     [99, 99],
     [151, 99],
   ]
-    .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.6" fill="${C.white}"/>`)
+    .map(([x, y]) => shp.circle(x ?? 0, y ?? 0, 2.6))
+    .join('');
+  const beads = [
+    [111, 129],
+    [117, 132],
+    [125, 133],
+    [133, 132],
+    [139, 129],
+  ]
+    .map(([x, y]) => shp.circle(x ?? 0, y ?? 0, 2.8))
     .join('');
   return (
-    // rukávce, živůtek, výšivka
-    `<ellipse cx="78" cy="156" rx="21" ry="19" fill="${C.white}" ${stroke()}/>` +
-    `<ellipse cx="172" cy="156" rx="21" ry="19" fill="${C.white}" ${stroke()}/>` +
-    `<path d="M70 150q8 6 16 0M164 150q8 6 16 0" fill="none" ${stroke(1)}/>` +
-    `<path d="M95 175v-38c8-9 52-9 60 0v38z" fill="currentColor" ${stroke()}/>` +
-    `<path d="M108 128l17 16l17-16z" fill="${C.white}" ${stroke(1.4)}/>` +
+    paint(shp.ellipse(78, 156, 21, 19), null, 2) +
+    paint(shp.ellipse(172, 156, 21, 19), null, 2) +
+    ink(shp.path('M70 150q8 6 16 0M164 150q8 6 16 0'), 1) +
+    paint(shp.path('M95 175v-38c8-9 52-9 60 0v38z'), cloth, 2) +
+    paint(shp.path('M108 128l17 16l17-16z'), null, 1.4) +
     folkFlower(125, 160, 6) +
-    // šátek — zadní díl kolem hlavy
-    `<path d="M96 104c-4-40 12-56 29-56s33 16 29 56c-2 12-8 18-14 20h-30c-6-2-12-8-14-20z" fill="currentColor" ${stroke()}/>` +
-    dots +
+    paint(shp.path('M96 104c-4-40 12-56 29-56s33 16 29 56c-2 12-8 18-14 20h-30c-6-2-12-8-14-20z'), cloth, 2) +
+    knock(dots) +
     face(true) +
-    // ofina a čelní díl šátku
-    `<path d="M107 85c6-7 30-7 36 0c-6-3-30-3-36 0z" fill="${C.hair}" ${stroke(1)}/>` +
-    `<path d="M103 86c1-15 11-22 22-22s21 7 22 22c-7-9-14-12-22-12s-15 3-22 12z" fill="currentColor" ${stroke(1.5)}/>` +
-    // uzel pod bradou
-    `<path d="M119 120l-13 15l16-6zM131 120l13 15l-16-6z" fill="currentColor" ${stroke(1.4)}/>` +
-    `<circle cx="125" cy="123" r="4.5" fill="currentColor" ${stroke(1.4)}/>` +
-    // korále
-    [
-      [111, 129],
-      [117, 132],
-      [125, 133],
-      [133, 132],
-      [139, 129],
-    ]
-      .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.8" fill="${C.red}" ${stroke(0.8)}/>`)
-      .join('')
+    paint(shp.path('M107 85c6-7 30-7 36 0c-6-3-30-3-36 0z'), P.hair, 1) +
+    paint(shp.path('M103 86c1-15 11-22 22-22s21 7 22 22c-7-9-14-12-22-12s-15 3-22 12z'), cloth, 1.5) +
+    paint(shp.path('M119 120l-13 15l16-6zM131 120l13 15l-16-6z'), cloth, 1.4) +
+    paint(shp.circle(125, 123, 4.5), cloth, 1.4) +
+    paint(beads, P.red, 0.8)
   );
 }
 
 /** Král: koruna, knír s bradkou, plášť (barva karty) se zlatým pruhem, hermelínový límec a žezlo. */
-function kingHalf(): string {
+function kingHalf(cloth: string): string {
   const ermine = [
     [99, 133],
     [112, 129],
     [138, 129],
     [151, 133],
   ]
-    .map(([x, y]) => `<path d="M${x} ${y}v4.5l-1.5 2M${x} ${y}v4.5l1.5 2" fill="none" ${stroke(1.3)}/>`)
+    .map(([x, y]) => `M${x} ${y}v4.5l-1.5 2M${x} ${y}v4.5l1.5 2`)
     .join('');
+  const rod = 'M72 175L90 116';
   return (
-    // žezlo (za ramenem)
-    `<path d="M72 175L90 116" stroke="${C.goldDark}" stroke-width="6" stroke-linecap="round"/>` +
-    `<path d="M72 175L90 116" stroke="${C.gold}" stroke-width="3.5" stroke-linecap="round"/>` +
-    `<circle cx="91" cy="112" r="6" fill="${C.gold}" ${stroke(1.4)}/>` +
-    // plášť se zlatým pruhem
-    `<path d="M60 175V159c0-18 20-29 42-31h46c22 2 42 13 42 31v16z" fill="currentColor" ${stroke()}/>` +
-    `<rect x="116" y="136" width="18" height="39" fill="${C.gold}" ${stroke(1.2)}/>` +
-    `<path d="M125 144l4 5l-4 5l-4-5zM125 160l4 5l-4 5l-4-5z" fill="${C.ink}"/>` +
+    ink(shp.path(rod), 6.6) +
+    knock(`<path d="${rod}" fill="none" stroke="url(#${ID}-pp)" stroke-width="4" stroke-linecap="round"/>`) +
+    wash(
+      `<path d="${rod}" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>`,
+      P.gold,
+      {
+        op: 0.8,
+        dx: 0.4,
+        dy: 0.3,
+      },
+    ) +
+    paint(shp.circle(91, 112, 6), P.gold, 1.4) +
+    paint(shp.path('M60 175V159c0-18 20-29 42-31h46c22 2 42 13 42 31v16z'), cloth, 2) +
+    paint(shp.rect(116, 136, 18, 39), P.gold, 1.2) +
+    inkFill(shp.path('M125 144l4 5l-4 5l-4-5zM125 160l4 5l-4 5l-4-5z')) +
     face(false) +
-    // hermelínový límec kolem krku
-    `<path d="M88 138c3-13 18-16 37-16s34 3 37 16c-3 6-10 8-16 5c-6-5-13-7-21-7s-15 2-21 7c-6 3-13 1-16-5z" fill="${C.white}" ${stroke(1.5)}/>` +
-    ermine +
-    // vlasy po stranách
-    `<path d="M102 100c-4-16 2-26 10-28h26c8 2 14 12 10 28c-2-11-9-17-23-17s-21 6-23 17z" fill="${C.hair}"/>` +
-    // bradka a knír
-    `<path d="M112 112c4 14 9 20 13 22c4-2 9-8 13-22c-5 5-21 5-26 0z" fill="${C.hairDark}"/>` +
-    `<path d="M105 103c6-6 14-5 20-1c6-4 14-5 20 1c3 5-1 9-6 7c-5-2-9-3-14-1c-5-2-9-1-14 1c-5 2-9-2-6-7z" fill="${C.hairDark}"/>` +
-    // koruna
-    `<path d="M100 76l1-28l12 13l12-19l12 19l12-13l1 28z" fill="${C.gold}" ${stroke()}/>` +
-    `<rect x="99" y="70" width="52" height="9" rx="2" fill="${C.gold}" ${stroke(1.5)}/>` +
-    `<circle cx="125" cy="74.5" r="3.2" fill="currentColor" ${stroke(1)}/>` +
-    `<circle cx="110" cy="74.5" r="2.4" fill="${C.red}"/><circle cx="140" cy="74.5" r="2.4" fill="${C.red}"/>` +
-    `<circle cx="101" cy="47" r="3" fill="${C.gold}" ${stroke(1)}/><circle cx="125" cy="41" r="3.2" fill="${C.gold}" ${stroke(1)}/>` +
-    `<circle cx="149" cy="47" r="3" fill="${C.gold}" ${stroke(1)}/>`
+    paint(
+      shp.path(
+        'M88 138c3-13 18-16 37-16s34 3 37 16c-3 6-10 8-16 5c-6-5-13-7-21-7s-15 2-21 7c-6 3-13 1-16-5z',
+      ),
+      null,
+      1.5,
+    ) +
+    ink(shp.path(ermine), 1.4) +
+    paint(shp.path('M102 100c-4-16 2-26 10-28h26c8 2 14 12 10 28c-2-11-9-17-23-17s-21 6-23 17z'), P.hair, 0) +
+    paint(shp.path('M112 112c4 14 9 20 13 22c4-2 9-8 13-22c-5 5-21 5-26 0z'), P.hairDark, 0.8) +
+    paint(
+      shp.path('M105 103c6-6 14-5 20-1c6-4 14-5 20 1c3 5-1 9-6 7c-5-2-9-3-14-1c-5-2-9-1-14 1c-5 2-9-2-6-7z'),
+      P.hairDark,
+      0.8,
+    ) +
+    paint(shp.path('M100 76l1-28l12 13l12-19l12 19l12-13l1 28z'), P.gold, 2) +
+    paint(shp.rect(99, 70, 52, 9, 2), P.goldDark, 1.5) +
+    paint(shp.circle(125, 74.5, 3.2), cloth, 1) +
+    wash(shp.circle(110, 74.5, 2.4) + shp.circle(140, 74.5, 2.4), P.red, { op: 0.9, dx: 0.3, dy: 0.2 }) +
+    paint(shp.circle(101, 47, 3) + shp.circle(125, 41, 3.2) + shp.circle(149, 47, 3), P.gold, 1)
   );
 }
 
-/** Lidový kvítek (výšivka): pět lístků kolem středu. */
-function folkFlower(cx: number, cy: number, r: number): string {
-  let petals = '';
-  for (let i = 0; i < 5; i++) {
-    const a = (Math.PI * 2 * i) / 5 - Math.PI / 2;
-    petals += `<circle cx="${r1(cx + Math.cos(a) * r)}" cy="${r1(cy + Math.sin(a) * r)}" r="${r1(r * 0.62)}" fill="${C.gold}"/>`;
-  }
-  return `${petals}<circle cx="${cx}" cy="${cy}" r="${r1(r * 0.5)}" fill="${C.red}"/>`;
-}
-
-function courtCard(suit: Suit, rank: Rank): string {
-  const half = rank === 11 ? jackHalf() : rank === 12 ? queenHalf() : kingHalf();
-  const top = `<g class="pc-figure">${half}${suitGlyph(suit, 66, 54, 20)}</g>`;
+function courtCard(suit: Suit, rank: Rank, si: SuitInk): string {
+  const half = rank === 11 ? jackHalf(si.cloth) : rank === 12 ? queenHalf(si.cloth) : kingHalf(si.cloth);
+  const mark = suitShape(suit, 66, 54, 20);
+  const top =
+    `<g class="pc-figure">${half}${wash(mark, si.wash, { op: 0.85, dx: 0.6, dy: 0.4 })}` +
+    `${ink(mark, 0.9, { scale: 20 / 512, op: 0.7 })}</g>`;
   return (
     `<g class="pc-court">` +
-    `<rect x="50" y="36" width="150" height="278" rx="6" fill="${C.frameTint}" fill-opacity="0.65"/>` +
+    wash(shp.rect(50, 36, 150, 278, 6), mixColor(si.wash, '#f4e4c0', 0.86), { op: 0.5, dx: 0, dy: 0 }) +
     `<g clip-path="url(#${ID}-court)">${top}<g transform="rotate(180 125 175)">${top}</g></g>` +
-    `<line x1="50" y1="175" x2="200" y2="175" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>` +
-    `<rect x="50" y="36" width="150" height="278" rx="6" fill="none" stroke="currentColor" stroke-width="2.5"/>` +
+    ink(shp.path('M50 175H200'), 1.3, { color: si.ink, op: 0.55 }) +
+    ink(shp.rect(50, 36, 150, 278, 6), 2, { color: si.ink, op: 0.8 }) +
     `</g>`
   );
 }
@@ -381,91 +447,115 @@ const COURT_CLIP = `<clipPath id="${ID}-court"><rect x="50" y="36" width="150" h
 // ─────────────────────────── Vylepšení a pečetě ───────────────────────────
 
 interface Surface {
-  /** Výplň podkladu (barva nebo `url(#…)`). */
-  fill: string;
-  fillOpacity?: number;
+  /** Barva papíru (výchozí krémová). */
+  paper?: string;
+  /** Okraj karty. */
   edge: string;
-  /** Vnitřní rámeček (barva) — zvýrazní vylepšení i při malé velikosti. */
-  inner?: string;
   defs?: string;
-  /** Kresba nad podkladem, pod pipy. */
+  /** Kresba nad papírem, pod pipy (tónování, rámeček, motiv). */
   under?: string;
   /** Kresba nad vším (lesk, ohnutý roh). */
   over?: string;
 }
 
+/** Lavírovaný pruh podél okraje karty (barva vylepšení — čitelné i při malé velikosti). */
+function band(color: string, op = 0.55): string {
+  return (
+    wash(
+      `<rect x="11" y="11" width="228" height="328" rx="12" fill="none" stroke="currentColor" stroke-width="12"/>`,
+      color,
+      {
+        op,
+        dx: 0,
+        dy: 0,
+      },
+    ) + ink(shp.rect(17, 17, 216, 316, 9), 1.1, { color, op: 0.7 })
+  );
+}
+
+/** Lavírování celého papíru (tón vylepšení). */
+function tint(color: string, op: number): string {
+  return wash(shp.rect(6, 6, 238, 338, 15), color, { op, dx: 0, dy: 0 });
+}
+
 function surface(enhancement: string | null, reg: ContentRegistry): Surface {
   switch (enhancement) {
     case null:
-      return { fill: C.paper, edge: C.paperEdge };
+      return { edge: WC.paperEdge };
     case 'bonus':
-      return { fill: '#e7f0fb', edge: '#8fb3e0', inner: '#3b7fd8' };
+      return { edge: '#9fb8dc', under: band('#3d6ab0') };
     case 'mult':
-      return { fill: '#fbe8e2', edge: '#e0a294', inner: '#d9452f' };
+      return { edge: '#e0a294', under: band('#c8463a') };
     case 'glass':
       return {
-        fill: '#e2f4f8',
-        fillOpacity: 0.8,
-        edge: '#7fb8c9',
-        inner: '#a9d6e2',
+        edge: '#8ec2d0',
+        under: tint('#7fc4d6', 0.28) + band('#5fa8bd', 0.35),
         over:
-          `<path d="M24 120L120 24h34L24 154zM40 330L226 144v26L66 330z" fill="#ffffff" opacity="0.45"/>` +
-          `<path d="M196 60l12 14l-6 10l10 12" fill="none" stroke="#7fb8c9" stroke-width="1.5" opacity="0.8"/>`,
+          `<path d="M24 120L120 24h30L24 150zM44 330L226 148v24L70 330z" fill="#ffffff" opacity="0.5"/>` +
+          ink(shp.path('M196 60l12 14l-6 10l10 12'), 1.3, { color: '#3f8094', op: 0.8 }),
       };
     case 'steel':
       return {
-        fill: `url(#${ID}-steel)`,
-        edge: '#6b7280',
-        inner: '#9aa3ad',
-        defs: `<linearGradient id="${ID}-steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef1f4"/><stop offset="0.45" stop-color="#b9c0c8"/><stop offset="0.55" stop-color="#d7dce1"/><stop offset="1" stop-color="#9aa3ad"/></linearGradient>`,
-        under: [
-          [13, 13],
-          [237, 13],
-          [13, 337],
-          [237, 337],
-        ]
-          .map(
-            ([x, y]) =>
-              `<circle cx="${x}" cy="${y}" r="4.5" fill="#d1d5db" stroke="#4b5563" stroke-width="1.5"/>`,
-          )
-          .join(''),
+        edge: '#7b838e',
+        under:
+          tint('#8a929c', 0.5) +
+          wash(shp.path('M6 120L120 6h60L6 180z'), '#ffffff', { op: 0.2, dx: 0, dy: 0 }) +
+          [
+            [16, 16],
+            [234, 16],
+            [16, 334],
+            [234, 334],
+          ]
+            .map(([x, y]) => paint(shp.circle(x ?? 0, y ?? 0, 5), '#c9ced4', 1.2))
+            .join(''),
       };
     case 'gold':
       return {
-        fill: `url(#${ID}-gold)`,
-        edge: '#a8780f',
-        inner: '#c8961a',
-        defs: `<linearGradient id="${ID}-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbeaa0"/><stop offset="0.5" stop-color="#e2b33a"/><stop offset="1" stop-color="#f6d97a"/></linearGradient>`,
-        over: `<path d="M24 90L90 24h20L24 110z" fill="#fffbe6" opacity="0.5"/>`,
+        edge: '#b08a2a',
+        under: tint('#e2b33a', 0.55) + band('#c8961a', 0.4),
+        over: `<path d="M24 90L90 24h18L24 108z" fill="#fffbe6" opacity="0.55"/>`,
       };
     case 'lucky':
       return {
-        fill: '#eaf6e6',
         edge: '#8cc497',
-        inner: '#2f7a3d',
-        under: `<g opacity="0.13" color="#2f7a3d">${iconMarkup('clover', { x: 45, y: 95, size: 160 })}</g>`,
+        under:
+          band('#3f8a4d', 0.5) +
+          paintIcon('clover', { x: 45, y: 95, size: 160 }, '#5f9a46', { op: 0.16, inkW: 0 }),
       };
     case 'wild':
       return {
-        fill: '#f6f0fd',
         edge: '#b69be0',
-        inner: `url(#${ID}-wild)`,
-        defs: `<linearGradient id="${ID}-wild" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9452f"/><stop offset="0.33" stop-color="#e8a92a"/><stop offset="0.66" stop-color="#2f9e57"/><stop offset="1" stop-color="#3b7fd8"/></linearGradient>`,
+        under:
+          wash(shp.circle(14, 14, 46), '#c8463a', { op: 0.45, dx: 0, dy: 0 }) +
+          wash(shp.circle(236, 14, 46), '#e6b347', { op: 0.5, dx: 0, dy: 0 }) +
+          wash(shp.circle(236, 336, 46), '#5f9a46', { op: 0.45, dx: 0, dy: 0 }) +
+          wash(shp.circle(14, 336, 46), '#3d6ab0', { op: 0.45, dx: 0, dy: 0 }) +
+          ink(shp.rect(17, 17, 216, 316, 9), 1.1, { color: '#7a5aa8', op: 0.6 }),
       };
     case 'worn':
       return {
-        fill: '#efe0bd',
         edge: '#b89c6a',
         under:
-          `<circle cx="168" cy="250" r="38" fill="none" stroke="#a0763f" stroke-width="5" opacity="0.18"/>` +
-          `<path d="M20 210q60 -8 210 6" fill="none" stroke="#b89c6a" stroke-width="1.5" opacity="0.5"/>`,
-        over: `<path d="M248 52V2h-50z" fill="#d8c393" stroke="#b89c6a" stroke-width="2"/><path d="M198 2l50 50h-50z" fill="#c9b07a" stroke="#b89c6a" stroke-width="2"/>`,
+          tint('#d9b77a', 0.3) +
+          wash(
+            `<circle cx="168" cy="250" r="38" fill="none" stroke="currentColor" stroke-width="5"/>`,
+            '#8a5a2a',
+            {
+              op: 0.28,
+              dx: 0,
+              dy: 0,
+            },
+          ) +
+          ink(shp.path('M20 210q60 -8 210 6'), 1.2, { color: '#a08050', op: 0.5 }),
+        over:
+          paint(shp.path('M248 52V2h-50z'), '#d8c393', 1.4) +
+          paint(shp.path('M198 2l50 50h-50z'), '#c9b07a', 1.4),
       };
     default: {
       // Neznámé (budoucí) vylepšení: rámeček v barvě jeho obrázku.
       const def = reg.enhancements[enhancement];
       const color = safeColor(def?.art.bg, '#6d28d9');
-      return { fill: C.paper, edge: color, inner: color };
+      return { edge: color, under: band(color) };
     }
   }
 }
@@ -475,68 +565,77 @@ function enhancementBadge(enhancement: string, reg: ContentRegistry): string {
   const art = reg.enhancements[enhancement]?.art;
   if (!art) return '';
   const bg = safeColor(art.bg, '#555555');
-  const fg = safeColor(art.fg, '#ffffff');
   return (
     `<g class="pc-enh-badge">` +
-    `<circle cx="222" cy="28" r="16" fill="${bg}" stroke="${C.white}" stroke-width="2.5"/>` +
-    iconMarkup(art.icon, { x: 211, y: 17, size: 22, color: fg }) +
+    paint(shp.circle(222, 28, 16), bg, 1.6, { op: 0.85 }) +
+    knock(iconKnockShape(art.icon, 211, 17, 22)) +
     `</g>`
   );
 }
 
-/** Pečeť vlevo dole: voskový odznak v barvě `SealDef.art`. */
+/** Pečeť vlevo dole: vosková pečeť v barvě `SealDef.art`. */
 function sealBadge(seal: string, reg: ContentRegistry): string {
   const art = reg.seals[seal]?.art;
   const bg = safeColor(art?.bg, '#7e22ce');
-  const fg = safeColor(art?.fg, '#ffffff');
   let wax = '';
   for (let i = 0; i < 10; i++) {
     const a = (Math.PI * 2 * i) / 10;
-    wax += `<circle cx="${r1(30 + Math.cos(a) * 15)}" cy="${r1(320 + Math.sin(a) * 15)}" r="5" fill="${bg}"/>`;
+    wax += shp.circle(30 + Math.cos(a) * 15, 320 + Math.sin(a) * 15, 5);
   }
   return (
     `<g class="pc-seal" data-seal="${escapeXml(seal)}">` +
-    wax +
-    `<circle cx="30" cy="320" r="16" fill="${bg}"/>` +
-    `<circle cx="30" cy="320" r="11.5" fill="none" stroke="${fg}" stroke-width="1.5" opacity="0.6"/>` +
-    iconMarkup(art?.icon ?? 'star', { x: 22, y: 312, size: 16, color: fg }) +
+    wash(wax + shp.circle(30, 320, 16), bg, { op: 0.9, dx: 0, dy: 0 }) +
+    ink(shp.circle(30, 320, 11.5), 1.2, { color: mixColor(bg, '#000000', 0.45), op: 0.7 }) +
+    knock(iconKnockShape(art?.icon ?? 'star', 22, 312, 16)) +
     `</g>`
   );
 }
 
 /** Kamenná karta: bez hodnoty a barvy — jen kámen. */
 function stoneFace(): string {
+  const blocks = [
+    'M24 30h70l10 52l-46 18l-34-10z',
+    'M112 26h112v64l-58 10l-48-26z',
+    'M24 104l42-6l30 40l-12 66l-60 8z',
+    'M104 96l60 14l62-8v96l-70 18l-48-40z',
+    'M24 226l64-10l46 34l-6 76h-104z',
+    'M140 248l86-30v108h-92z',
+  ];
   return (
-    `<rect x="2" y="2" width="246" height="346" rx="18" fill="#8b8580" stroke="#57534e" stroke-width="3"/>` +
-    `<rect x="12" y="12" width="226" height="326" rx="10" fill="none" stroke="#6f6a64" stroke-width="2"/>` +
-    `<g fill="#9d978f" stroke="#6f6a64" stroke-width="2" stroke-linejoin="round">` +
-    `<path d="M24 30h70l10 52l-46 18l-34-10z"/><path d="M112 26h112v64l-58 10l-48-26z"/>` +
-    `<path d="M24 104l42-6l30 40l-12 66l-60 8z"/><path d="M104 96l60 14l62-8v96l-70 18l-48-40z"/>` +
-    `<path d="M24 226l64-10l46 34l-6 76h-104z"/><path d="M140 248l86-30v108h-92z"/>` +
-    `</g>` +
-    `<path d="M70 150l18 24l-8 30M180 140l-14 36l20 22M60 270l30 12" fill="none" stroke="#57534e" stroke-width="2" opacity="0.7"/>` +
-    `<path d="M24 30h70l10 52M112 26h112" fill="none" stroke="#b5afa7" stroke-width="2" opacity="0.6"/>`
+    tint('#8b8580', 0.55) +
+    blocks.map((d, i) => paint(shp.path(d), i % 2 ? '#a7a198' : '#9a948c', 1.6, { noKnock: true })).join('') +
+    ink(shp.path('M70 150l18 24l-8 30M180 140l-14 36l20 22M60 270l30 12'), 1.6, { op: 0.75 })
   );
+}
+
+/** Silueta ikony (bez barvy) — papírový výřez na odznaku nebo pečeti. */
+function iconKnockShape(name: string, x: number, y: number, size: number): string {
+  return iconShape(name, { x, y, size }).markup;
 }
 
 // ─────────────────────────── Sestavení ───────────────────────────
 
 function svgRoot(classes: string, style: string, data: string, body: string, defs = ''): string {
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${CARD_VIEWBOX}" class="${classes}" style="${style}" ${data} focusable="false">` +
-    (defs ? `<defs>${defs}</defs>` : '') +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${CARD_VIEWBOX}" class="${classes}"${style ? ` style="${style}"` : ''} ${data} focusable="false">` +
+    `<defs>${wcDefs({ width: CARD_WIDTH, height: CARD_HEIGHT })}${defs}</defs>` +
     body +
     `</svg>`
   );
 }
 
-/** Styl kořene: barva karty z CSS proměnné (se zálohou). */
+/** Styl kořene: barva karty z CSS proměnné (se zálohou) — pro prvky, které barvu dědí z CSS. */
 export function suitColorStyle(suit: Suit): string {
   const v = SUIT_VARS[suit];
   return `color: var(${v.cssVar}, ${v.fallback})`;
 }
 
-function buildFace(card: CardFace, reg: ContentRegistry): string {
+function paperRect(sf: Surface): string {
+  return `<rect x="2" y="2" width="246" height="346" rx="${PAPER_RX}" fill="url(#${ID}-pp)" stroke="${sf.edge}" stroke-width="3"/>`;
+}
+
+function buildFace(card: CardFace, reg: ContentRegistry, scheme: SuitScheme): string {
+  beginArt();
   const enh = card.enhancement;
   const noRankSuit = enh !== null && reg.enhancements[enh]?.noRankSuit === true;
   const data =
@@ -545,28 +644,30 @@ function buildFace(card: CardFace, reg: ContentRegistry): string {
     (card.seal ? ` data-seal="${escapeXml(card.seal)}"` : '');
   const seal = card.seal ? sealBadge(card.seal, reg) : '';
   if (noRankSuit) {
-    return svgRoot('pc-svg pc-face pc-stone', 'color: #57534e', data, stoneFace() + seal);
+    return svgRoot(
+      'pc-svg pc-face pc-stone',
+      'color: #57534e',
+      data,
+      paperRect({ edge: '#6f6a64' }) + stoneFace() + seal + grainOver(CARD_WIDTH, CARD_HEIGHT, PAPER_RX),
+    );
   }
+  const si = SUIT_INKS[scheme][card.suit];
   const sf = surface(enh, reg);
   const content =
     card.rank === 14
-      ? ace(card.suit)
+      ? ace(card.suit, si)
       : card.rank >= 11
-        ? courtCard(card.suit, card.rank)
-        : pips(card.suit, card.rank);
+        ? courtCard(card.suit, card.rank, si)
+        : pips(card.suit, card.rank, si);
   const body =
-    `<rect x="2" y="2" width="246" height="346" rx="18" fill="${sf.fill}"${
-      sf.fillOpacity !== undefined ? ` fill-opacity="${sf.fillOpacity}"` : ''
-    } stroke="${sf.edge}" stroke-width="3"/>` +
-    (sf.inner
-      ? `<rect x="9" y="9" width="232" height="332" rx="12" fill="none" stroke="${sf.inner}" stroke-width="4"/>`
-      : '') +
+    paperRect(sf) +
     (sf.under ?? '') +
     content +
-    cornerIndex(card.suit, card.rank) +
+    cornerIndex(card.suit, card.rank, si) +
     (sf.over ?? '') +
     (enh ? enhancementBadge(enh, reg) : '') +
-    seal;
+    seal +
+    grainOver(CARD_WIDTH, CARD_HEIGHT, PAPER_RX);
   const defs = (sf.defs ?? '') + (card.rank >= 11 && card.rank <= 13 ? COURT_CLIP : '');
   return svgRoot(`pc-svg pc-face pc-suit-${card.suit}`, suitColorStyle(card.suit), data, body, defs);
 }
@@ -580,13 +681,17 @@ const faceCache = new Map<string, string>();
 
 /**
  * SVG markup líce karty (s placeholderem `%ID%` pro id ve `<defs>` — použij `withUniqueIds`, nebo rovnou
- * `cardFaceElement`). Výsledek se kešuje podle hodnoty, barvy, vylepšení a pečeti.
+ * `cardFaceElement`). Výsledek se kešuje podle hodnoty, barvy, vylepšení, pečeti a barevného schématu.
  */
-export function cardFaceMarkupRaw(card: CardFace, reg: ContentRegistry = defaultRegistry()): string {
-  const key = `${cardFaceKey(card)}|${iconsLoaded() ? 1 : 0}|${reg === defaultRegistry() ? '' : 'x'}`;
+export function cardFaceMarkupRaw(
+  card: CardFace,
+  reg: ContentRegistry = defaultRegistry(),
+  scheme: SuitScheme = currentSuitScheme(),
+): string {
+  const key = `${cardFaceKey(card)}|${scheme}|${iconsLoaded() ? 1 : 0}|${reg === defaultRegistry() ? '' : 'x'}`;
   let markup = faceCache.get(key);
   if (markup === undefined) {
-    markup = buildFace(card, reg);
+    markup = buildFace(card, reg, scheme);
     if (reg === defaultRegistry()) faceCache.set(key, markup);
   }
   return markup;
@@ -601,40 +706,69 @@ export function withUniqueIds(markup: string): string {
 }
 
 /** SVG markup líce karty připravený k vložení (unikátní id). */
-export function cardFaceMarkup(card: CardFace, reg?: ContentRegistry): string {
-  return withUniqueIds(cardFaceMarkupRaw(card, reg));
+export function cardFaceMarkup(card: CardFace, reg?: ContentRegistry, scheme?: SuitScheme): string {
+  return withUniqueIds(cardFaceMarkupRaw(card, reg, scheme));
+}
+
+/** Malovaný tulipán (lidový motiv rubu). */
+function tulip(cx: number, cy: number, s: number): string {
+  const head =
+    `M${cx} ${cy}C${cx - 18 * s} ${cy - 2 * s} ${cx - 22 * s} ${cy - 20 * s} ${cx - 16 * s} ${cy - 34 * s}` +
+    `C${cx - 8 * s} ${cy - 24 * s} ${cx - 4 * s} ${cy - 26 * s} ${cx} ${cy - 40 * s}` +
+    `C${cx + 4 * s} ${cy - 26 * s} ${cx + 8 * s} ${cy - 24 * s} ${cx + 16 * s} ${cy - 34 * s}` +
+    `C${cx + 22 * s} ${cy - 20 * s} ${cx + 18 * s} ${cy - 2 * s} ${cx} ${cy}Z`;
+  const leaves =
+    `M${cx} ${cy + 44 * s}C${cx - 15 * s} ${cy + 28 * s} ${cx - 27 * s} ${cy + 26 * s} ${cx - 37 * s} ${cy + 30 * s}` +
+    `C${cx - 27 * s} ${cy + 40 * s} ${cx - 15 * s} ${cy + 44 * s} ${cx} ${cy + 44 * s}Z` +
+    `M${cx} ${cy + 44 * s}C${cx + 15 * s} ${cy + 28 * s} ${cx + 27 * s} ${cy + 26 * s} ${cx + 37 * s} ${cy + 30 * s}` +
+    `C${cx + 27 * s} ${cy + 40 * s} ${cx + 15 * s} ${cy + 44 * s} ${cx} ${cy + 44 * s}Z`;
+  return (
+    ink(shp.path(`M${cx} ${cy}V${cy + 52 * s}`), 2.2) +
+    paint(shp.path(leaves), WC_PAL.green, 1.6) +
+    paint(shp.path(head), WC_PAL.red, 1.8)
+  );
 }
 
 /**
- * Rub karty: vínová s lidovou mřížkou a tulipánem; s `ArtSpec` balíčku v jeho barvách a s jeho ikonou.
+ * Rub karty: indigová vodovka s rozpitými srdíčky a papírovým oválem s tulipánem; s `ArtSpec` balíčku v jeho
+ * barvách a s jeho ikonou. Markup s placeholderem `%ID%` (jako `cardFaceMarkupRaw`).
  */
-export function cardBackMarkup(spec?: ArtSpec): string {
-  const bg = safeColor(spec?.bg, '#7a2230');
-  const fg = safeColor(spec?.fg, C.gold);
-  const accent = safeColor(spec?.accent, fg);
+export function cardBackMarkupRaw(spec?: ArtSpec): string {
+  beginArt();
+  const bg = safeColor(spec?.bg, '#3d5a8c');
+  const fg = safeColor(spec?.fg, WC_PAL.gold);
+  const accent = safeColor(spec?.accent, spec ? fg : '#c8463a');
+  let blots = '';
+  for (let j = 0, y = 40; y < 330; y += 34, j++) {
+    for (let x = 36; x < 230; x += 40) {
+      blots += `<path d="${SUIT_PATH_D.H}" transform="${suitTransform(x + (j % 2) * 20, y, 13)}"/>`;
+    }
+  }
   const emblem = spec
-    ? iconMarkup(spec.icon, { x: 85, y: 135, size: 80, color: fg })
-    : `<g fill="${fg}">` +
-      `<path d="M125 240v-46" stroke="${fg}" stroke-width="4" fill="none"/>` +
-      `<path d="M125 234c-15-8-25-22-27-34c14 4 24 16 27 26zM125 234c15-8 25-22 27-34c-14 4-24 16-27 26z"/>` +
-      `<path d="M100 150c0 26 12 42 25 42s25-16 25-42c-8 10-14 10-18 0c-2-10-4-20-7-26c-3 6-5 16-7 26c-4 10-10 10-18 0z"/>` +
-      `</g>`;
+    ? paintIcon(spec.icon, { x: 85, y: 135, size: 80 }, bg, { op: 0.75 })
+    : tulip(125, 172, 1.05);
   const body =
-    `<rect x="2" y="2" width="246" height="346" rx="18" fill="${bg}" stroke="${C.ink}" stroke-opacity="0.35" stroke-width="3"/>` +
-    `<rect x="14" y="14" width="222" height="322" rx="10" fill="url(#${ID}-lat)"/>` +
-    `<rect x="14" y="14" width="222" height="322" rx="10" fill="none" stroke="${accent}" stroke-width="3"/>` +
-    `<rect x="22" y="22" width="206" height="306" rx="6" fill="none" stroke="${accent}" stroke-width="1" opacity="0.6"/>` +
-    `<ellipse cx="125" cy="175" rx="58" ry="76" fill="${bg}" stroke="${accent}" stroke-width="3"/>` +
-    `<ellipse cx="125" cy="175" rx="50" ry="68" fill="none" stroke="${accent}" stroke-width="1" stroke-dasharray="4 4"/>` +
-    emblem;
-  const defs = `<pattern id="${ID}-lat" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45 125 175)"><path d="M0 0H22M0 0V22" stroke="${fg}" stroke-width="2" opacity="0.32"/><circle cx="11" cy="11" r="2" fill="${fg}" opacity="0.4"/></pattern>`;
-  return withUniqueIds(svgRoot('pc-svg pc-back', '', 'data-back="1"', body, defs));
+    `<rect x="2" y="2" width="246" height="346" rx="${PAPER_RX}" fill="url(#${ID}-pp)" stroke="${WC.paperEdge}" stroke-width="3"/>` +
+    `<g mask="url(#${ID}-bm)">` +
+    wash(shp.rect(14, 14, 222, 322, 10), bg, { op: 0.82, dx: 0, dy: 0 }) +
+    wash(blots, accent, { op: 0.5, dx: 0, dy: 0 }) +
+    `</g>` +
+    knock(shp.ellipse(125, 175, 60, 80)) +
+    ink(shp.ellipse(125, 175, 60, 80), 2, { color: mixColor(bg, '#000000', 0.3), op: 0.8 }) +
+    ink(shp.ellipse(125, 175, 52, 72), 1, {
+      color: mixColor(bg, '#000000', 0.3),
+      op: 0.5,
+      extra: 'stroke-dasharray="4 4"',
+    }) +
+    emblem +
+    grainOver(CARD_WIDTH, CARD_HEIGHT, PAPER_RX);
+  const defs = `<mask id="${ID}-bm"><rect x="14" y="14" width="222" height="322" rx="16" fill="#fff" filter="url(#${ID}-mb)"/></mask>`;
+  return svgRoot('pc-svg pc-back', '', 'data-back="1"', body, defs);
 }
 
-function parseSvg(markup: string): SVGSVGElement {
-  const tpl = document.createElement('template');
-  tpl.innerHTML = markup;
-  return tpl.content.firstElementChild as SVGSVGElement;
+/** Rub karty připravený k vložení (unikátní id). */
+export function cardBackMarkup(spec?: ArtSpec): string {
+  return withUniqueIds(cardBackMarkupRaw(spec));
 }
 
 /** Přístupnost SVG: s popiskem `role="img"`, jinak dekorativní (`aria-hidden`). */
@@ -651,15 +785,17 @@ export function labelSvg(el: SVGSVGElement, label?: string): SVGSVGElement {
 /** SVG element líce (nebo rubu, když `faceDown`). */
 export function cardFaceElement(
   card: CardFace & { faceDown?: boolean },
-  opts: { label?: string; registry?: ContentRegistry; back?: ArtSpec } = {},
+  opts: { label?: string; registry?: ContentRegistry; back?: ArtSpec; scheme?: SuitScheme } = {},
 ): SVGSVGElement {
-  const markup = card.faceDown ? cardBackMarkup(opts.back) : cardFaceMarkup(card, opts.registry);
-  return labelSvg(parseSvg(markup), opts.label);
+  const markup = card.faceDown
+    ? cardBackMarkupRaw(opts.back)
+    : cardFaceMarkupRaw(card, opts.registry, opts.scheme);
+  return labelSvg(rasterSvg(markup), opts.label);
 }
 
 /** SVG element rubu karty (balíček, karty lícem dolů). */
 export function cardBackElement(opts: { label?: string; spec?: ArtSpec } = {}): SVGSVGElement {
-  return labelSvg(parseSvg(cardBackMarkup(opts.spec)), opts.label);
+  return labelSvg(rasterSvg(cardBackMarkupRaw(opts.spec)), opts.label);
 }
 
 /** Vyprázdní keš líců (např. po načtení ikon, aby odznaky dostaly skutečné ikony). */

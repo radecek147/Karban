@@ -115,6 +115,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'beer-stein',
+      scene: 'beerMat',
       prop: 'quill-ink',
       bg: '#6b3f1d',
       fg: '#f7e6c4',
@@ -313,6 +314,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'watering-can',
+      scene: 'gardener',
       prop: 'cabbage',
       bg: '#3f6b2a',
       fg: '#f2f7d9',
@@ -446,6 +448,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'golem-head',
+      scene: 'golem',
       prop: 'stone-block',
       bg: '#4a4038',
       fg: '#eadfc8',

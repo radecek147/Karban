@@ -140,7 +140,7 @@ describe('SVG hrací karty', () => {
         const strokes = corners[0]?.querySelectorAll('.pc-rank path').length ?? 0;
         expect(strokes, label).toBe([...t(`ranks.${rank}.short`)].length);
         // Symbol barvy je u indexu vždy (barvoslepí).
-        expect(corners[0]?.querySelectorAll(':scope > path').length, label).toBe(1);
+        expect(corners[0]?.querySelectorAll('.pc-csuit').length, label).toBe(1);
         if (rank <= 10) expect(doc.querySelectorAll('.pc-pips path').length, label).toBe(rank);
         if (rank >= 11 && rank <= 13) expect(doc.querySelectorAll('.pc-figure').length, label).toBe(2);
         if (rank === 14) expect(doc.querySelector('.pc-ace'), label).not.toBeNull();
@@ -227,7 +227,7 @@ describe('renderer ArtSpec', () => {
       const doc = expectValidSvg(markup, rarity);
       expect(doc.documentElement.getAttribute('data-rarity')).toBe(rarity);
       expect(markup).toContain(colors.frame);
-      expect(markup.match(/l9 10l-9 10l-9-10z/g)?.length, rarity).toBe(colors.gems);
+      expect(doc.querySelector('.art-gems')?.getAttribute('data-gems'), rarity).toBe(String(colors.gems));
     }
   });
 

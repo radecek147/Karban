@@ -384,6 +384,8 @@ export interface ArtSpec {
   pattern?: 'none' | 'stripes' | 'dots' | 'checker' | 'waves' | 'rays' | 'grid' | 'zigzag';
   /** Doplňková rekvizita (druhá menší ikona). */
   prop?: string;
+  /** Ručně kreslená scéna místo ikony (klíč v src/ui/art/scenes.ts); neznámá scéna → ikona. */
+  scene?: string;
 }
 
 /**
