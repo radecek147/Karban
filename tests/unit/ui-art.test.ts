@@ -278,7 +278,7 @@ describe('renderer ArtSpec', () => {
     for (const kind of ['small', 'big', 'boss'] as const) {
       expect(blindArt(kind, null).getAttribute('data-kind')).toBe('blind');
     }
-  });
+  }, 30_000); // ~300 akvarelových obrázků vč. scén se v happy-dom parsuje pomalu (zvlášť při souběhu testů)
 });
 
 // ─────────────────────────── Popisy ───────────────────────────

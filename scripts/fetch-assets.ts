@@ -713,13 +713,6 @@ function renderAssetsMd(
       `beze změny glyfů; vybrány subsety ${FONT_SUBSETS.join(' + ')} a řezy ${FONT_FACES_TEXT}, vlastní \`fonts.css\``,
     ]),
     row([
-      'Písmo Karban Digits: `src/ui/art/digitFont.ts` — od přechodu rozhraní na Fraunces (styl E1) se nenačítá a do buildu se nedostane',
-      'odvozeno z písma Pixelify Sans (https://github.com/eifetx/Pixelify-Sans), binárka TrueType se skládala za běhu (FontFace API)',
-      'Stefie Justprince — Copyright 2021 The Pixelify Sans Project Authors; úpravy autoři projektu Karban',
-      'SIL Open Font License 1.1 (`OFL-1.1`) — odvozené dílo, bez rezervovaného jména původního písma',
-      'číslice, C, c, Z a písmena s háčkem a kroužkem překreslené kvůli čitelnosti v pixelové mřížce',
-    ]),
-    row([
       `Textury rozhraní (${textures.length}): ${textures.map((f) => `\`${f}\``).join(', ')} v \`${rel(TEXTURES_DIR)}\``,
       'vlastní procedurální bitmapy (styl E1 „Pohádková knížka“): SVG šum `feTurbulence` a nasvícení `feDiffuseLighting` vykreslené Chromiem z Playwrightu, příkaz `npm run gen-textures` (`scripts/gen-textures.ts`)',
       'autoři projektu Karban',

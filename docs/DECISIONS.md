@@ -3706,6 +3706,14 @@ které se v ploše mění a na krajích tmavnou, hrubý krémový papír se zrne
   Spolu se scénami má vlastní ilustraci 92 ze 101 žolíků; ikonu z knihovny mají jen věci a pojmy (Rundu všem, Sekera, Silvestr…).
   Švejk zůstává ikonou (podoba podle Josefa Lady je chráněná do konce roku 2027).
 - **Štamgast** (tutoriál) je nová kresba ve stejném stylu (bez ikon).
+- **Rozhraní:** písmo **Fraunces** (Google Fonts, OFL; řezy 400, 600, 700 a kurzívy, latin + latin-ext, ~195 kB)
+  místo Pixelify Sans. Pixelify Sans i odvozené „Karban Digits“ (opravovalo drobné pixelové glyfy) jsou pryč. Sukno
+  je malované se světlejším středem, levý panel, menu a dialogy jsou listy papíru s natrhlým okrajem a čísla jsou
+  inkoustová. Hlavní tlačítka jsou akvarelové skvrny tónované z CSS: „Zahrát“ zeleně, „Zahodit“ červeně, ostatní
+  zlatě. Vedlejší tlačítka jsou papírová s rukou kresleným rámečkem, čipy × mult jsou modrá a červená skvrna.
+  Popisky jsou kurzívou místo verzálek. Textury (`src/assets/textures/*.webp`, 13 souborů, největší 84 kB) jsou
+  vlastní procedurální bitmapy (`npm run gen-textures`), v CSS nejsou žádné živé filtry. Sukno je o něco tmavší než
+  v náhledu, aby krémový text měl kontrast aspoň 4,5 : 1.
 - **Technika:** procedurální SVG — papír `feTurbulence` + `feDiffuseLighting`, lavírování `feDisplacementMap`
   - rozmazání + tmavší okraj (`feMorphology`) + zrno pigmentu, tuš lehce rozvlněná. Žádné bitmapy ani cizí obrázky.
 - **Výkon** (`src/ui/art/raster.ts`): živé filtry v DOM se přepočítávaly při každém překreslení vrstvy. Měřeno

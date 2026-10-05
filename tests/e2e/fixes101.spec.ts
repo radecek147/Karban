@@ -56,7 +56,7 @@ test('písmo: Fraunces kreslí číslice, C a písmena s háčkem; pangram v po�
     return {
       faces: faces.length,
       ranges: faces.map((f) => f.unicodeRange).join(','),
-      // Dřívější pixelové „Karban Digits“ (src/ui/art/digitFont.ts) se už nenačítá — ani omylem.
+      // Dřívější pixelové „Karban Digits“ (odstraněné se stylem E1) se nenačítá — ani omylem.
       digits: [...document.fonts].filter((f) => f.family.replace(/"/g, '') === 'Karban Digits').length,
       check: document.fonts.check('700 16px "Fraunces"', sample),
       ui: getComputedStyle(document.body).fontFamily,

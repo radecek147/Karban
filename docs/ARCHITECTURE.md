@@ -376,8 +376,11 @@ flavor a že texty dodržují typografii.
 - Detail zboží a možnosti obálky (`openOfferDetail` v `screens/game/modals.ts`): tap / klik na kartu otevře dialog
   s popisem a kopiemi tlačítek slotu, které „zmáčknou“ původní tlačítko; důvod neaktivního tlačítka je i jako text pod
   slotem (`blockReasonsLine`).
-- Písmo „Karban Digits“ (`art/digitFont.ts`): číslice, C, c, Z a písmena s háčkem a kroužkem skládané za běhu do
-  TrueType (FontFace, `unicode-range`) — čitelné v drobném pixelovém textu.
+- Písmo rozhraní Fraunces (OFL, `src/assets/fonts/`, řezy 400/600/700 + kurzívy, latin + latin-ext) a textury
+  stylu E1 (`src/assets/textures/*.webp`: papír, sukno, natrhlé okraje, tahy tuše, tvary a tón lavírování,
+  skvrna za nápisem v menu) — vlastní procedurální bitmapy z `scripts/gen-textures.ts` (`npm run gen-textures`,
+  šum se `stitchTiles`, nasvícení na dlaždici 3 × 3 a ořez středu → bezešvé). Lavírovaná tlačítka a panely jsou
+  statické masky na pseudo-elementech tónované CSS proměnnými; žádné živé SVG filtry v CSS.
 
 ## 5. Ukládání
 
