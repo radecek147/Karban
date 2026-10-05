@@ -90,6 +90,7 @@ export const menuScreen: ScreenFactory = (app) => {
     ? h(
         'aside',
         { class: 'menu__tip', 'aria-labelledby': 'menu-tip-label' },
+        h('span', { class: 'menu__tip-pin', 'aria-hidden': 'true' }),
         h('span', { id: 'menu-tip-label', class: 'menu__tip-label' }, t('app.tipLabel')),
         tipText,
         h(
@@ -118,6 +119,8 @@ export const menuScreen: ScreenFactory = (app) => {
       { class: 'menu__list', role: 'list' },
       item('newGame', { primary: true, onClick: () => app.go('newGame') }),
       item('continue', {
+        // Rozehraný run je stejně důležitý jako nová hra — zlatá skvrna (bez runu papírové, neaktivní).
+        primary: canContinue,
         disabled: !canContinue,
         onClick: () => {
           if (!continueRun(app)) {

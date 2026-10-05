@@ -19,7 +19,7 @@ import {
 
 /**
  * Opravy UI po testu 1.0 (1.0.1, docs/DECISIONS.md „2026-10-03 — Oprava UI po testu 1.0“) ve skutečném prohlížeči:
- * čitelné písmo (Karban Digits s „C“ a háčky), focus po výběru útraty, zpětná vazba výběru, Pan starosta, detail
+ * čitelné písmo (od stylu E1 Fraunces s „C“ a háčky), focus po výběru útraty, zpětná vazba výběru, Pan starosta, detail
  * zboží na dotyku, telefon 390 × 844 bez posouvání, Nová hra s kompaktními zamčenými balíčky a viditelnou chybou seedu.
  */
 
@@ -45,24 +45,30 @@ async function box(
   return b;
 }
 
-test('písmo: Karban Digits kreslí číslice, C a písmena s háčkem; pangram v pořádku', async ({ page }) => {
+test('písmo: Fraunces kreslí číslice, C a písmena s háčkem; pangram v pořádku', async ({ page }) => {
   const log = watchConsole(page);
   await page.goto('/?tutorial=off');
   const fonts = await page.evaluate(async () => {
     await document.fonts.ready;
-    await document.fonts.load('16px "Karban Digits"', 'Kč 3/8 RUCE');
-    const faces = [...document.fonts].filter((f) => f.family.replace(/"/g, '') === 'Karban Digits');
+    const sample = 'Kč 3/8 RUCE Příliš žluťoučký kůň ĎŤŇĚŘŠŽ';
+    await document.fonts.load('700 16px "Fraunces"', sample);
+    const faces = [...document.fonts].filter((f) => f.family.replace(/"/g, '') === 'Fraunces');
     return {
       faces: faces.length,
-      range: faces[0]?.unicodeRange ?? '',
-      check: document.fonts.check('16px "Karban Digits"', 'Kč 3/8 RUCE Příliš žluťoučký kůň'),
+      ranges: faces.map((f) => f.unicodeRange).join(','),
+      // Dřívější pixelové „Karban Digits“ (src/ui/art/digitFont.ts) se už nenačítá — ani omylem.
+      digits: [...document.fonts].filter((f) => f.family.replace(/"/g, '') === 'Karban Digits').length,
+      check: document.fonts.check('700 16px "Fraunces"', sample),
+      ui: getComputedStyle(document.body).fontFamily,
     };
   });
-  expect(fonts.faces).toBe(2);
+  // Řezy 400, 400 kurzíva, 600, 600 kurzíva, 700 × podsoubory latin a latin-ext.
+  expect(fonts.faces).toBe(10);
+  expect(fonts.digits).toBe(0);
   expect(fonts.check).toBe(true);
-  // Prohlížeč rozsah normalizuje bez úvodních nul (U+0030 → U+30).
-  for (const code of ['U+30-39', 'U+43', 'U+63', 'U+10C-10E', 'U+158-159', 'U+160-161'])
-    expect(fonts.range).toContain(code);
+  expect(fonts.ui).toMatch(/^"?Fraunces"?,/);
+  // Prohlížeč rozsah normalizuje bez úvodních nul (U+0030 → U+30): číslice v latin, háčky v latin-ext.
+  for (const code of ['U+0-FF', 'U+100-2BA']) expect(fonts.ranges).toContain(code);
   expectCleanConsole(log);
 });
 

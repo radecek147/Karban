@@ -2,15 +2,16 @@
  * npm run fetch-assets — připraví volně licencované assety do src/assets a přegeneruje ASSETS.md.
  *
  * Kroky:
- *  1. Fonty Pixelify Sans (OFL 1.1) z npm balíčku @fontsource/pixelify-sans → src/assets/fonts
- *     (woff2, váhy 400 a 700, subsety latin + latin-ext = české znaky) + fonts.css + OFL.txt.
+ *  1. Písmo Fraunces (OFL 1.1) z npm balíčku @fontsource/fraunces → src/assets/fonts (woff2, řezy 400,
+ *     400 kurzíva, 600, 600 kurzíva a 700, subsety latin + latin-ext = české znaky) + fonts.css + OFL.txt.
  *  2. Kurátorovaný výběr ikon (pole ICONS) z npm balíčku @iconify-json/game-icons (CC BY 3.0)
  *     → src/assets/icons/<name>.svg + src/assets/icons/index.ts (path data jako řetězce, bez sítě).
  *  3. Best effort: dohledá autora každé ikony v repozitáři game-icons na GitHubu
  *     (cache src/assets/icons/authors.json — znovu se ptá jen na chybějící).
  *  4. Best effort: zkusí volitelné CC0 zdroje (Kenney). Když nejsou dostupné (v sandboxu proxy 403),
  *     jen to poznamená — hra je stejně kreslí procedurálně (src/ui/art).
- *  5. Vygeneruje ASSETS.md a výstupy zformátuje Prettierem (pokud je nainstalovaný).
+ *  5. Vygeneruje ASSETS.md (včetně přehledu textur ze `src/assets/textures`, které vyrábí `npm run gen-textures`)
+ *     a výstupy zformátuje Prettierem (pokud je nainstalovaný).
  *
  * Build nikdy nezávisí na síti: vše potřebné se commituje do src/assets. Síťové kroky nikdy neshodí
  * běh (jen varování). Výstup je deterministický (žádná časová razítka), takže opakovaný běh nedělá diff.
@@ -24,7 +25,8 @@ import { fileURLToPath } from 'node:url';
 // ─────────────────────────── Cesty a konstanty ───────────────────────────
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const FONT_PKG_DIR = path.join(ROOT, 'node_modules/@fontsource/pixelify-sans');
+const FONT_PKG = '@fontsource/fraunces';
+const FONT_PKG_DIR = path.join(ROOT, 'node_modules', FONT_PKG);
 const ICON_PKG_DIR = path.join(ROOT, 'node_modules/@iconify-json/game-icons');
 const FONTS_OUT = path.join(ROOT, 'src/assets/fonts');
 const ICONS_OUT = path.join(ROOT, 'src/assets/icons');
@@ -37,10 +39,27 @@ const PRETTIER_BIN = path.join(ROOT, 'node_modules/prettier/bin/prettier.cjs');
 const NET_TIMEOUT_MS = 8000;
 const NET_CONCURRENCY = 12;
 
-const FONT_FAMILY = 'Pixelify Sans';
-const FONT_DESIGNER = 'Stefie Justprince';
-const FONT_WEIGHTS = [400, 700] as const;
+const FONT_FAMILY = 'Fraunces';
+const FONT_ID = 'fraunces';
+const FONT_DESIGNER = 'Undercase Type (Phaedra Charles, Flavia Zimbardi)';
+const FONT_REPO = 'https://github.com/undercasetype/Fraunces';
+const FONT_SPECIMEN = 'https://fonts.google.com/specimen/Fraunces';
+/** Řezy: text 400, zvýraznění 600, nadpisy a čísla 700; kurzíva na hlášky a popisky (styl E1). */
+const FONT_FACES = [
+  { weight: 400, style: 'normal' },
+  { weight: 400, style: 'italic' },
+  { weight: 600, style: 'normal' },
+  { weight: 600, style: 'italic' },
+  { weight: 700, style: 'normal' },
+] as const;
 const FONT_SUBSETS = ['latin-ext', 'latin'] as const;
+/** Výčet řezů do hlavičky fonts.css a ASSETS.md. */
+const FONT_FACES_TEXT = FONT_FACES.map((f) => `${f.weight}${f.style === 'italic' ? ' kurzíva' : ''}`).join(
+  ', ',
+);
+
+/** Textury rozhraní (vlastní procedurální, scripts/gen-textures.ts). */
+const TEXTURES_DIR = path.join(ROOT, 'src/assets/textures');
 
 const ICON_SOURCE_URL = 'https://game-icons.net';
 const ICON_LICENSE_URL = 'https://creativecommons.org/licenses/by/3.0/';
@@ -261,44 +280,47 @@ function extractUnicodeRange(css: string, faceId: string): string | null {
 }
 
 async function prepareFonts(): Promise<FontReport> {
-  ensurePackage(FONT_PKG_DIR, '@fontsource/pixelify-sans');
+  ensurePackage(FONT_PKG_DIR, FONT_PKG);
   const pkg = await readJson<{ version: string; license?: string }>(path.join(FONT_PKG_DIR, 'package.json'));
   const meta = await readJsonOptional<{ license?: { type?: string; attribution?: string } }>(
     path.join(FONT_PKG_DIR, 'metadata.json'),
   );
   const unicode =
     (await readJsonOptional<Record<string, string>>(path.join(FONT_PKG_DIR, 'unicode.json'))) ?? {};
-  const attribution =
-    meta?.license?.attribution ??
-    `Copyright The ${FONT_FAMILY} Project Authors (https://github.com/eifetx/Pixelify-Sans)`;
-  const repoUrl = /\((https?:[^)]+)\)/.exec(attribution)?.[1] ?? 'https://github.com/eifetx/Pixelify-Sans';
+  // Metadata opakují copyright pro každý zdrojový soubor (rovný řez i kurzíva) — stačí první věta.
+  const rawAttribution =
+    meta?.license?.attribution ?? `Copyright 2020 The ${FONT_FAMILY} Project Authors (${FONT_REPO})`;
+  const attribution = /^Copyright[^()]*\([^)]*\)/.exec(rawAttribution)?.[0] ?? rawAttribution;
+  const repoUrl = FONT_REPO;
   const licenseType = meta?.license?.type ?? pkg.license ?? 'OFL-1.1';
 
   await mkdir(FONTS_OUT, { recursive: true });
   for (const old of await readdir(FONTS_OUT)) {
-    if (/^pixelify-sans-.*\.woff2?$/.test(old)) await rm(path.join(FONTS_OUT, old));
+    // I soubory dřívějšího písma (Pixelify Sans) — v assetech nemá zůstat nic nepoužitého.
+    if (/^(pixelify-sans|fraunces)-.*\.woff2?$/.test(old)) await rm(path.join(FONTS_OUT, old));
   }
 
   const faces: string[] = [];
   const files: string[] = [];
-  for (const weight of FONT_WEIGHTS) {
-    const weightCssFile = path.join(FONT_PKG_DIR, `${weight}.css`);
-    const weightCss = existsSync(weightCssFile) ? await readFile(weightCssFile, 'utf8') : '';
+  for (const face of FONT_FACES) {
+    const suffix = face.style === 'italic' ? '-italic' : '';
+    const faceCssFile = path.join(FONT_PKG_DIR, `${face.weight}${suffix}.css`);
+    const faceCss = existsSync(faceCssFile) ? await readFile(faceCssFile, 'utf8') : '';
     for (const subset of FONT_SUBSETS) {
-      const faceId = `pixelify-sans-${subset}-${weight}-normal`;
+      const faceId = `${FONT_ID}-${subset}-${face.weight}-${face.style}`;
       const file = `${faceId}.woff2`;
       await copyFile(path.join(FONT_PKG_DIR, 'files', file), path.join(FONTS_OUT, file));
       files.push(file);
-      const range = extractUnicodeRange(weightCss, faceId) ?? unicode[subset];
+      const range = extractUnicodeRange(faceCss, faceId) ?? unicode[subset];
       if (!range) warn(`Font ${file}: nenalezen unicode-range, @font-face bude bez něj.`);
       faces.push(
         [
           `/* ${faceId} */`,
           '@font-face {',
           `  font-family: '${FONT_FAMILY}';`,
-          '  font-style: normal;',
+          `  font-style: ${face.style};`,
           '  font-display: swap;',
-          `  font-weight: ${weight};`,
+          `  font-weight: ${face.weight};`,
           `  src: url('./${file}') format('woff2');`,
           ...(range ? [`  unicode-range: ${range.split(/\s*,\s*/).join(', ')};`] : []),
           '}',
@@ -311,8 +333,8 @@ async function prepareFonts(): Promise<FontReport> {
     '/*',
     ' * Vygenerováno skriptem scripts/fetch-assets.ts (npm run fetch-assets) — NEUPRAVUJ RUČNĚ.',
     ` * ${FONT_FAMILY} — ${FONT_DESIGNER}; ${attribution}.`,
-    ` * Licence: SIL Open Font License 1.1 (viz OFL.txt). Zdroj: npm @fontsource/pixelify-sans@${pkg.version}.`,
-    ` * Subsety ${FONT_SUBSETS.join(' + ')} (české znaky), váhy ${FONT_WEIGHTS.join(' a ')}.`,
+    ` * Licence: SIL Open Font License 1.1 (viz OFL.txt). Zdroj: npm ${FONT_PKG}@${pkg.version}.`,
+    ` * Subsety ${FONT_SUBSETS.join(' + ')} (české znaky), řezy ${FONT_FACES_TEXT}.`,
     ' */',
   ].join('\n');
   await writeFile(path.join(FONTS_OUT, 'fonts.css'), `${header}\n\n${faces.join('\n\n')}\n`);
@@ -665,11 +687,12 @@ function renderAssetsMd(
   icons: IconReport,
   authors: Record<string, string>,
   optional: OptionalResult[],
+  textures: readonly string[],
 ): string {
   const credits = creditList(authors);
   const namedAuthors = credits.filter((c) => c.author !== UNKNOWN_AUTHOR).map((c) => c.author);
   const row = (cells: string[]): string => `| ${cells.map(mdEscape).join(' | ')} |`;
-  const fontFiles = `\`src/assets/fonts/pixelify-sans-{${FONT_SUBSETS.join(',')}}-{${FONT_WEIGHTS.join(',')}}-normal.woff2\`, \`fonts.css\`, \`OFL.txt\``;
+  const fontFiles = `\`src/assets/fonts/${FONT_ID}-{${FONT_SUBSETS.join(',')}}-{${[...new Set(FONT_FACES.map((f) => f.weight))].join(',')}}-{normal,italic}.woff2\` (${font.files.length} souborů), \`fonts.css\`, \`OFL.txt\``;
 
   const out: string[] = [
     '# Assety a licence — Karban',
@@ -684,17 +707,24 @@ function renderAssetsMd(
     row(['---', '---', '---', '---', '---']),
     row([
       `Písmo ${FONT_FAMILY}: ${fontFiles}`,
-      `https://fonts.google.com/specimen/Pixelify+Sans přes npm \`@fontsource/pixelify-sans@${font.version}\` (${font.repoUrl})`,
+      `${FONT_SPECIMEN} přes npm \`${FONT_PKG}@${font.version}\` (${font.repoUrl})`,
       `${FONT_DESIGNER} — ${font.attribution}`,
       `SIL Open Font License 1.1 (\`${font.licenseType}\`), text v \`src/assets/fonts/OFL.txt\`${font.licenseFrom === 'embedded' ? ' (vestavěný text, balíček neobsahoval LICENSE)' : ''}`,
-      `beze změny glyfů; vybrány subsety ${FONT_SUBSETS.join(' + ')} a váhy ${FONT_WEIGHTS.join(' a ')}, vlastní \`fonts.css\``,
+      `beze změny glyfů; vybrány subsety ${FONT_SUBSETS.join(' + ')} a řezy ${FONT_FACES_TEXT}, vlastní \`fonts.css\``,
     ]),
     row([
-      'Písmo Karban Digits (číslice 0–9, C, c, Z a písmena s háčkem a kroužkem): `src/ui/art/digitFont.ts`',
-      `odvozeno z písma ${FONT_FAMILY} výše; binárka TrueType se skládá za běhu (FontFace API), nic se nestahuje`,
-      `${FONT_DESIGNER} — ${font.attribution}; úpravy autoři projektu Karban`,
+      'Písmo Karban Digits: `src/ui/art/digitFont.ts` — od přechodu rozhraní na Fraunces (styl E1) se nenačítá a do buildu se nedostane',
+      'odvozeno z písma Pixelify Sans (https://github.com/eifetx/Pixelify-Sans), binárka TrueType se skládala za běhu (FontFace API)',
+      'Stefie Justprince — Copyright 2021 The Pixelify Sans Project Authors; úpravy autoři projektu Karban',
       'SIL Open Font License 1.1 (`OFL-1.1`) — odvozené dílo, bez rezervovaného jména původního písma',
-      'číslice přepsané do pixelové mřížky; „5“, „2“, „3“, „6“, „7“, „9“, „0“ a „Z“ překreslené kvůli čitelnosti (5 ≠ S, Z ≠ 2, 3 ≠ 8, 0 ≠ O); „C“ a „c“ s větším otvorem; Č č Ď Ě ě Ň ň Ř ř Š š Ť Ů ů Ž ž = původní základ + nový širší háček / kroužek',
+      'číslice, C, c, Z a písmena s háčkem a kroužkem překreslené kvůli čitelnosti v pixelové mřížce',
+    ]),
+    row([
+      `Textury rozhraní (${textures.length}): ${textures.map((f) => `\`${f}\``).join(', ')} v \`${rel(TEXTURES_DIR)}\``,
+      'vlastní procedurální bitmapy (styl E1 „Pohádková knížka“): SVG šum `feTurbulence` a nasvícení `feDiffuseLighting` vykreslené Chromiem z Playwrightu, příkaz `npm run gen-textures` (`scripts/gen-textures.ts`)',
+      'autoři projektu Karban',
+      'licence projektu',
+      '— papír, malované sukno, akvarelové skvrny (maska + tón, barvu dodá CSS), natrhlý okraj papíru, tuš, skvrna za nápisem v menu; nic staženého',
     ]),
     row([
       `Ikony (${icons.icons.length}): \`src/assets/icons/*.svg\`, \`src/assets/icons/index.ts\``,
@@ -800,7 +830,12 @@ async function main(): Promise<void> {
   const authors = await resolveIconAuthors(icons.icons);
   await writeIcons(icons, authors);
   const optional = await tryOptionalSources();
-  await writeFile(ASSETS_MD, renderAssetsMd(font, icons, authors, optional));
+  // Textury generuje `npm run gen-textures` (bez sítě) — sem jen do přehledu v ASSETS.md.
+  const textures = existsSync(TEXTURES_DIR)
+    ? (await readdir(TEXTURES_DIR)).filter((f) => /\.(webp|png)$/.test(f)).sort()
+    : [];
+  if (textures.length === 0) warn(`V ${rel(TEXTURES_DIR)} nejsou textury — spusť „npm run gen-textures“.`);
+  await writeFile(ASSETS_MD, renderAssetsMd(font, icons, authors, optional, textures));
 
   formatWithPrettier([
     rel(path.join(FONTS_OUT, 'fonts.css')),

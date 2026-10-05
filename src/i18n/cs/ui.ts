@@ -270,8 +270,11 @@ export const credits = {
   font: {
     title: 'Písmo',
     license: 'Licence SIL Open Font License 1.1',
-    digits:
-      'Číslice, písmena C a Z a háčky jsme podle něj překreslili, aby se v drobném textu nepletla pětka s písmenem S, zet s dvojkou, trojka s osmičkou, C s O a háček s tečkou. I upravené písmo je pod OFL 1.1.',
+    note: 'Patkové písmo jako z pohádkové knížky. Háčky i čárky má na svém místě, což se o leckterém úředním dopise říct nedá.',
+  },
+  art: {
+    title: 'Obrázky a textury',
+    text: 'Tuš, vodovky, papír i zelené sukno jsou namalované v kódu – žádný štětec nebyl zneužit, jen procesor se zapotil.',
   },
   icons: {
     title: 'Ikony',

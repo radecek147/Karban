@@ -1,5 +1,5 @@
 /**
- * Titulky: autoři, nástroje, atribuce písma (Pixelify Sans, OFL) a ikon (game-icons.net, CC BY 3.0, autoři
+ * Titulky: autoři, nástroje, atribuce písma (Fraunces, OFL) a ikon (game-icons.net, CC BY 3.0, autoři
  * podle `src/assets/icons/authors.json`), „inspirováno hrou Balatro“ a poděkování.
  *
  * Titulky pomalu rolují (CSS transform). Bez animací, s `prefers-reduced-motion` nebo po „Zastavit“ jsou statické
@@ -14,10 +14,10 @@ import { h } from '../dom';
 
 /** Písmo (ASSETS.md). */
 const FONT_CREDIT = {
-  name: 'Pixelify Sans',
-  author: 'Stefie Justprince',
-  copyright: '© 2021 The Pixelify Sans Project Authors',
-  url: 'https://github.com/eifetx/Pixelify-Sans',
+  name: 'Fraunces',
+  author: 'Undercase Type (Phaedra Charles, Flavia Zimbardi)',
+  copyright: '© 2020 The Fraunces Project Authors',
+  url: 'https://github.com/undercasetype/Fraunces',
   licenseUrl: 'https://openfontlicense.org',
 };
 
@@ -99,7 +99,7 @@ export const creditsScreen: ScreenFactory = (app) => {
       h('p', null, FONT_CREDIT.author),
       h('p', { class: 'credits__small' }, FONT_CREDIT.copyright),
       h('p', { class: 'credits__small' }, link(FONT_CREDIT.licenseUrl, t('credits.font.license'))),
-      h('p', { class: 'credits__small' }, t('credits.font.digits')),
+      h('p', { class: 'credits__small' }, t('credits.font.note')),
     ),
     block(
       t('credits.icons.title'),
@@ -126,6 +126,7 @@ export const creditsScreen: ScreenFactory = (app) => {
         ),
       ),
     ),
+    block(t('credits.art.title'), h('p', null, t('credits.art.text'))),
     block(t('credits.sound.title'), h('p', null, t('credits.sound.text'))),
     block(
       t('credits.inspiration.title'),

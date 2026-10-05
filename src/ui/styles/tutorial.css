@@ -24,12 +24,14 @@
   padding: 0.7rem 0.85rem 0.7rem;
   color: var(--ink);
   pointer-events: auto;
-  background: var(--paper);
-  border: 3px solid var(--accent);
-  border-radius: var(--radius);
-  box-shadow:
-    0 6px 0 rgb(0 0 0 / 25%),
-    0 14px 30px rgb(0 0 0 / 45%);
+  /* Bublina z pohádkové knížky: papír obtažený tuší, se zlatým lemem vodovky uvnitř. */
+  background:
+    linear-gradient(90deg, rgb(226 171 63 / 30%), rgb(226 171 63 / 0%) 0.5rem),
+    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
+    var(--paper);
+  border: 2px solid rgb(46 38 32 / 85%);
+  border-radius: 7px 10px 8px 9px / 9px 8px 10px 7px;
+  box-shadow: 0 12px 28px rgb(6 26 16 / 45%);
 }
 
 .tutorial[hidden] {
@@ -66,16 +68,16 @@
 }
 
 .tutorial__meta {
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.82rem;
+  font-style: italic;
   color: var(--ink-soft);
 }
 
 .tutorial__title {
   margin-top: 0.1rem;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 700;
+  font-style: italic;
   color: var(--wood);
 }
 
@@ -125,8 +127,6 @@
 .tutorial .btn--ghost {
   min-width: 0;
   color: var(--ink-soft);
-  background: transparent;
-  box-shadow: inset 0 0 0 2px var(--paper-shade);
 }
 
 .tutorial .btn:focus-visible {
@@ -140,7 +140,7 @@
   width: 16px;
   height: 16px;
   background: var(--paper);
-  border: 3px solid var(--accent);
+  border: 2px solid rgb(46 38 32 / 85%);
 }
 
 .tutorial[data-side='none'] .tutorial__arrow {
