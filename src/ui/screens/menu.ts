@@ -124,9 +124,16 @@ export const menuScreen: ScreenFactory = (app) => {
         disabled: !canContinue,
         onClick: () => {
           if (!continueRun(app)) {
+            // Run z novější verze hry není poškozený — hráč má aktualizovat (stejně jako u importu).
+            const tooNew = GameController.savedRunError(app.store) === 'tooNew';
             // Nečitelný run se nemaže bez zálohy (`karban.run.backup.<ms>`, jde do exportu).
             const backup = GameController.backupSavedRun(app.store);
-            toast(t(backup ? 'menu.continue.backedUp' : 'menu.continue.failed'), {
+            const key = tooNew
+              ? 'menu.continue.tooNew'
+              : backup
+                ? 'menu.continue.backedUp'
+                : 'menu.continue.failed';
+            toast(t(key), {
               kind: 'error',
               testId: 'toast-continue-failed',
             });

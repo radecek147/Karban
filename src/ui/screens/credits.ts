@@ -184,26 +184,56 @@ export const creditsScreen: ScreenFactory = (app) => {
     viewport,
   );
 
+  /** Rozměry průjezdu: start = výška okna (obsah vyjíždí zespodu), distance = dráha, seconds = délka. */
+  let roll0 = { start: 0, distance: 0, seconds: 0 };
+
   /** Délka jednoho průjezdu podle výšky obsahu a rychlosti hry (měří se jednou po vložení do stránky). */
   const measure = (): void => {
     const start = viewport.clientHeight;
     const distance = start + roll.offsetHeight;
     const seconds = Math.max(20, distance / (ROLL_SPEED * Math.max(1, app.settings.speed)));
-    // První průjezd nezačíná u spodního okraje, ale s logem nahoře (záporné zpoždění = už rozjeté).
-    const lead = (start * 0.85 * seconds) / distance;
+    roll0 = { start, distance, seconds };
     roll.style.setProperty('--roll-start', `${start}px`);
     roll.style.setProperty('--roll-duration', `${seconds.toFixed(1)}s`);
-    roll.style.animationDelay = `-${lead.toFixed(2)}s`;
+    // První průjezd nezačíná u spodního okraje, ale s logem nahoře (záporné zpoždění = už rozjeté).
+    rollFrom(-start * 0.15);
+  };
+
+  /** Rozjede titulky od posunu `offset` (px nad horním okrajem okna; záporný = obsah ještě níž). */
+  const rollFrom = (offset: number): void => {
+    if (roll0.distance <= 0) return;
+    const at = ((roll0.start + offset) / roll0.distance) * roll0.seconds;
+    roll.style.animationDelay = `-${Math.max(0, at).toFixed(2)}s`;
+  };
+
+  /** Aktuální posun jedoucích titulků (px nad horním okrajem), z transformace animace. */
+  const rolledOffset = (): number => {
+    const tr = getComputedStyle(roll).transform;
+    if (!tr || tr === 'none' || typeof DOMMatrixReadOnly === 'undefined') return 0;
+    try {
+      const ty = new DOMMatrixReadOnly(tr).m42;
+      return Number.isFinite(ty) ? -ty : 0;
+    } catch {
+      return 0;
+    }
   };
 
   const setRolling = (on: boolean): void => {
-    rolling = on && canRoll;
+    const next = on && canRoll;
+    // Pauza nechá titulky, kde jsou (jdou dál posouvat ručně), a rozjetí pokračuje od místa, kam hráč dojel.
+    const offset = rolling && !next ? rolledOffset() : null;
+    if (next && !rolling) rollFrom(viewport.scrollTop);
+    rolling = next;
     el.classList.toggle('credits--rolling', rolling);
     el.classList.toggle('credits--static', !rolling);
     toggle.querySelector('.btn__label')!.textContent = rolling ? t('credits.pause') : t('credits.resume');
     toggle.setAttribute('aria-pressed', String(!rolling));
-    if (!rolling) viewport.scrollTop = 0;
+    if (!rolling) viewport.scrollTop = Math.max(0, offset ?? 0);
   };
+
+  // Najetí myší titulky zastaví, ale až po skutečném pohybu nad nimi — kurzor, který po kliknutí na „Titulky“
+  // jen zůstal stát nad oknem, je nezastaví hned po otevření.
+  viewport.addEventListener('pointermove', () => el.classList.add('credits--hover-pause'), { once: true });
 
   setRolling(rolling);
   let frame = 0;

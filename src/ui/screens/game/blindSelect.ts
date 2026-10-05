@@ -168,7 +168,11 @@ export function renderBlindSelect(ctx: GameCtx): HTMLElement {
       'header',
       { class: 'game-panel__header' },
       h('h2', { class: 'game-panel__title', id: 'blind-select-title' }, t('game.blinds.title')),
-      h('p', { class: 'game-panel__subtitle' }, t('game.blinds.subtitle')),
+      h(
+        'p',
+        { class: 'game-panel__subtitle' },
+        t(ctx.controller.engine.modifiers().noSkip ? 'game.blinds.subtitleNoSkip' : 'game.blinds.subtitle'),
+      ),
     ),
     h('div', { class: 'blind-select__cards' }, cards),
   );

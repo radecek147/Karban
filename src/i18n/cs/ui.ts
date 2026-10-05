@@ -40,6 +40,8 @@ export const menu = {
     /** Nečitelný run se před smazáním zazálohuje (`karban.run.backup.<ms>`) — jde do exportu uložení. */
     backedUp:
       'Rozehranou hru se nepodařilo načíst, asi ji někdo polil pivem. Schovali jsme ji do zálohy – najdeš ji v exportu uložení.',
+    tooNew:
+      'Rozehraná hra je z novější verze Karbanu. Nejdřív aktualizuj, pak dohrávej – schovali jsme ji do zálohy v exportu uložení.',
   },
   challenges: {
     label: 'Výzvy',
@@ -121,7 +123,8 @@ export const newGame = {
       tooShort: 'Seed je moc krátký – potřebuje přesně {n|plural:znak,znaky,znaků}.',
       tooLong: 'Seed je moc dlouhý – stačí přesně {n|plural:znak,znaky,znaků}.',
       invalidDate: 'Takový den v kalendáři nenajdeš. Denní seed má tvar DEN-RRRRMMDD.',
-      reserved: 'Tenhle tvar si hra nechává pro sebe. Zadej {n|plural:znak,znaky,znaků}, nebo DEN-RRRRMMDD.',
+      reserved:
+        'Pomlčka patří jen denním seedům (DEN-RRRRMMDD). Vlastní seed zadej jako {n|plural:znak,znaky,znaků} bez pomlčky.',
       dailyToday:
         'Dnešní denní run se předem netrénuje – na dnešek použij Denní run v menu. Generálka se nekoná.',
       dailyFuture: 'Do budoucnosti se nekouká, ani přes karty. Přehrát jde jen den, který už byl.',
@@ -132,6 +135,8 @@ export const newGame = {
   overwrite: {
     title: 'Zahodit rozehranou hru?',
     message: 'Máš rozehraný run. Nová hra ho přepíše – a karty už se nevrátí.',
+    messageDaily:
+      'Máš rozehraný dnešní oficiální denní run. Nová hra ho přepíše, zapíše se jako opuštěný a dnešní oficiální pokus propadne – druhý už dnes nebude.',
     confirm: 'Rozdat nové',
   },
   failed: 'Hru se nepodařilo založit. Karty se rozsypaly pod stůl.',

@@ -536,11 +536,11 @@ export function collectionEntries(
                   flavor: null,
                   facts: [
                     {
-                      label: t('art.kind.hand'),
+                      label: t('meta.collection.detail.baseLabel'),
                       value: t('meta.collection.detail.base', { chips: def.baseChips, mult: def.baseMult }),
                     },
                     {
-                      label: t('meta.collection.detail.stats'),
+                      label: t('meta.collection.detail.perLevelLabel'),
                       value: t('meta.collection.detail.perLevel', {
                         chips: def.chipsPerLevel,
                         mult: def.multPerLevel,
@@ -574,7 +574,10 @@ export function collectionEntries(
           art: () => createContentCard('challenge', def.id, { tooltip: false, registry }),
           detail: () =>
             textsDetail(tx, t('art.kind.challenge'), {
-              lines: tx.rules,
+              // Zamčená výzva: pravidla, popis ani hlášku neprozradí (stejně jako obrazovka Výzvy).
+              ...(state === 'locked'
+                ? { desc: '', flavor: null, note: t('meta.challenges.detail.lockedNote') }
+                : { lines: tx.rules }),
               condition: state === 'locked' ? unlockInfo(profile, registry, 'challenges', def.id) : null,
               stats:
                 state === 'locked'

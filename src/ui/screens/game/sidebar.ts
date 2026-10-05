@@ -18,7 +18,7 @@ import { blindName, bossTexts } from '../../describe';
 import { h } from '../../dom';
 import { openSettingsModal } from '../settings';
 import type { GameCtx } from './shared';
-import { roundNumber } from './shared';
+import { focusPhaseAction, roundNumber } from './shared';
 
 export interface Sidebar {
   el: HTMLElement;
@@ -36,8 +36,9 @@ export interface Sidebar {
 }
 
 export interface SidebarActions {
-  openRunInfo(): void;
-  openPause(): void;
+  /** Otevře dialog; slib se splní po jeho zavření (focus se pak vrátí na akci fáze). */
+  openRunInfo(): Promise<unknown>;
+  openPause(): Promise<unknown>;
 }
 
 function setText(el: HTMLElement, text: string): void {
@@ -153,14 +154,14 @@ export function createSidebar(ctx: GameCtx, actions: SidebarActions): Sidebar {
       variant: 'paper',
       size: 'small',
       testId: 'run-info',
-      onClick: () => actions.openRunInfo(),
+      onClick: () => void actions.openRunInfo().then(() => focusPhaseAction(ctx)),
     }),
     button({
       label: t('game.sidebar.settings'),
       variant: 'paper',
       size: 'small',
       testId: 'game-settings',
-      onClick: () => void openSettingsModal(ctx.app),
+      onClick: () => void openSettingsModal(ctx.app).closed.then(() => focusPhaseAction(ctx)),
     }),
     button({
       label: t('game.sidebar.menu'),
@@ -168,7 +169,7 @@ export function createSidebar(ctx: GameCtx, actions: SidebarActions): Sidebar {
       variant: 'ghost',
       size: 'small',
       testId: 'game-menu',
-      onClick: () => actions.openPause(),
+      onClick: () => void actions.openPause().then(() => focusPhaseAction(ctx)),
     }),
   );
 

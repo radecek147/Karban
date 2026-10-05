@@ -414,6 +414,9 @@ export class TutorialController {
     const shown = this.bubble.hidden ? null : this.step;
     // Během animací akce bublina zmizí; po nich ji vrátí `update` (controller.notify).
     this.hide();
+    // „Zahraj je“ odbaví jen zahraná ruka — po zahození rada počká (jinak by hráč zahazování nikdy neviděl popsané
+    // ve správném pořadí a radu o hraní by přeskočil).
+    if (shown === 'play' && !events.some((e) => e.type === 'handPlayed')) return;
     if (shown && events.length > 0) this.mark([shown]);
   }
 

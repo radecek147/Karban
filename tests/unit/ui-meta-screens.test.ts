@@ -23,6 +23,8 @@ import {
 } from '../../src/ui/screens/collection';
 import { menuScreen } from '../../src/ui/screens/menu';
 import { interpretSeed, newGameScreen } from '../../src/ui/screens/newGame';
+import { challengeTexts } from '../../src/ui/describe';
+import { confirmOverwrite } from '../../src/ui/runStart';
 import { STATS_TABS, rateText, statsScreen, statsTabContent } from '../../src/ui/screens/stats';
 import { STORAGE_KEYS, memoryStore, type KeyValueStore } from '../../src/ui/storage';
 
@@ -339,6 +341,35 @@ describe('menu', () => {
     q<HTMLButtonElement>('[data-testid="menu-stats"]').click();
     expect(app.screenId).toBe('stats');
   });
+
+  it('přepsání rozehraného oficiálního denního runu má vlastní varování', async () => {
+    store.set(STORAGE_KEYS.run, '{}');
+    app.profile.current = {
+      no: 1,
+      seed: 'DEN-20261005',
+      deckId: 'pub',
+      stake: 1,
+      challengeId: null,
+      daily: true,
+      mode: 'daily',
+      seeded: false,
+      official: true,
+      counted: true,
+      startedAt: NOW.toISOString(),
+      outcome: null,
+      cause: null,
+    } as Profile['current'];
+    const answer = confirmOverwrite(app);
+    expect(q('[data-testid="overwrite-confirm"]').textContent).toContain(t('newGame.overwrite.messageDaily'));
+    closeAllModals();
+    expect(await answer).toBe(false);
+    // Obyčejný rozehraný run: obecná hláška.
+    app.profile.current = { ...app.profile.current!, mode: 'normal', daily: false, official: false };
+    const plain = confirmOverwrite(app);
+    expect(q('[data-testid="overwrite-confirm"]').textContent).toContain(t('newGame.overwrite.message'));
+    closeAllModals();
+    await plain;
+  });
 });
 
 // ─────────────────────────── Sbírka ───────────────────────────
@@ -490,6 +521,35 @@ describe('sbírka', () => {
     expect(q('#codex-panel').dataset.tab).toBe('achievements');
     document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(app.screenId).toBe('menu');
+  });
+
+  it('kombinace: detail má popisky Základ a Za úroveň (QA 2026-10-05: byly prohozené)', () => {
+    app.go('collection', { tab: 'hands' });
+    q('[data-testid="codex-item-pair"]').click();
+    const detail = q('[data-testid="codex-detail"]');
+    const pair = REG.handTypes.pair!;
+    expect(detail.textContent).toContain(t('meta.collection.detail.baseLabel'));
+    expect(detail.textContent).toContain(
+      t('meta.collection.detail.base', { chips: pair.baseChips, mult: pair.baseMult }),
+    );
+    expect(detail.textContent).toContain(t('meta.collection.detail.perLevelLabel'));
+    expect(detail.textContent).not.toContain('Základ: ');
+    closeAllModals();
+  });
+
+  it('zamčená výzva: Sbírka neprozradí pravidla ani popis (jako obrazovka Výzvy)', () => {
+    app.go('collection', { tab: 'challenges' });
+    const locked = [...document.querySelectorAll<HTMLElement>('[data-testid^="codex-item-"]')].find(
+      (el) => el.dataset.state === 'locked',
+    );
+    expect(locked).toBeDefined();
+    const id = locked!.dataset.testid!.replace('codex-item-', '');
+    locked!.click();
+    const detail = q('[data-testid="codex-detail"]');
+    expect(detail.textContent).toContain(t('meta.challenges.detail.lockedNote'));
+    for (const rule of challengeTexts(id, { registry: REG }).rules)
+      expect(detail.textContent).not.toContain(rule);
+    closeAllModals();
   });
 
   it('achievementy: skrytý jako „???“ s nápovědou, nezískaný s průběhem, získaný s datem', () => {

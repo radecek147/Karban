@@ -404,6 +404,32 @@ describe('herní obrazovka – ovládání', () => {
     expectNoMissingTexts();
   });
 
+  it('po zavření Info o runu z panelu dostane focus hlavní akce fáze (Enter neotevře dialog znovu)', async () => {
+    const c = GameController.newRun({ deckId: 'pub', stake: 1, seed: SEED }, deps());
+    open(c);
+    expect(phase()).toBe('blind_select');
+    const info = root.querySelector<HTMLButtonElement>('[data-testid="run-info"]')!;
+    info.focus();
+    info.click();
+    expect(document.querySelector('[data-testid="run-info-modal"]')).not.toBeNull();
+    document.querySelector<HTMLButtonElement>('[data-testid="run-info-close"]')!.click();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(document.querySelector('[data-testid="run-info-modal"]')).toBeNull();
+    expect(document.activeElement).toBe(root.querySelector('[data-testid="blind-select-small"]'));
+  });
+
+  it('Info o runu: čistý balíček má vlastní větu a síla piva neopakuje název', async () => {
+    const c = await inRound();
+    await settle(c);
+    root.querySelector<HTMLButtonElement>('[data-testid="run-info"]')!.click();
+    const modal = document.querySelector('[data-testid="run-info-modal"]')!;
+    expect(modal.textContent).toContain(t('game.runInfo.deckPlain'));
+    expect(modal.querySelector('.run-info__stake')?.textContent).toBe(
+      t('game.runInfo.stakeLevel', { level: 1, max: Object.keys(REG.stakes).length }),
+    );
+    closeAllModals();
+  });
+
   it('bez rozehrané hry ukáže cestu zpět do menu', () => {
     app.controller = null;
     app.go('game');

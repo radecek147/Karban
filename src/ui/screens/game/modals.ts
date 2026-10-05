@@ -13,7 +13,7 @@ import { button } from '../../components/button';
 import { createCardBack, createCardView } from '../../components/card';
 import { createConsumableCard } from '../../components/consumableCard';
 import { createJokerCard } from '../../components/jokerCard';
-import { openModal } from '../../components/modal';
+import { openModal, type ModalHandle } from '../../components/modal';
 import { hideTooltip, richText, type TooltipContent, type TooltipLine } from '../../components/tooltip';
 import {
   bossTexts,
@@ -39,8 +39,8 @@ function infoSection(title: string, ...children: (Node | null)[]): HTMLElement {
   return h('section', { class: 'run-info__section' }, h('h3', { class: 'run-info__title' }, title), children);
 }
 
-function textList(items: string[]): HTMLElement {
-  if (items.length === 0) return h('p', { class: 'run-info__none' }, t('game.runInfo.none'));
+function textList(items: string[], emptyKey = 'game.runInfo.none'): HTMLElement {
+  if (items.length === 0) return h('p', { class: 'run-info__none' }, t(emptyKey));
   return h(
     'ul',
     { class: 'run-info__list', role: 'list' },
@@ -218,24 +218,28 @@ function deckSummary(ctx: GameCtx): HTMLElement {
         ),
       ),
     ),
-    textList([
-      ...line(
-        'enhancements',
-        countBy(deck, (c) => c.enhancement),
-      ),
-      ...line(
-        'seals',
-        countBy(deck, (c) => c.seal),
-      ),
-      ...line(
-        'editions',
-        countBy(deck, (c) => c.edition),
-      ),
-    ]),
+    textList(
+      [
+        ...line(
+          'enhancements',
+          countBy(deck, (c) => c.enhancement),
+        ),
+        ...line(
+          'seals',
+          countBy(deck, (c) => c.seal),
+        ),
+        ...line(
+          'editions',
+          countBy(deck, (c) => c.edition),
+        ),
+      ],
+      // Prázdný seznam úprav by se četl jako prázdný balíček — vlastní věta.
+      'game.runInfo.deckPlain',
+    ),
   );
 }
 
-export function openRunInfo(ctx: GameCtx): void {
+export function openRunInfo(ctx: GameCtx): ModalHandle<void> {
   // Bublina s detailem karty pod dialogem by překážela.
   hideTooltip();
   const c = ctx.controller;
@@ -261,7 +265,7 @@ export function openRunInfo(ctx: GameCtx): void {
     onClick: () => void copySeed(s.seed),
   });
 
-  openModal({
+  return openModal<void>({
     title: t('game.runInfo.title'),
     size: 'large',
     className: 'modal--run-info',
@@ -311,7 +315,10 @@ export function openRunInfo(ctx: GameCtx): void {
             ? h(
                 'p',
                 { class: 'run-info__stake' },
-                t('game.runInfo.stakeLevel', { name: t(`stakes.${stake.id}.name`), level: stake.level }),
+                t('game.runInfo.stakeLevel', {
+                  level: stake.level,
+                  max: Object.keys(ctx.registry.stakes).length,
+                }),
               )
             : null,
           textList(stakeRules),
@@ -387,8 +394,11 @@ export function openDeckPreview(ctx: GameCtx): void {
       h('div', { class: 'deck-preview__cards' }, cards.map(mini)),
     );
   };
+  // Jen hodnoty, které balíček má (Mariášový bez 2–6, Figurkový jen figury); vyčerpaná hodnota zůstane s nulou.
+  const deckRanks = new Set(s.deck.filter((x) => !isRanklessCard(x, ctx.registry)).map((x) => x.rank));
   const rankCounts = RANKS.slice()
     .reverse()
+    .filter((rank) => deckRanks.has(rank))
     .map((rank) => {
       const n = s.deck.filter(
         (x) => x.rank === rank && remaining.has(x.id) && !isRanklessCard(x, ctx.registry),
@@ -474,7 +484,7 @@ export async function openPauseMenu(ctx: GameCtx): Promise<void> {
     ],
   });
   const choice = await m.closed;
-  if (choice === 'settings') openSettingsModal(ctx.app);
+  if (choice === 'settings') await openSettingsModal(ctx.app).closed;
   else if (choice === 'menu') ctx.app.go('menu');
 }
 

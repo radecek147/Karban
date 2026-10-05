@@ -1156,7 +1156,7 @@ kbd {
   will-change: transform;
 }
 
-.credits--rolling .credits__viewport:hover .credits__roll,
+.credits--rolling.credits--hover-pause .credits__viewport:hover .credits__roll,
 .credits--rolling .credits__viewport:focus-within .credits__roll {
   animation-play-state: paused;
 }

@@ -136,6 +136,17 @@ export async function copySeed(seed: string): Promise<void> {
 }
 
 /** Klíč pro návrat focusu po překreslení panelu (tlačítka nesou `data-focus-key`). */
+/**
+ * Po zavření dialogu otevřeného z levého panelu (Info o runu, Nastavení, Menu) mimo kolo vrátí focus na hlavní akci
+ * fáze (Vybrat / Vyplatit / Pokračovat, `data-autofocus`). Jinak by focus zůstal na tlačítku panelu a Enter by
+ * dialog otevřel znovu místo akce fáze (QA 2026-10-05). V kole focus patří ruce (klávesy 1–8 ho vrátí samy).
+ */
+export function focusPhaseAction(ctx: GameCtx): void {
+  if (ctx.app.screenId !== 'game' || ctx.controller.state.phase === 'round') return;
+  if (document.documentElement.classList.contains('modal-open')) return;
+  document.querySelector<HTMLElement>('#app [data-autofocus]:not(:disabled)')?.focus({ preventScroll: true });
+}
+
 export function focusKey(): string | null {
   const el = document.activeElement;
   return el instanceof HTMLElement ? (el.dataset.focusKey ?? null) : null;

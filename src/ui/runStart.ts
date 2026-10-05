@@ -15,12 +15,17 @@ export function runInProgress(app: App): boolean {
   return GameController.hasSavedRun(app.store);
 }
 
-/** Zeptá se, jestli zahodit rozehraný run (bez rozehraného runu rovnou true). */
+/**
+ * Zeptá se, jestli zahodit rozehraný run (bez rozehraného runu rovnou true). Rozehraný oficiální denní pokus má
+ * vlastní varování — po přepsání se zapíše jako opuštěný a dnes už druhý oficiální pokus není.
+ */
 export async function confirmOverwrite(app: App): Promise<boolean> {
   if (!runInProgress(app)) return true;
+  const cur = app.profiles.profile.current;
+  const daily = !!cur && cur.mode === 'daily' && cur.official && cur.outcome === null;
   return confirmModal({
     title: t('newGame.overwrite.title'),
-    message: t('newGame.overwrite.message'),
+    message: t(daily ? 'newGame.overwrite.messageDaily' : 'newGame.overwrite.message'),
     confirmLabel: t('newGame.overwrite.confirm'),
     danger: true,
     testId: 'overwrite-confirm',

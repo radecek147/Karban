@@ -106,8 +106,8 @@ class GameView implements PresentView {
     this.ctx = createGameCtx(app, controller, () => this.refresh());
 
     this.sidebar = createSidebar(this.ctx, {
-      openRunInfo: () => openRunInfo(this.ctx),
-      openPause: () => void openPauseMenu(this.ctx),
+      openRunInfo: () => openRunInfo(this.ctx).closed,
+      openPause: () => openPauseMenu(this.ctx),
     });
     this.topRow = createTopRow(this.ctx, {
       openJoker: (uid) => openJokerDetail(this.ctx, uid),

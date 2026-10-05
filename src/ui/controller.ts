@@ -17,6 +17,7 @@ import type {
   RunState,
 } from '../engine';
 import { Game, deserializeRun, serializeRun, validateRunState } from '../engine';
+import { SaveError, type SaveErrorCode } from '../engine/save/save';
 import type { KeyValueStore } from './storage';
 import { RUN_BACKUP_PREFIX, STORAGE_KEYS, writeBackup } from './storage';
 
@@ -98,6 +99,18 @@ export class GameController {
 
   static hasSavedRun(store: KeyValueStore): boolean {
     return store.get(STORAGE_KEYS.run) !== null;
+  }
+
+  /** Proč nejde uložený run načíst (kód chyby formátu), nebo null — pro přesnou hlášku v menu. */
+  static savedRunError(store: KeyValueStore): SaveErrorCode | null {
+    const raw = store.get(STORAGE_KEYS.run);
+    if (!raw) return null;
+    try {
+      deserializeRun(raw);
+      return null;
+    } catch (e) {
+      return e instanceof SaveError ? e.code : 'invalidFormat';
+    }
   }
 
   setPresenter(p: Presenter): void {

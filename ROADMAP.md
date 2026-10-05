@@ -499,6 +499,21 @@ Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba h
 
 ---
 
+## Velký test hry (2026-10-05) — `docs/PLAYTEST-2026-10-05.md`
+
+- [x] Test ve 3 oblastech (hratelnost+balanc, meta+ukládání, rozlišení+výkon+přístupnost), zpráva o slabinách
+- [x] Opravy jednoznačných chyb (focus po dialozích, varování denního runu, Sbírka, titulky, tutoriál, texty)
+- [x] Návrhy designu 1–4 (náhledy celé obrazovky); doporučení Sirkárna + nové rozvržení
+- [ ] Volba designu hráčem → přestavba rozvržení (horní lišta, velcí žolíci se jménem, skóre uprostřed stolu)
+- [ ] Výkon obrázků (podle volby: plochý renderer bez filtrů, nebo kódování ve Workeru + prioritní fronta),
+      Sbírka se sdílenou siluetou neobjevených a rastrováním jen viditelných
+- [ ] Nízká okna a velikost UI 120–140 %, toasty mimo ovládání, bublina tutoriálu mimo zboží
+- [ ] Tempo: výchozí rychlost 2×, nápověda „mezerník přeskočí“, pauza zastaví skórování
+- [ ] Balanc: Pan farář a spol. dolů, Kolotoč na pouti, Virální video a spol. nahoru, šetření na úrok
+- [ ] Přístupnost: shoda viditelného textu a `aria-label`, pořadí Tab ve Večerce a obálce
+
+---
+
 ## Obsahové patche (po 1.0)
 
 Po vydání 1.0 pokračuj patchi. Každý patch: obsah podle `docs/CONTENT-GUIDE.md`, testy, simulace,

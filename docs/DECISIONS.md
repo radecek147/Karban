@@ -3765,3 +3765,32 @@ zesílené je jen podání vodovek:
 
 **Proč:** volba hráče. Silnější linka E3 vedle bledých lazur působila vybledle. Sytější vodovky jsou blíž
 náhledu E3 a teplé odstíny E1 si nechávají.
+
+## 2026-10-05 — Velký test hry a návrhy nového designu
+
+**Co:** Hráč chtěl hru důkladně otestovat, sepsat slabiny a navrhnout lepší design. Testovali tři agenti
+v prohlížeči (hratelnost a balanc, meta a ukládání, rozlišení, výkon a přístupnost). Výsledky a seznam slabin
+jsou v `docs/PLAYTEST-2026-10-05.md`.
+
+- **Opraveno hned** (jen jednoznačné chyby v logice a textech, testy přidány):
+  - focus po zavření dialogu z levého panelu se vrací na hlavní akci fáze, takže Enter už dialog znovu neotevře,
+  - vlastní varování při přepsání oficiálního denního pokusu,
+  - popisky kombinací ve Sbírce,
+  - zamčené výzvy ve Sbírce neprozradí pravidla,
+  - podtitulek výběru útraty u výzvy bez přeskakování,
+  - pauza titulků,
+  - tutoriálovou radu „Zahraj je“ odbaví jen zahraná ruka,
+  - hláška u runu z novější verze,
+  - texty Info o runu,
+  - skloňování ve výplatě,
+  - náhled Mariášového balíčku,
+  - hláška u seedu s pomlčkou.
+- **Rozvržení a výkon zatím nechávám**, protože závisí na volbě designu: nízká okna, velikost UI, toasty,
+  bublina tutoriálu, rastrování akvarelu a Sbírka.
+- **Návrhy designu:** 1 Sirkárna (retro tisk), 2 Hospoda po zavíračce (neon), 3 Komiks, 4 Knížka, jen líp.
+  Všechny mají nové rozvržení: horní lišta, velcí žolíci se jménem, skóre uprostřed stolu, větší ruka.
+  Doporučuji Sirkárnu: stejná data scén, jiný renderer, bez drahých filtrů, čitelná v každé velikosti.
+  Volba čeká na hráče.
+
+**Proč:** jednoznačné chyby nemá smysl nechávat ležet. Rozvržení a výkon by se při změně stylu stejně
+předělávaly, proto čekají na rozhodnutí.
