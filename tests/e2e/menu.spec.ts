@@ -244,7 +244,7 @@ test('titulky obsahují „Balatro“, písmo a atribuci game-icons s autory', a
   await expect(roll).toContainText('Balatro');
   await expect(roll).toContainText('game-icons.net');
   await expect(roll).toContainText('CC BY 3.0');
-  await expect(roll).toContainText('Pixelify Sans');
+  await expect(roll).toContainText('Fraunces');
   await expect(roll).toContainText('Open Font License');
   await expect(page.getByTestId('credits-icon-authors')).toContainText('Delapouite');
   await expect(page.getByTestId('credits-icon-authors')).toContainText('Lorc');

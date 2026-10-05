@@ -15,7 +15,6 @@ import type { ContentRegistry } from '../engine';
 import { t } from '../i18n/cs';
 import type { Profile } from '../engine/meta';
 import { AnimQueue } from './anim/queue';
-import { installDigitFont } from './art/digitFont';
 import { isModalOpen } from './components/modal';
 import { toast } from './components/toast';
 import type { GameController } from './controller';
@@ -76,8 +75,6 @@ export class App {
       reducedMotion: prefersReducedMotion(),
     }));
     applySettingsToDocument(this.settings);
-    // Číslice s čitelnou „5“ a „2“ (písmo se skládá za běhu, bez sítě).
-    installDigitFont();
     // Mezerník během animace přeskočí — už ve fázi zachytávání, aby ho nespolkl zaměřený prvek
     // (karta, žolík), který mezerník jinak zastaví u sebe.
     document.addEventListener('keydown', (e) => this.handleSkipKey(e), true);

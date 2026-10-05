@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 const PANGRAM = 'Příliš žluťoučký kůň úpěl ďábelské ódy';
 
-test('hlavní menu se načte bez chyb a vykreslí češtinu fontem Pixelify Sans', async ({ page }) => {
+test('hlavní menu se načte bez chyb a vykreslí češtinu fontem Fraunces', async ({ page }) => {
   // CLAUDE.md kap. 8: konzole bez chyb a varování (včetně chybějících i18n klíčů „[i18n] …“).
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -33,16 +33,23 @@ test('hlavní menu se načte bez chyb a vykreslí češtinu fontem Pixelify Sans
 
   const fonts = await page.evaluate(async (text) => {
     await document.fonts.ready;
-    const loaded = await document.fonts.load('16px "Pixelify Sans"', text);
+    const loaded = await document.fonts.load('16px "Fraunces"', text);
+    const loadedItalic = await document.fonts.load('italic 16px "Fraunces"', text);
+    const loadedBold = await document.fonts.load('700 16px "Fraunces"', text);
     return {
-      check: document.fonts.check('16px "Pixelify Sans"', text),
+      check: document.fonts.check('16px "Fraunces"', text),
+      // Česká písmena (latin-ext) i základní latinka: oba podsoubory písma se opravdu načetly.
       loadedFaces: loaded.length,
+      italicFaces: loadedItalic.filter((f) => f.style === 'italic').length,
+      boldFaces: loadedBold.filter((f) => f.weight === '700').length,
       typoFont: getComputedStyle(document.querySelector('[data-testid="typo-test"]')!).fontFamily,
     };
   }, PANGRAM);
-  expect(fonts.loadedFaces).toBeGreaterThan(0);
+  expect(fonts.loadedFaces).toBe(2);
+  expect(fonts.italicFaces).toBe(2);
+  expect(fonts.boldFaces).toBe(2);
   expect(fonts.check).toBe(true);
-  expect(fonts.typoFont).toContain('Pixelify Sans');
+  expect(fonts.typoFont).toContain('Fraunces');
 
   await page.screenshot({ path: 'test-results/smoke-title.png', fullPage: true });
 

@@ -20,29 +20,32 @@
   gap: 0.4rem;
 }
 
+/* Záložka: lístek na suknu (tmavší lazura, čárkovaný krémový obrys); vybraná = papír polit zlatou vodovkou. */
 .tabs__tab {
   display: inline-flex;
   align-items: center;
   gap: 0.45em;
   min-height: 2.5rem;
-  padding: 0.35em 0.9em;
-  font-size: 0.95rem;
-  font-weight: 700;
+  padding: 0.35em 0.95em;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--on-felt);
-  background: rgb(0 0 0 / 22%);
-  border-radius: 999px;
-  box-shadow: inset 0 0 0 2px rgb(244 236 216 / 18%);
+  background: var(--felt-panel);
+  border: 1.5px dashed var(--felt-line);
+  border-radius: 8px 12px 7px 10px / 10px 7px 12px 8px;
   transition: transform var(--t-fast) ease-out;
 }
 
 .tabs__tab:hover:not(.is-active) {
   transform: translateY(-1px);
+  background: rgb(6 30 19 / 36%);
 }
 
 .tabs__tab.is-active {
   color: var(--ink);
-  background: var(--accent);
-  box-shadow: 0 3px 0 var(--accent-dark);
+  background: radial-gradient(ellipse at 40% 45%, #efc874, var(--accent) 62%, #cf9530);
+  border: 1.5px solid rgb(46 38 32 / 70%);
+  box-shadow: 0 3px 8px rgb(6 26 16 / 35%);
 }
 
 .tabs__tab:focus-visible {
@@ -53,11 +56,13 @@
 .tabs__badge {
   min-width: 1.5em;
   padding: 0.05em 0.45em;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-style: italic;
   text-align: center;
   color: var(--paper);
-  background: var(--danger);
-  border-radius: 999px;
+  background: var(--wash-red);
+  border-radius: 40% 55% 45% 60% / 60% 45% 55% 40%;
 }
 
 .tabs__panel:focus-visible {
@@ -80,7 +85,8 @@
 .codex-count {
   font-size: 1.35rem;
   font-weight: 700;
-  color: var(--accent);
+  font-style: italic;
+  color: var(--money-light);
 }
 
 .codex-controls {
@@ -96,8 +102,8 @@
 }
 
 .codex-select__label {
-  font-size: 0.8rem;
-  letter-spacing: 0.04em;
+  font-size: 0.88rem;
+  font-style: italic;
   color: var(--on-felt-muted);
 }
 
@@ -107,10 +113,12 @@
   font: inherit;
   font-size: 0.95rem;
   color: var(--ink);
-  background: var(--paper);
-  border: 0;
+  background:
+    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
+    var(--paper);
+  border: 2px solid transparent;
+  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
   border-radius: var(--radius-small);
-  box-shadow: inset 0 -2px 0 var(--paper-shade);
 }
 
 .codex-select__input:focus-visible {
@@ -126,8 +134,10 @@
 
 .codex-group__title {
   margin-bottom: 0.6rem;
-  font-size: 1.15rem;
-  color: var(--on-felt-muted);
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--on-felt);
 }
 
 .codex-grid {
@@ -153,8 +163,9 @@
   padding: 0.5rem 0.3rem 0.6rem;
   color: var(--on-felt);
   text-align: center;
-  background: rgb(0 0 0 / 14%);
-  border-radius: var(--radius);
+  background: rgb(6 30 19 / 18%);
+  border: 1px dashed rgb(246 239 224 / 18%);
+  border-radius: 8px 12px 7px 10px / 10px 7px 12px 8px;
   transition: transform var(--t-fast) ease-out;
 }
 
@@ -192,15 +203,14 @@
   top: 0.25rem;
   right: 0.25rem;
   z-index: 2;
-  padding: 0.1em 0.45em;
-  font-size: 0.7rem;
+  padding: 0.08em 0.5em 0.12em;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-style: italic;
   color: var(--paper);
-  background: var(--danger);
-  border-radius: 999px;
-  box-shadow: 0 2px 0 rgb(0 0 0 / 30%);
+  background: var(--wash-red);
+  border-radius: 40% 55% 45% 60% / 60% 45% 55% 40%;
+  box-shadow: 0 2px 4px rgb(6 26 16 / 35%);
 }
 
 /* Silueta: neodemčeno / neobjeveno — tvar ano, detaily ne. */
@@ -216,19 +226,24 @@
   opacity: 0.5;
 }
 
+/* Medailon (achievementy, kombinace): kolečko papíru s dvojitým kroužkem tuší, ikona sépiovou tuší. */
 .codex-icon {
   position: relative;
   display: grid;
   place-items: center;
   width: var(--card-w);
   height: var(--card-w);
-  font-size: calc(var(--card-w) * 0.55);
-  color: var(--accent);
-  background: radial-gradient(circle, var(--felt-light), var(--felt-dark));
+  font-size: calc(var(--card-w) * 0.5);
+  color: var(--wood);
+  background:
+    radial-gradient(circle, transparent 0 60%, rgb(46 38 32 / 55%) 61% 62.5%, transparent 63.5%),
+    radial-gradient(circle at 40% 36%, rgb(226 171 63 / 28%), transparent 70%),
+    var(--tex-paper) 0 0 / 192px 192px,
+    var(--paper);
   border-radius: 50%;
   box-shadow:
-    inset 0 0 0 3px var(--accent-dark),
-    0 4px 0 rgb(0 0 0 / 25%);
+    inset 0 0 0 1.5px rgb(46 38 32 / 75%),
+    0 4px 8px rgb(6 26 16 / 35%);
 }
 
 .codex-icon .icon {
@@ -271,7 +286,7 @@
 }
 
 .codex-detail__art .codex-icon {
-  color: var(--accent);
+  color: var(--wood);
 }
 
 .codex-detail__text {
@@ -283,10 +298,9 @@
 }
 
 .codex-detail__kind {
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -330,15 +344,17 @@
 
 .codex-detail__heading {
   margin-bottom: 0.25rem;
-  font-size: 0.95rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  font-style: italic;
   color: var(--wood);
 }
 
 .codex-detail__condition,
 .codex-detail__stats {
   padding: 0.6rem 0.8rem;
-  background: var(--paper-shade);
-  border-radius: var(--radius-small);
+  border: 2px solid transparent;
+  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
 }
 
 .codex-detail__stats ul {
@@ -369,7 +385,10 @@
 
 .deck-option.is-locked {
   cursor: not-allowed;
-  background: var(--paper-shade);
+  background:
+    linear-gradient(rgb(120 96 60 / 14%), rgb(120 96 60 / 14%)),
+    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
+    var(--paper-shade);
 }
 
 .deck-option.is-locked:hover {
@@ -410,12 +429,14 @@
   height: 2.4rem;
   font-size: 0.95rem;
   font-weight: 700;
+  font-style: italic;
   color: var(--ink);
-  background: radial-gradient(circle, var(--paper) 0 52%, var(--paper-shade) 53% 60%, var(--paper) 61%);
+  background:
+    radial-gradient(circle, transparent 0 58%, rgb(46 38 32 / 55%) 59% 61%, transparent 62%), var(--paper);
   border-radius: 50%;
   box-shadow:
-    inset 0 0 0 2px #c9b98f,
-    0 3px 0 rgb(0 0 0 / 25%);
+    inset 0 0 0 1.5px rgb(46 38 32 / 70%),
+    0 3px 5px rgb(6 26 16 / 35%);
 }
 
 .deck-option__condition {
@@ -426,13 +447,13 @@
 .deck-option__locked {
   display: inline-block;
   margin-right: 0.2em;
-  padding: 0.05em 0.5em;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  padding: 0.05em 0.5em 0.08em;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-style: italic;
   color: var(--paper);
   background: var(--ink-soft);
-  border-radius: 999px;
+  border-radius: 3px 7px 4px 6px / 6px 4px 7px 3px;
 }
 
 /* Zamčená síla piva: vybledlý tácek, ale název čitelný (tlumená barva místo průhlednosti celé položky). */
@@ -467,8 +488,11 @@
 }
 
 .seed-field__status.is-note {
+  font-style: italic;
   color: var(--ink);
-  background: var(--paper-shade);
+  background:
+    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
+    var(--paper);
 }
 
 .seed-field__status.is-error {
@@ -508,12 +532,19 @@
 .stats-section__title,
 .stats-heading {
   margin-bottom: 0.6rem;
-  font-size: 1.25rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  font-style: italic;
   color: var(--wood);
 }
 
+.stats-section__title {
+  padding-bottom: 0.3rem;
+  background: var(--tex-ink-line) 0 100% / 100% 4px no-repeat;
+}
+
 .stats-heading {
-  color: var(--accent);
+  color: var(--on-felt);
 }
 
 .stat-list {
@@ -535,7 +566,7 @@
   justify-content: space-between;
   gap: 0.15rem 0.75rem;
   padding-bottom: 0.3rem;
-  border-bottom: 1px dashed var(--paper-shade);
+  border-bottom: 1px dashed rgb(46 38 32 / 22%);
 }
 
 .stat-row__label {
@@ -582,8 +613,8 @@
 .stats-table-wrap {
   overflow-x: auto;
   background:
-    linear-gradient(to right, var(--paper) 40%, rgb(244 236 216 / 0%)) left / 1.5rem 100% no-repeat local,
-    linear-gradient(to left, var(--paper) 40%, rgb(244 236 216 / 0%)) right / 1.5rem 100% no-repeat local,
+    linear-gradient(to right, var(--paper) 40%, rgb(251 248 241 / 0%)) left / 1.5rem 100% no-repeat local,
+    linear-gradient(to left, var(--paper) 40%, rgb(251 248 241 / 0%)) right / 1.5rem 100% no-repeat local,
     radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 22%), transparent) left / 0.6rem 100% no-repeat scroll,
     radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 22%), transparent) right / 0.6rem 100% no-repeat
       scroll;
@@ -598,13 +629,13 @@
 .stats-table th,
 .stats-table td {
   padding: 0.35rem 0.5rem;
-  border-bottom: 1px solid var(--paper-shade);
+  border-bottom: 1px solid rgb(46 38 32 / 14%);
 }
 
 .stats-table thead th {
-  font-size: 0.8rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -669,12 +700,13 @@
 .history-item__tag {
   display: inline-block;
   margin-left: 0.5em;
-  padding: 0.05em 0.5em;
-  font-size: 0.75rem;
+  padding: 0.05em 0.5em 0.08em;
+  font-size: 0.8rem;
   font-weight: 400;
+  font-style: italic;
   color: var(--paper);
   background: var(--ink-soft);
-  border-radius: 999px;
+  border-radius: 3px 7px 4px 6px / 6px 4px 7px 3px;
 }
 
 .history-item__line {
@@ -709,9 +741,6 @@
 .stats-section .btn--ghost,
 .history-item .btn--ghost {
   min-width: 0;
-  color: var(--ink);
-  background: transparent;
-  box-shadow: inset 0 0 0 2px var(--ink-soft);
 }
 
 .stats-section .btn--ghost:focus-visible,
@@ -774,10 +803,12 @@
   height: 3rem;
   padding: 0.55rem;
   color: var(--paper);
-  background: var(--felt);
+  background: radial-gradient(circle at 40% 36%, rgb(255 248 222 / 16%), transparent 70%), var(--felt);
   border: 3px solid var(--accent);
   border-radius: 50%;
-  box-shadow: 0 3px 0 rgb(0 0 0 / 25%);
+  box-shadow:
+    0 0 0 1.5px rgb(46 38 32 / 60%),
+    0 3px 6px rgb(6 26 16 / 30%);
 }
 
 .meta-icon svg {
@@ -806,7 +837,9 @@
 
 .run-news__title {
   margin-bottom: 0.35rem;
-  font-size: 1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-style: italic;
   color: var(--wood);
 }
 
@@ -924,9 +957,11 @@
 
 .challenges__group-title {
   margin-bottom: 0.4rem;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-style: italic;
   /* Světlejší pivní zlatá: drobný nadpis na suknu má v `--accent` kontrast jen 3,8 : 1. */
-  color: var(--money);
+  color: var(--money-light);
 }
 
 .challenges__items {
@@ -947,9 +982,9 @@
   font: inherit;
   color: var(--on-felt);
   text-align: left;
-  background: rgb(0 0 0 / 22%);
-  border-radius: var(--radius-small);
-  box-shadow: inset 0 0 0 2px rgb(244 236 216 / 14%);
+  background: var(--felt-panel);
+  border: 1.5px dashed rgb(246 239 224 / 26%);
+  border-radius: 6px 10px 7px 9px / 9px 7px 10px 6px;
   transition: transform var(--t-fast) ease-out;
 }
 
@@ -959,8 +994,13 @@
 
 .challenge-item.is-selected {
   color: var(--ink);
-  background: var(--paper);
-  box-shadow: 0 3px 0 var(--accent-dark);
+  background:
+    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
+    var(--paper);
+  border: 1.5px solid rgb(46 38 32 / 70%);
+  box-shadow:
+    inset 4px 0 0 var(--accent),
+    0 3px 8px rgb(6 26 16 / 35%);
 }
 
 .challenge-item:focus-visible {
@@ -991,11 +1031,12 @@
 }
 
 .challenge-item__new {
-  padding: 0.05em 0.45em;
-  font-size: 0.72rem;
+  padding: 0.05em 0.5em 0.08em;
+  font-size: 0.78rem;
+  font-style: italic;
   color: var(--paper);
-  background: var(--danger);
-  border-radius: 999px;
+  background: var(--wash-red);
+  border-radius: 40% 55% 45% 60% / 60% 45% 55% 40%;
 }
 
 .challenge-item__status {
@@ -1046,7 +1087,9 @@
 }
 
 .challenge-detail__name {
-  font-size: 1.6rem;
+  font-size: 1.65rem;
+  font-weight: 700;
+  font-style: italic;
   color: var(--wood);
 }
 
@@ -1055,11 +1098,13 @@
   gap: 0.35rem;
   align-items: center;
   margin-top: 0.25rem;
-  padding: 0.1em 0.6em;
+  padding: 0.1em 0.65em 0.14em;
   font-weight: 700;
+  font-style: italic;
   color: var(--ink);
-  background: var(--accent);
-  border-radius: 999px;
+  background: radial-gradient(ellipse at 40% 45%, #efc874, var(--accent) 62%, #cf9530);
+  border-radius: 3px 8px 4px 7px / 7px 4px 8px 3px;
+  box-shadow: 0 0 0 1px rgb(46 38 32 / 45%);
 }
 
 .challenge-detail__badge .icon {
@@ -1079,7 +1124,9 @@
 
 .challenge-detail__heading {
   margin-top: 0.4rem;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-style: italic;
   color: var(--wood);
 }
 

@@ -268,14 +268,15 @@ Ikony aplikace se generují z `src-tauri/icon.svg` příkazem `npm run desktop:i
 ## Licence a atribuce
 
 - **Kód** je pod licencí [MIT](LICENSE).
-- **Písmo** [Pixelify Sans](https://github.com/eifetx/Pixelify-Sans) — Stefie Justprince, © 2021 The
-  Pixelify Sans Project Authors, licence SIL Open Font License 1.1 (`src/assets/fonts/OFL.txt`).
+- **Písmo** [Fraunces](https://github.com/undercasetype/Fraunces) — Undercase Type (Phaedra Charles, Flavia
+  Zimbardi), © 2020 The Fraunces Project Authors, licence SIL Open Font License 1.1 (`src/assets/fonts/OFL.txt`).
 - **Ikony** z [game-icons.net](https://game-icons.net) — autoři Delapouite, Lorc, Skoll, Sbed, Caro Asercion,
   Faithtoken, Guard13007, Cathelineau a Willdabeast, licence
   [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Ikony jsou přebarvené a skládané do obrázků
   karet; zůstávají pod CC BY 3.0. Rozpis ikon podle autorů je v [ASSETS.md](ASSETS.md).
-- **Hrací karty, obrázky žolíků, šéfů a dalších karet, zvukové efekty i hudba** vznikají přímo v kódu
-  (procedurální SVG, syntezátor ve Web Audio) a patří pod licenci projektu.
+- **Hrací karty, obrázky žolíků, šéfů a dalších karet, textury rozhraní, zvukové efekty i hudba** vznikají
+  přímo v kódu (procedurální SVG a bitmapy z `npm run gen-textures`, syntezátor ve Web Audio) a patří pod
+  licenci projektu.
 - **Žádné assety, texty, jména ani čísla z Balatra** ani jiné komerční hry. Balatro je jen inspirace
   mechanikami.
 

@@ -46,9 +46,11 @@
   pointer-events: none;
 }
 
-/* Během animace vypadají jako neaktivní (stejně jako `.btn:disabled` — neprůhledně, bez „olivového“ prosvítání). */
+/* Během animace vypadají jako neaktivní (stejně jako `.btn:disabled` — vymytá skvrna, sukno neprosvítá). */
 .game.is-busy .gb-controls .btn {
-  filter: saturate(0.3) brightness(0.8);
+  --wash-fill: color-mix(in srgb, var(--wash) 30%, #e2d8c2);
+
+  color: rgb(46 38 32 / 66%);
 }
 
 .game.is-busy .gb-selected {
@@ -57,65 +59,69 @@
 
 /* ─────────────────────────── Levý panel ─────────────────────────── */
 
+/*
+ * List papíru s natrhlým okrajem na suknu (styl `.sheet`, base.css): tuší psané popisky, oddíly oddělené
+ * linkou tuší, políčka (Ruce, Zahození…) orámovaná tuší, čipy × mult jako modrá a červená vodovka.
+ */
 .game-sidebar {
+  --edge: 12px;
+
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   min-height: 0;
-  padding: 0.65rem;
+  padding: 0.85rem 0.95rem 0.95rem;
   overflow: auto;
-  background: var(--wood-grain), var(--board-bg);
-  border-radius: 14px;
-  box-shadow:
-    inset 0 0 0 2px var(--wood-dark),
-    0 10px 24px rgb(0 0 0 / 35%);
   scrollbar-width: thin;
+  scrollbar-color: rgb(46 38 32 / 35%) transparent;
 }
 
 .gs-label {
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--on-felt-muted);
+  font-size: 0.88rem;
+  font-style: italic;
+  line-height: 1.25;
+  color: var(--ink-soft);
 }
 
+/* Hlavička útraty: žeton + název tuší, pod ní linka. */
 .gs-blind {
   display: grid;
   grid-template-columns: 3.4rem minmax(0, 1fr);
   gap: 0.6rem;
   align-items: center;
-  padding: 0.55rem 0.6rem;
-  color: var(--chalk);
-  background: var(--chalkboard);
-  border-radius: var(--radius);
-  box-shadow:
-    inset 0 0 0 3px rgb(255 255 255 / 6%),
-    0 3px 0 rgb(0 0 0 / 30%);
+  padding: 0.15rem 0.15rem 0.6rem;
+  color: var(--ink);
+  background: var(--tex-ink-line) 0 100% / 100% 4px no-repeat;
 }
 
+/* Šéf: hlavička s nádechem červené vodovky, název červenou tuší. */
 .gs-blind[data-blind='boss']:not(.is-beaten) {
-  box-shadow:
-    inset 0 0 0 3px var(--danger),
-    0 3px 0 rgb(0 0 0 / 30%);
+  background:
+    var(--tex-ink-line) 0 100% / 100% 4px no-repeat,
+    radial-gradient(ellipse 80% 70% at 30% 45%, rgb(196 61 50 / 16%), transparent 75%);
 }
 
-/* Poražená útrata (konec kola) a výhra: zlatý rámeček místo červeného šéfova. */
+.gs-blind[data-blind='boss']:not(.is-beaten) .gs-blind__name {
+  color: var(--danger-dark);
+}
+
+/* Poražená útrata (konec kola) a výhra: zlatý nádech místo červeného šéfova. */
 .gs-blind.is-beaten,
 .gs-blind[data-blind='victory'] {
-  box-shadow:
-    inset 0 0 0 3px var(--accent),
-    0 3px 0 rgb(0 0 0 / 30%);
+  background:
+    var(--tex-ink-line) 0 100% / 100% 4px no-repeat,
+    radial-gradient(ellipse 80% 70% at 30% 45%, rgb(226 171 63 / 26%), transparent 75%);
 }
 
 .gs-blind.is-beaten .gs-blind__rule {
-  color: var(--accent);
+  color: var(--money-ink);
 }
 
 .gs-blind__trophy {
   width: 100%;
   height: 100%;
   padding: 0.35rem;
-  color: var(--accent);
+  color: var(--accent-dark);
 }
 
 .gs-blind__token {
@@ -129,26 +135,28 @@
 }
 
 .gs-blind__name {
-  font-size: 1.15rem;
-  color: var(--paper);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .gs-blind__rule {
-  margin-top: 0.2rem;
-  font-size: 0.8rem;
+  margin-top: 0.15rem;
+  font-size: 0.85rem;
+  font-style: italic;
   line-height: 1.25;
-  color: var(--on-felt-muted);
+  color: var(--ink-soft);
 }
 
-/* Aktivní štítky: řada malých žetonů s tooltipem. */
+/* Aktivní štítky: řada malých žetonů s tooltipem na nádechu papíru. */
 .gs-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem 0.5rem;
   align-items: center;
   padding: 0.3rem 0.5rem;
-  background: rgb(0 0 0 / 22%);
-  border-radius: var(--radius);
+  background: rgb(120 96 60 / 10%);
+  border-radius: var(--radius-small);
 }
 
 .gs-tags[hidden] {
@@ -168,11 +176,10 @@
   --card-w: 2.5rem;
 }
 
+/* Oddíl listu (cíl, skóre, kombinace): bez rámečku, oddělený linkou tuší. */
 .gs-box {
-  padding: 0.45rem 0.6rem;
-  background: rgb(0 0 0 / 30%);
-  border-radius: var(--radius);
-  box-shadow: inset 0 2px 6px rgb(0 0 0 / 35%);
+  padding: 0.3rem 0.2rem 0.55rem;
+  background: var(--tex-ink-line) 0 100% / 100% 4px no-repeat;
 }
 
 /*
@@ -192,25 +199,27 @@
   white-space: nowrap;
 }
 
+/* Cíl kola: velké červené číslo (jako v knížce podtržené pravidlo). */
 .gs-target__value {
-  font-size: clamp(0.75rem, calc(100cqi / (var(--chars, 6) * 0.62)), var(--value-fs, 1.7rem));
+  font-size: clamp(0.75rem, calc(100cqi / (var(--chars, 6) * 0.62)), var(--value-fs, 1.95rem));
   font-weight: 700;
   line-height: 1.1;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
+  color: #b3322a;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .gs-target__reward {
-  font-size: 0.8rem;
-  color: var(--money);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--money-ink);
 }
 
 .gs-score__value {
-  font-size: clamp(0.75rem, calc(100cqi / (var(--chars, 6) * 0.62)), var(--value-fs, 1.9rem));
+  font-size: clamp(0.75rem, calc(100cqi / (var(--chars, 6) * 0.62)), var(--value-fs, 1.95rem));
   font-weight: 700;
   line-height: 1.1;
-  color: var(--paper);
-  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .gs-hand__head {
@@ -223,14 +232,15 @@
 }
 
 .gs-hand__name {
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  color: var(--paper);
+  color: var(--ink);
 }
 
 .gs-hand__level {
-  font-size: 0.8rem;
-  color: var(--on-felt-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--ink-soft);
 }
 
 .gs-hand__calc {
@@ -241,36 +251,49 @@
   margin-top: 0.3rem;
 }
 
+/* Čipy × mult: modrá a červená vodovka (skvrna na `::after`) s krémovými čísly. */
 .gs-hand__chips,
 .gs-hand__mult {
+  --wash: var(--wash-blue);
+
+  position: relative;
+  isolation: isolate;
   display: block;
-  padding: 0.2rem 0.4rem;
+  padding: 0.3rem 0.45rem 0.32rem;
   overflow: hidden;
-  font-size: 1.45rem;
+  font-size: 1.5rem;
   font-weight: 700;
   line-height: 1.15;
-  color: #fff;
+  color: var(--paper);
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
-  border-radius: var(--radius-small);
-  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgb(30 20 12 / 35%);
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
-.gs-hand__chips {
-  background: var(--chips);
-  box-shadow: 0 3px 0 #23589c;
+.gs-hand__chips::after,
+.gs-hand__mult::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    var(--tex-wash-tone) 0 0 / 100% 100% no-repeat,
+    var(--wash);
+  -webkit-mask: var(--tex-wash-shape) 0 0 / 100% 100% no-repeat;
+  mask: var(--tex-wash-shape) 0 0 / 100% 100% no-repeat;
 }
 
 .gs-hand__mult {
-  background: var(--mult);
-  box-shadow: 0 3px 0 #96301f;
+  --wash: var(--wash-red);
 }
 
 .gs-hand__times {
   font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--paper);
+  font-weight: 400;
+  color: var(--ink);
 }
 
 /* Mimo kolo (výběr útraty, Večerka…) jsou náhled kombinace a skóre kola jen informační. */
@@ -282,9 +305,9 @@
 /* Laťka šéfa (Pan starosta): „Překonej: X“ pod názvem kombinace. */
 .gs-hand__beat {
   margin-top: 0.2rem;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--money-ink);
 }
 
 /* Odhad nepřekoná laťku (Pan starosta): varování jantarové — ruka se zahrát smí, jen se nezapočítá. */
@@ -295,40 +318,40 @@
 
 /* Šéf by ruku zakázal (Soused s vrtačkou): varování přímo v náhledu kombinace. */
 .gs-hand__warn {
-  margin-top: 0.25rem;
-  padding: 0.2rem 0.4rem;
-  font-size: 0.78rem;
+  margin-top: 0.3rem;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.8rem;
+  font-style: italic;
   line-height: 1.25;
-  color: #fff;
+  color: var(--paper);
   background: var(--danger);
-  border-radius: var(--radius-small);
+  border-radius: 3px 6px 4px 5px;
 }
 
 .gs-hand.is-blocked .gs-hand__chips,
 .gs-hand.is-blocked .gs-hand__mult {
   text-decoration: line-through;
-  filter: saturate(0.4) brightness(0.8);
+  filter: saturate(0.4) brightness(0.85);
 }
 
 .gs-hand.is-scoring {
-  box-shadow:
-    inset 0 2px 6px rgb(0 0 0 / 35%),
-    0 0 0 2px var(--accent);
+  border-radius: var(--radius-small);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .gs-stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
+/* Políčko statistiky: tuší orámovaný obdélník na papíře. */
 .gs-stat {
-  padding: 0.3rem 0.5rem;
+  padding: 0.25rem 0.45rem 0.3rem;
   color: var(--ink);
   text-align: center;
-  background: var(--paper);
-  border-radius: var(--radius-small);
-  box-shadow: 0 3px 0 var(--paper-shade);
+  border: 2px solid transparent;
+  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
 }
 
 .gs-stat--wide {
@@ -340,23 +363,21 @@
   flex-wrap: wrap;
   gap: 0.25rem;
   justify-content: center;
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.82rem;
+  font-style: italic;
+  line-height: 1.2;
   color: var(--ink-soft);
 }
 
 .gs-stat__note {
-  text-transform: none;
-  letter-spacing: 0;
   color: var(--danger);
 }
 
 .gs-stat__value {
-  font-size: var(--stat-fs, 1.3rem);
+  font-size: var(--stat-fs, 1.4rem);
   font-weight: 700;
   line-height: 1.15;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .gs-stat__value--hands {
@@ -369,8 +390,8 @@
 
 .gs-stat__value--money {
   /* Velký zůstatek (milion korun) se zmenší, ať se vejde na řádek (`--chars`, viz výš). */
-  font-size: min(var(--stat-fs, 1.3rem), calc(100cqi / (var(--chars, 4) * 0.62)));
-  color: #8a6408;
+  font-size: min(var(--stat-fs, 1.4rem), calc(100cqi / (var(--chars, 4) * 0.62)));
+  color: var(--money-ink);
 }
 
 .gs-stat__value--money.is-negative {
@@ -380,18 +401,39 @@
 .gs-buttons {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.4rem;
+  gap: 0.45rem;
   margin-top: auto;
 }
 
 .gs-buttons .btn {
   min-height: 2.3rem;
   padding-inline: 0.4em;
-  font-size: 0.85rem;
+  font-size: 0.92rem;
+  box-shadow: none;
 }
 
 .gs-buttons .btn:last-child {
   grid-column: 1 / -1;
+}
+
+.game-sidebar .btn--ghost {
+  color: var(--ink);
+  background: transparent;
+  border: 2px solid transparent;
+  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
+}
+
+.game-sidebar .btn--ghost:hover:not(:disabled),
+.game-sidebar .btn--paper:hover:not(:disabled) {
+  background: rgb(226 171 63 / 16%);
+}
+
+.game-sidebar .btn--paper {
+  background: transparent;
+}
+
+.game-sidebar .btn:focus-visible {
+  outline-color: var(--accent-dark);
 }
 
 /* ─────────────────────────── Horní řada: žolíci a spotřebky ─────────────────────────── */
@@ -402,15 +444,16 @@
   gap: 0.6rem;
 }
 
+/* Panel na suknu: tmavší lazura s krémovým čárkovaným obrysem (jako místo na stole vyznačené křídou). */
 .gt-group {
   --card-w: max(56px, calc(var(--game-card-w) * 0.8));
 
   position: relative;
   min-width: 0;
-  padding: 0.3rem 0.6rem 0.45rem;
-  background: rgb(0 0 0 / 20%);
-  border-radius: var(--radius);
-  box-shadow: inset 0 2px 8px rgb(0 0 0 / 35%);
+  padding: 0.25rem 0.6rem 0.45rem;
+  background: var(--felt-panel);
+  border: 1.5px dashed var(--felt-line);
+  border-radius: 10px 14px 9px 12px / 12px 9px 14px 10px;
 }
 
 .gt-group--consumables {
@@ -422,17 +465,15 @@
   gap: 0.4rem;
   align-items: baseline;
   margin-bottom: 0.25rem;
-  font-size: 0.8rem;
-  font-weight: 400;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--on-felt-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--on-felt);
 }
 
 .gt-count {
   font-weight: 700;
-  color: var(--paper);
-  letter-spacing: 0;
+  color: var(--on-felt);
+  font-variant-numeric: lining-nums;
 }
 
 .gt-row {
@@ -477,7 +518,8 @@
   inset: 1.4rem 0.6rem 0.45rem;
   display: grid;
   place-items: center start;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-style: italic;
   color: var(--on-felt-muted);
   pointer-events: none;
 }
@@ -504,21 +546,26 @@
   align-self: stretch;
   justify-self: stretch;
   min-height: 0;
-  color: rgb(0 0 0 / 11%);
+  color: rgb(14 54 34 / 40%);
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--t-med) ease-out;
 }
 
+/* Ovál hrací plochy: světlejší lazura vodovky obtažená tenkou tmavě zelenou tuší. */
 .game-stage__decor::before {
   content: '';
   position: absolute;
   inset: 3% 2%;
-  border: 3px dashed rgb(244 236 216 / 9%);
+  background: radial-gradient(
+    ellipse at 50% 46%,
+    rgb(255 250 230 / 13%),
+    rgb(255 250 230 / 7%) 62%,
+    rgb(255 250 230 / 3%)
+  );
+  border: 2px solid rgb(16 50 32 / 38%);
   border-radius: 50%;
-  box-shadow:
-    inset 0 0 0 10px rgb(0 0 0 / 5%),
-    0 0 0 10px rgb(0 0 0 / 4%);
+  box-shadow: inset 0 0 36px rgb(6 26 16 / 14%);
 }
 
 .game[data-phase='round'] .game-stage__decor {
@@ -539,16 +586,20 @@
   overflow: visible;
 }
 
-/* Šéf: prošívaný ovál na suknu zčervená (statický stín, žádná animace). */
+/* Šéf: ovál na suknu prosákne červenou vodovkou (statická lazura, žádná animace). */
 .game.is-boss .game-stage__decor {
-  color: rgb(90 10 5 / 16%);
+  color: rgb(96 18 10 / 30%);
 }
 
 .game.is-boss .game-stage__decor::before {
-  border-color: rgb(231 118 108 / 30%);
-  box-shadow:
-    inset 0 0 70px rgb(200 55 45 / 22%),
-    0 0 0 10px rgb(0 0 0 / 4%);
+  background: radial-gradient(
+    ellipse at 50% 46%,
+    rgb(255 236 220 / 10%),
+    rgb(196 61 50 / 14%) 70%,
+    rgb(196 61 50 / 22%)
+  );
+  border-color: rgb(110 24 16 / 45%);
+  box-shadow: inset 0 0 60px rgb(150 30 20 / 22%);
 }
 
 .game-table {
@@ -575,22 +626,25 @@
   filter: brightness(0.74) saturate(0.55);
 }
 
-/* Nápověda na prázdném stole: tmavý „tácek“, ať se nepere s potiskem sukna. */
+/* Nápověda na prázdném stole: papírová cedulka s tuší, ať se nepere s potiskem sukna. */
 .game-table__hint {
   align-self: center;
   justify-self: center;
   max-width: min(30rem, 90%);
-  padding: 0.45rem 1.1rem;
-  font-size: 0.95rem;
-  color: var(--paper-shade);
+  padding: 0.4rem 1.1rem 0.45rem;
+  font-size: 0.98rem;
+  font-style: italic;
+  color: var(--ink);
   text-align: center;
   pointer-events: none;
-  background: rgb(10 30 20 / 55%);
-  border-radius: 999px;
-  box-shadow: inset 0 0 0 1px rgb(244 236 216 / 10%);
+  background:
+    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
+    var(--paper);
+  border-radius: 3px 5px 4px 6px;
+  box-shadow: 0 4px 10px rgb(6 26 16 / 35%);
 }
 
-/* Příchod šéfa: plakát nad stolem (neblokuje kliknutí, zmizí sám). */
+/* Příchod šéfa: plakát „Hledá se“ nad stolem — papír s dvojitým červeným rámečkem (neblokuje kliknutí). */
 .boss-banner {
   --boss-color: var(--danger);
 
@@ -603,15 +657,18 @@
   justify-self: center;
   width: min(34rem, calc(100% - 1rem));
   margin-top: 0.6rem;
-  padding: 0.75rem 1rem 0.8rem 0.8rem;
-  color: var(--chalk);
+  padding: 0.85rem 1.1rem 0.9rem 0.9rem;
+  color: var(--ink);
   pointer-events: none;
-  background: var(--chalkboard);
-  border-radius: 14px;
+  background:
+    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
+    var(--paper);
+  border-radius: 4px 7px 5px 6px;
   box-shadow:
-    inset 0 0 0 3px var(--boss-color),
-    inset 0 0 0 6px rgb(0 0 0 / 35%),
-    0 14px 34px rgb(0 0 0 / 50%);
+    inset 0 0 0 2px var(--boss-color),
+    inset 0 0 0 5px rgb(251 248 241 / 0%),
+    inset 0 0 0 6px rgb(196 61 50 / 45%),
+    0 14px 34px rgb(6 26 16 / 50%);
   opacity: 0;
   transform: translateY(-14px) scale(0.96);
   transition:
@@ -639,31 +696,31 @@
 }
 
 .boss-banner__label {
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--on-felt-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--danger-dark);
 }
 
 .boss-banner__name {
-  font-size: 1.45rem;
+  font-size: 1.55rem;
   font-weight: 700;
   line-height: 1.15;
-  color: var(--paper);
+  color: var(--danger-dark);
 }
 
 .boss-banner__rule {
   margin-top: 0.2rem;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   line-height: 1.3;
 }
 
 .boss-banner__intro {
   margin-top: 0.35rem;
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   font-style: italic;
   line-height: 1.3;
-  color: var(--accent);
+  color: var(--wood);
 }
 
 .game-panel-host {
@@ -677,11 +734,11 @@
   margin: 0 auto;
 }
 
+/* Panel fáze na papíře (konec kola, pitva, výhra): list s natrhlým okrajem (styl `.sheet`, base.css). */
 .game-panel.paper {
-  padding: 1rem 1.25rem 1.25rem;
-  box-shadow:
-    var(--frame-shadow),
-    0 18px 40px rgb(0 0 0 / 45%);
+  --edge: 12px;
+
+  padding: 1.1rem 1.4rem 1.3rem;
 }
 
 .game-panel__header {
@@ -690,11 +747,12 @@
 }
 
 .game-panel__title {
-  font-size: 1.8rem;
-  color: var(--paper);
-  text-shadow:
-    0 3px 0 var(--wood),
-    0 6px 14px rgb(0 0 0 / 40%);
+  font-size: 1.9rem;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: var(--on-felt);
+  text-shadow: 0 2px 10px rgb(6 26 16 / 45%);
 }
 
 .paper .game-panel__title {
@@ -704,6 +762,7 @@
 
 .game-panel__subtitle {
   margin-top: 0.2rem;
+  font-style: italic;
   color: var(--on-felt-muted);
 }
 
@@ -737,21 +796,22 @@
   padding: 0.8rem 0.8rem 0.9rem;
   color: var(--ink);
   text-align: center;
-  background: var(--paper);
-  border-radius: 12px;
-  box-shadow:
-    0 4px 0 var(--paper-shade),
-    0 10px 22px rgb(0 0 0 / 30%);
+  background:
+    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
+    var(--paper);
+  border-radius: 4px 6px 5px 4px;
+  box-shadow: var(--shadow-card);
   transition:
     transform var(--t-med) ease-out,
     opacity var(--t-med) ease-out;
 }
 
+/* Aktuální útrata: zvednutá, se zlatým lemem vodovky obtaženým tuší. */
 .blind-card.is-current {
   box-shadow:
     0 0 0 3px var(--accent),
-    0 4px 0 var(--accent-dark),
-    0 14px 28px rgb(0 0 0 / 40%);
+    0 0 0 4.5px rgb(46 38 32 / 55%),
+    0 14px 28px rgb(6 26 16 / 42%);
   transform: translateY(-6px);
 }
 
@@ -762,7 +822,7 @@
 .blind-card.is-defeated,
 .blind-card.is-skipped {
   filter: grayscale(0.85);
-  box-shadow: 0 2px 0 var(--paper-shade);
+  box-shadow: 0 2px 6px rgb(6 26 16 / 25%);
 }
 
 .blind-card.is-defeated .blind-card__token,
@@ -770,25 +830,26 @@
   opacity: 0.45;
 }
 
+/* Stav útraty: pruh vodovky přes šířku karty (kurzíva). */
 .blind-card__status {
   align-self: stretch;
-  padding: 0.1rem 0.5rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  padding: 0.12rem 0.5rem 0.16rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-style: italic;
   color: var(--paper);
   background: var(--ink-soft);
-  border-radius: 999px;
+  border-radius: 3px 8px 4px 7px / 7px 4px 8px 3px;
 }
 
 .blind-card.is-current .blind-card__status {
   color: var(--ink);
-  background: var(--accent);
+  background: radial-gradient(ellipse at 40% 45%, #efc874, var(--accent) 60%, #cf9530);
 }
 
 .blind-card--boss .blind-card__status {
-  /* Tmavší než --danger: světlý text na pilulce s kontrastem ≥ 4,5 : 1. */
-  background: #b33128;
+  /* Tmavší než --danger: světlý text na pruhu s kontrastem ≥ 4,5 : 1. */
+  background: #b02f26;
 }
 
 .blind-card__token {
@@ -802,20 +863,23 @@
 }
 
 .blind-card__name {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
+  font-weight: 700;
   color: var(--wood);
 }
 
 .blind-card__rule {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
+  font-style: italic;
   line-height: 1.3;
   color: var(--danger-dark);
 }
 
 .blind-card__note {
   margin-top: 0.35rem;
-  font-size: 0.8rem;
-  color: var(--felt-light);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #2c6a45;
   text-align: center;
 }
 
@@ -826,33 +890,34 @@
   align-self: stretch;
 }
 
+/* Cíl a odměna: políčka orámovaná tuší (jako v levém panelu). */
 .blind-card__fact {
-  padding: 0.3rem;
-  background: var(--paper-shade);
-  border-radius: var(--radius-small);
+  padding: 0.25rem 0.3rem 0.3rem;
+  border: 2px solid transparent;
+  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
 }
 
 .blind-card__fact dt {
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.82rem;
+  font-style: italic;
   color: var(--ink-soft);
 }
 
 .blind-card__target {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  color: var(--danger-dark);
-  font-variant-numeric: tabular-nums;
+  color: #b3322a;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .blind-card__reward {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  /* Tmavá „pivní“ zlatá: kontrast ≥ 4,5 : 1 na papíře i na --paper-shade. */
+  /* Tmavá „pivní“ zlatá: kontrast ≥ 4,5 : 1 na papíře. */
   color: #6f5005;
 }
 
+/* Štítek za přeskočení: nalepený lístek s čárkovaným obrysem tuší. */
 .blind-card__tag {
   --card-w: 3rem;
 
@@ -861,11 +926,11 @@
   align-items: center;
   align-self: stretch;
   padding: 0.4rem 0.5rem;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   line-height: 1.25;
   text-align: left;
-  border: 2px dashed var(--paper-shade);
-  border-radius: var(--radius-small);
+  border: 1.5px dashed rgb(46 38 32 / 40%);
+  border-radius: 3px 6px 4px 5px;
 }
 
 .blind-card__tag--none {
@@ -920,12 +985,6 @@
   }
 }
 
-.blind-card .btn--ghost {
-  color: var(--ink);
-  background: transparent;
-  box-shadow: inset 0 0 0 2px var(--ink-soft);
-}
-
 /* ─────────────────────────── Konec kola ─────────────────────────── */
 
 .round-end {
@@ -950,16 +1009,17 @@
   animation-delay: calc(var(--i, 0) * 170ms / var(--speed));
 }
 
+/* Účtenka: tečky tuší k částce, součet pod linkou. */
 .round-end__dots {
   flex: 1;
   min-width: 1rem;
-  border-bottom: 2px dotted var(--paper-shade);
+  border-bottom: 2px dotted rgb(46 38 32 / 32%);
 }
 
 .round-end__amount {
   font-weight: 700;
-  color: #8a6408;
-  font-variant-numeric: tabular-nums;
+  color: var(--money-ink);
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .round-end__line.is-negative .round-end__amount {
@@ -967,10 +1027,11 @@
 }
 
 .round-end__line--total {
-  padding-top: 0.4rem;
+  padding-top: 0.5rem;
   margin-top: 0.2rem;
   font-size: 1.3rem;
-  border-top: 2px solid var(--ink-soft);
+  font-weight: 600;
+  background: var(--tex-ink-line) 0 0 / 100% 4px no-repeat;
 }
 
 .round-end .game-panel__actions {
@@ -1005,52 +1066,54 @@
   text-align: left;
 }
 
+/* Cedule „Večerka“: malovaný štít na papíře — název červenou tuší pod zlatou vodovkou, rámeček tuší. */
 .shop__sign {
   position: relative;
+  isolation: isolate;
   flex: 0 1 auto;
   min-width: 0;
-  padding: 0.3rem 1.1rem 0.45rem;
-  background: var(--wood-grain), var(--board-bg);
-  border-radius: var(--radius);
-  box-shadow:
-    inset 0 0 0 2px var(--wood-dark),
-    inset 0 0 0 4px rgb(232 169 42 / 18%),
-    0 6px 16px rgb(0 0 0 / 35%);
+  padding: 0.3rem 1.2rem 0.45rem;
+  color: var(--ink);
+  background:
+    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
+    var(--paper);
+  border: 2px solid transparent;
+  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
+  box-shadow: 0 6px 14px rgb(6 26 16 / 35%);
+  transform: rotate(-0.6deg);
 }
 
-/* Hřebíčky v rozích cedule. */
-.shop__sign::before,
+/* Zlatá skvrna za názvem (statická, tvar z textury). */
 .shop__sign::after {
   content: '';
   position: absolute;
-  top: 0.45rem;
-  width: 0.4rem;
-  height: 0.4rem;
-  background: radial-gradient(circle at 35% 35%, #e9d9a8, #8a7444 70%);
-  border-radius: 50%;
-  box-shadow: 0 1px 1px rgb(0 0 0 / 50%);
-}
-
-.shop__sign::before {
-  left: 0.4rem;
-}
-
-.shop__sign::after {
-  right: 0.4rem;
+  top: 0.15rem;
+  left: 0.55rem;
+  z-index: -1;
+  width: min(9.5rem, 70%);
+  height: 2.2rem;
+  pointer-events: none;
+  background:
+    var(--tex-wash-tone) 0 0 / 100% 100% no-repeat,
+    var(--wash-gold);
+  opacity: 0.7;
+  -webkit-mask: var(--tex-wash-shape) 0 0 / 100% 100% no-repeat;
+  mask: var(--tex-wash-shape) 0 0 / 100% 100% no-repeat;
 }
 
 .shop__title {
-  font-size: 1.6rem;
-  color: var(--accent);
-  text-shadow:
-    0 0 10px rgb(232 169 42 / 55%),
-    0 2px 0 var(--wood-dark);
+  font-size: 1.7rem;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: #9e2b22;
 }
 
 .shop__sign .game-panel__subtitle {
-  margin-top: 0.1rem;
-  font-size: 0.85rem;
-  color: var(--paper-shade);
+  margin-top: 0.05rem;
+  font-size: 0.88rem;
+  font-style: italic;
+  color: var(--ink-soft);
 }
 
 .shop__bar {
@@ -1098,24 +1161,27 @@
   }
 }
 
-/* Police: tmavá výloha s dřevěnou lištou dole (na ní „stojí“ zboží). */
+/* Police: tmavší lazura sukna s krémovým čárkovaným obrysem, dole malovaná polička (na ní „stojí“ zboží). */
 .shop-section {
   flex: var(--slots, 1) 1 auto;
-  padding: 0.4rem 0.6rem 0.65rem;
+  padding: 0.35rem 0.6rem 0.7rem;
   background:
-    linear-gradient(to top, var(--wood) 0 0.3rem, var(--wood-dark) 0.3rem 0.45rem, transparent 0.45rem),
-    rgb(0 0 0 / 22%);
-  border-radius: var(--radius);
-  box-shadow: inset 0 2px 8px rgb(0 0 0 / 35%);
+    linear-gradient(
+      to top,
+      rgb(150 104 60 / 70%) 0 0.28rem,
+      rgb(46 30 18 / 55%) 0.28rem 0.4rem,
+      transparent 0.4rem
+    ),
+    var(--felt-panel);
+  border: 1.5px dashed var(--felt-line);
+  border-radius: 10px 14px 9px 12px / 12px 9px 14px 10px;
 }
 
 .shop-section__title {
   margin-bottom: 0.1rem;
-  font-size: 0.8rem;
-  font-weight: 400;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--on-felt-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--on-felt);
 }
 
 .shop-section__slots {
@@ -1155,16 +1221,17 @@
   top: 0;
   left: 50%;
   max-width: calc(100% + 1rem);
-  padding: 0.05rem 0.45rem;
+  padding: 0.05rem 0.5rem 0.1rem;
   overflow: hidden;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
+  font-style: italic;
   color: var(--ink);
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: var(--accent);
-  border-radius: 999px;
-  box-shadow: 0 2px 0 var(--accent-dark);
+  background: radial-gradient(ellipse at 40% 45%, #efc874, var(--accent) 60%, #cf9530);
+  border-radius: 3px 8px 4px 7px / 7px 4px 8px 3px;
+  box-shadow: 0 0 0 1px rgb(46 38 32 / 45%);
   transform: translateX(-50%);
 }
 
@@ -1177,7 +1244,8 @@
 .shop-slot__name {
   max-width: 100%;
   min-height: 2.4em;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   line-height: 1.2;
   text-align: center;
 }
@@ -1209,7 +1277,7 @@
   width: var(--card-w);
   height: calc(var(--card-w) * 1.4);
   overflow: hidden;
-  border: 2px dashed rgb(244 236 216 / 30%);
+  border: 1.5px dashed var(--felt-line);
   border-radius: var(--card-radius);
 }
 
@@ -1220,7 +1288,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #e7766c;
+  color: #f08b7f;
   white-space: nowrap;
   border: 2px solid currentcolor;
   border-radius: 4px;
@@ -1251,13 +1319,15 @@
 }
 
 .shop-empty__title {
-  font-size: 1.4rem;
+  font-size: 1.45rem;
   font-weight: 700;
-  color: var(--danger);
+  font-style: italic;
+  color: #a8302a;
 }
 
 .shop-empty__hint {
   margin-top: 0.3rem;
+  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -1282,7 +1352,8 @@
 }
 
 .booster-option__name {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   text-align: center;
 }
 
@@ -1319,7 +1390,8 @@
 
 .booster__picks {
   font-size: 1.2rem;
-  color: var(--accent);
+  font-style: italic;
+  color: var(--money-light);
 }
 
 .booster__header {
@@ -1340,10 +1412,11 @@
 
 .booster__titles .booster__picks {
   margin-top: 0;
-  padding: 0.05rem 0.7rem;
+  padding: 0.05rem 0.75rem 0.1rem;
   font-size: 1.05rem;
-  background: rgb(0 0 0 / 25%);
-  border-radius: 999px;
+  background: var(--felt-panel);
+  border: 1.5px dashed var(--felt-line);
+  border-radius: 10px 14px 9px 12px / 12px 9px 14px 10px;
 }
 
 .booster__header .btn {
@@ -1387,9 +1460,23 @@
   position: sticky;
   bottom: 0;
   z-index: 1;
-  padding: 0.75rem 1.25rem;
-  margin: 0.25rem -1.25rem 0;
-  background: linear-gradient(to bottom, rgb(244 236 216 / 0%), var(--paper) 0.75rem);
+  padding: 0.6rem 0.7rem 0.75rem;
+  margin: 0.4rem -0.7rem 0;
+  background:
+    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
+    var(--paper);
+}
+
+/* Přechod nad pruhem: stejný papír, který se nahoru ztrácí (maska), ať pruh nepůsobí jako nalepený. */
+.game.is-ended .game-panel__actions::before {
+  content: '';
+  position: absolute;
+  inset: auto 0 100%;
+  height: 0.9rem;
+  pointer-events: none;
+  background: inherit;
+  -webkit-mask: linear-gradient(to bottom, transparent, #000);
+  mask: linear-gradient(to bottom, transparent, #000);
 }
 
 /* Spodní odsazení panelu dává pruh s tlačítky (celkem stejně jako dřív). */
@@ -1419,7 +1506,8 @@
 
 .game-over__quote {
   margin: 0.25rem 0 0.75rem;
-  font-size: 1.35rem;
+  font-size: 1.4rem;
+  font-style: italic;
   line-height: 1.3;
   color: var(--wood);
   text-align: center;
@@ -1465,10 +1553,12 @@
 
 .game-over__stats-title {
   margin: 0.6rem 0 0.4rem;
-  font-size: 1rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
+  padding-bottom: 0.3rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--wood);
+  background: var(--tex-ink-line) 0 100% / 100% 4px no-repeat;
 }
 
 .game-stats {
@@ -1480,7 +1570,7 @@
 .game-stats--meta {
   padding-top: 0.5rem;
   margin-top: 0.5rem;
-  border-top: 2px dotted var(--paper-shade);
+  border-top: 2px dotted rgb(46 38 32 / 30%);
 }
 
 .game-stat {
@@ -1509,14 +1599,13 @@
   justify-content: center;
   padding: 0.5rem;
   margin-top: 0.75rem;
-  background: var(--paper-shade);
-  border-radius: var(--radius-small);
+  border: 2px solid transparent;
+  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
 }
 
 .game-seed__label {
-  font-size: 0.8rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.9rem;
+  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -1561,7 +1650,8 @@
 
 .victory__hint {
   margin-top: 0.5rem;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-style: italic;
   text-align: center;
   color: var(--ink-soft);
 }
@@ -1686,7 +1776,8 @@
 
 .gb-hint {
   margin-bottom: 0.4rem;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-style: italic;
   color: var(--on-felt-muted);
   text-align: center;
 }
@@ -1698,14 +1789,19 @@
   align-items: center;
 }
 
+/* Zahrát = zelená vodovka s tuší, Zahodit = červená vodovka s krémovým písmem (styl E1). */
 .gb-play {
+  --wash: var(--wash-green);
+
   justify-self: end;
   min-width: 9rem;
+  font-size: 1.35rem;
 }
 
 .gb-discard {
   justify-self: start;
   min-width: 9rem;
+  font-size: 1.35rem;
 }
 
 .gb-mid {
@@ -1722,29 +1818,26 @@
 }
 
 .gb-sort__label {
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.9rem;
+  font-style: italic;
   color: var(--on-felt-muted);
 }
 
 .gb-sort .btn {
   min-height: 2.1rem;
   padding: 0.3em 0.8em;
-  font-size: 0.85rem;
+  font-size: 0.92rem;
 }
 
-/* Zapnuté trvalé třídění (RunState.handSort) — stejně jako aktivní záložka. */
+/* Zapnuté trvalé třídění (RunState.handSort) — papír polit zlatou vodovkou (jako aktivní záložka). */
 .gb-sort .btn.is-active:not(:disabled) {
   color: var(--ink);
-  background: var(--accent);
-  box-shadow:
-    0 4px 0 var(--accent-dark),
-    0 5px 0 rgb(0 0 0 / 25%);
+  background: radial-gradient(ellipse at 40% 45%, #efc874, var(--accent) 62%, #cf9530);
 }
 
 .gb-selected {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  font-style: italic;
   color: var(--on-felt-muted);
 }
 
@@ -1771,11 +1864,13 @@
   padding: 0.1rem 0.6rem;
   text-align: center;
   translate: -50% 0;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  color: #fff;
+  font-style: italic;
+  color: var(--paper);
   background: var(--danger);
-  border-radius: 999px;
+  border-radius: 6px 10px 7px 9px / 9px 7px 10px 6px;
+  box-shadow: 0 3px 8px rgb(6 26 16 / 35%);
   animation: gb-alert-in var(--t-fast) ease-out;
 }
 
@@ -1791,25 +1886,26 @@
 
 /* Velikost ruky; zmenšená (Velká voda, Garsonka) červeně, zvětšená zeleně. */
 .gb-handsize {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  font-style: italic;
   color: var(--on-felt-muted);
   white-space: nowrap;
 }
 
 .gb-handsize.is-reduced {
-  padding: 0 0.4rem;
+  padding: 0 0.45rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--paper);
   background: var(--danger);
-  border-radius: 999px;
+  border-radius: 6px 10px 7px 9px / 9px 7px 10px 6px;
 }
 
 .gb-handsize.is-raised {
-  padding: 0 0.4rem;
+  padding: 0 0.45rem;
   font-weight: 700;
-  color: #fff;
-  background: var(--felt-light);
-  border-radius: 999px;
+  color: var(--paper);
+  background: #2f7049;
+  border-radius: 6px 10px 7px 9px / 9px 7px 10px 6px;
 }
 
 .gb-deck {
@@ -1827,21 +1923,24 @@
   transition: transform var(--t-fast) ease-out;
 }
 
+/* Balíček: hromádka karet (dvě „spodní“ karty jako papírové okraje pod rubem). */
 .gb-deck .pcard {
   box-shadow:
-    3px 3px 0 rgb(0 0 0 / 25%),
-    6px 6px 0 rgb(0 0 0 / 15%);
+    2px 2px 0 #e9e1cf,
+    2.5px 2.5px 0 rgb(46 38 32 / 35%),
+    4.5px 4.5px 0 #ddd3bd,
+    5px 5px 0 rgb(46 38 32 / 35%),
+    6px 9px 12px rgb(6 26 16 / 35%);
   border-radius: var(--card-radius);
 }
 
 .gb-deck__count {
   padding: 0 0.5rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--ink);
-  background: var(--paper);
-  border-radius: 999px;
-  font-variant-numeric: tabular-nums;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--on-felt);
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 @media (hover: hover) {
@@ -1871,15 +1970,17 @@
   position: absolute;
   bottom: 0.25rem;
   left: 0;
-  padding: 0.1em 0.5em;
-  font-size: 1.05rem;
+  padding: 0.1em 0.55em 0.14em;
+  font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.2;
-  color: #fff;
+  color: var(--paper);
   white-space: nowrap;
   background: var(--ink);
-  border-radius: 999px;
-  box-shadow: 0 3px 0 rgb(0 0 0 / 35%);
+  border-radius: 7px 12px 8px 11px / 11px 8px 12px 7px;
+  box-shadow:
+    inset 0 0 0 1px rgb(46 38 32 / 40%),
+    0 3px 8px rgb(6 26 16 / 40%);
   transform: translateX(-50%);
   animation: bubble-rise calc(900ms / var(--speed)) cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
@@ -1897,7 +1998,7 @@
   background: #8f241c;
   box-shadow:
     0 0 0 2px var(--mult),
-    0 3px 0 rgb(0 0 0 / 35%);
+    0 3px 8px rgb(6 26 16 / 40%);
 }
 
 .game-bubble--money .game-bubble__text {
@@ -1906,8 +2007,11 @@
 }
 
 .game-bubble--message .game-bubble__text {
+  font-style: italic;
   color: var(--ink);
-  background: var(--paper);
+  background:
+    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
+    var(--paper);
 }
 
 .game-bubble--bad .game-bubble__text {
@@ -2032,9 +2136,13 @@
 }
 
 .run-info__title {
-  margin-bottom: 0.4rem;
-  font-size: 1.05rem;
+  margin-bottom: 0.45rem;
+  padding-bottom: 0.25rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-style: italic;
   color: var(--wood);
+  background: var(--tex-ink-line) 0 100% / 100% 4px no-repeat;
 }
 
 .run-info__hands {
@@ -2047,13 +2155,13 @@
 .run-info__hands td {
   padding: 0.15rem 0.4rem;
   text-align: left;
-  border-bottom: 1px solid var(--paper-shade);
+  border-bottom: 1px solid rgb(46 38 32 / 14%);
 }
 
 .run-info__hands thead th {
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -2168,9 +2276,9 @@
 
 .deck-preview__label {
   margin-top: 0.25rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -2204,22 +2312,22 @@
 }
 
 .detail__kind {
-  font-size: 0.8rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-style: italic;
   color: var(--ink-soft);
 }
 
 .detail__kind.rarity-rare {
-  color: #2f6fb5;
+  color: #2f62a8;
 }
 
 .detail__kind.rarity-epic {
-  color: #7b3fb5;
+  color: #74399f;
 }
 
 .detail__kind.rarity-legendary {
-  color: #9b7310;
+  color: #86630c;
 }
 
 .detail__desc {
