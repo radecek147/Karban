@@ -464,7 +464,7 @@ simulacemi. Seřazeno podle priority.
 
 ---
 
-## Desktopová aplikace (macOS .dmg)
+## Desktopová aplikace (macOS, Windows, Linux)
 
 - [x] Obal Tauri 2 (`src-tauri/`), okno 1366 × 820, ikona z vlastního SVG, ad hoc podpis, macOS 11+
 - [x] Rozdíly proti webu v `src/ui/desktop.ts`: export přes nativní dialog (`save_export`), celá obrazovka přes okno,
@@ -474,6 +474,8 @@ simulacemi. Seřazeno podle priority.
 - [x] První sestavení workflow (2026-10-04, běh 37209959381): `Karban_1.0.1_universal.dmg` 6,45 MiB, `lipo` x86_64 + arm64,
       `codesign --verify` platný (ad hoc)
 - [ ] První `.dmg` z workflow vyzkoušené na Macu (instalace, uložení, export, celá obrazovka)
+- [x] Windows (`.exe`, NSIS) a Linux (`.AppImage`, `.deb`) ve stejném workflow; Linux ověřený lokálně (AppImage pod Xvfb)
+- [ ] Instalátor `.exe` vyzkoušený na Windows
 
 ---
 

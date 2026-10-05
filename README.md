@@ -20,7 +20,7 @@ jakmile se v repozitáři zapnou GitHub Pages (viz [Nasazení](#nasazení)). Po 
 - [Jak hrát](#jak-hrát)
 - [Ovládání](#ovládání)
 - [Co ve hře najdeš](#co-ve-hře-najdeš)
-- [Hra pro macOS (.dmg)](#hra-pro-macos-dmg)
+- [Desktopová verze (macOS, Windows, Linux)](#desktopová-verze-macos-windows-linux)
 - [Spuštění](#spuštění)
 - [Vývoj](#vývoj)
 - [Nasazení](#nasazení)
@@ -141,30 +141,36 @@ Počty jsou spočítané z registru obsahu (`src/content`):
 Figury jsou Kluk, Dáma a Král; žádný text, obrázek ani číslo není převzaté z Balatra ani jiné komerční
 hry.
 
-## Hra pro macOS (.dmg)
+## Desktopová verze (macOS, Windows, Linux)
 
-Karban jde hrát i jako běžná aplikace pro macOS (Apple Silicon i Intel, macOS 11 a novější) — bez prohlížeče,
-Node.js a Terminálu. Aplikace je hra zabalená přes [Tauri](https://tauri.app/) do okna se systémovým WebView.
+Karban jde hrát i jako běžná aplikace — bez prohlížeče, Node.js a Terminálu. Je to hra zabalená přes
+[Tauri](https://tauri.app/) do okna se systémovým prohlížečovým jádrem.
 
-**Stažení:** `.dmg` sestavuje GitHub Actions ([.github/workflows/desktop.yml](.github/workflows/desktop.yml)).
-Je přiložený k [vydání (Releases)](https://github.com/radecek147/FM/releases), a když vydání ještě není, najdeš ho
-v záložce **Actions → Desktop (macOS .dmg)** u posledního běhu v části **Artifacts** („Karban-macOS“, stáhne se
-jako ZIP s `.dmg` uvnitř; vyžaduje přihlášení na GitHub).
+**Stažení:** balíčky sestavuje GitHub Actions ([.github/workflows/desktop.yml](.github/workflows/desktop.yml)).
+Jsou přiložené k [vydání (Releases)](https://github.com/radecek147/FM/releases). Když vydání ještě není, najdeš je
+v záložce **Actions → Desktop (macOS, Windows, Linux)** u posledního běhu v části **Artifacts**. Stáhnou se jako ZIP
+a stažení vyžaduje přihlášení na GitHub.
 
-**Instalace:** otevři `.dmg` a přetáhni **Karban** do složky **Aplikace**.
+| Systém                            | Soubor                                      | Artefakt       |
+| --------------------------------- | ------------------------------------------- | -------------- |
+| macOS 11+ (Apple Silicon i Intel) | `Karban_<verze>_universal.dmg`              | Karban-macOS   |
+| Windows 10 / 11 (64bit)           | `Karban_<verze>_x64-setup.exe`              | Karban-Windows |
+| Linux (x86-64)                    | `Karban_<verze>_amd64.AppImage` nebo `.deb` | Karban-Linux   |
 
-**První spuštění:** aplikace není podepsaná účtem Apple Developer, takže ji macOS napoprvé odmítne s hláškou, že
-nemůže ověřit vývojáře. Stačí jednou:
+Aplikace nejsou podepsané placenými certifikáty, takže je systém napoprvé neověří:
 
-1. Zkus Karban spustit (dvojklik) a hlášku zavři.
-2. Otevři **Nastavení systému → Soukromí a zabezpečení**, sjeď dolů a u zprávy o Karbanu klikni na
-   **Přesto otevřít** a potvrď heslem.
+- **macOS:** otevři `.dmg` a přetáhni **Karban** do **Aplikací**. První spuštění macOS odmítne. Pak otevři
+  **Nastavení systému → Soukromí a zabezpečení**, sjeď dolů a u Karbanu klikni na **Přesto otevřít**. Kdyby
+  hlásil, že je aplikace „poškozená“, pomůže v Terminálu `xattr -dr com.apple.quarantine /Applications/Karban.app`.
+- **Windows:** spusť `Karban_<verze>_x64-setup.exe`. Když se objeví modré okno „Systém Windows ochránil váš
+  počítač“, klikni na **Další informace → Přesto spustit**. Instalátor dá Karban do nabídky Start; když v systému
+  chybí WebView2 (starší Windows 10), sám ho doinstaluje.
+- **Linux:** `.AppImage` stačí povolit ke spuštění (`chmod +x Karban_*.AppImage`) a spustit. Na Ubuntu 22.04
+  a novějším může chybět `libfuse2` (`sudo apt install libfuse2`). Na Ubuntu / Debianu jde místo toho nainstalovat
+  `.deb`: `sudo apt install ./Karban_<verze>_amd64.deb`.
 
-Pak už se spouští normálně. Kdyby macOS hlásil, že je aplikace „poškozená“, pomůže v Terminálu
-`xattr -dr com.apple.quarantine /Applications/Karban.app`.
-
-Uložené hry aplikace drží zvlášť od prohlížeče; přenést je jde přes **Nastavení → Exportovat / Importovat
-uložení** (v aplikaci se otevře normální dialog pro uložení souboru).
+Uložené hry má aplikace zvlášť od prohlížeče. Přenést je jde přes **Nastavení → Exportovat / Importovat uložení**
+(v aplikaci se otevře normální dialog pro uložení souboru).
 
 ## Spuštění
 
@@ -255,8 +261,8 @@ Lokální náhled se stejnou cestou jako na Pages: `BASE_PATH=/FM/ npm run build
 ### Desktopová aplikace
 
 `npm run desktop:dev` otevře hru v okně aplikace (potřebuje [Rust](https://rustup.rs/) a na Linuxu knihovny
-WebKitGTK), `npm run desktop:build` sestaví aplikaci pro aktuální systém. `.dmg` pro macOS sestavuje workflow
-**Desktop (macOS .dmg)** — ručně v záložce Actions, nebo samo po zveřejnění vydání (pak `.dmg` přiloží k vydání).
+WebKitGTK), `npm run desktop:build` sestaví aplikaci pro aktuální systém. Balíčky pro macOS (`.dmg`), Windows (`.exe`) a Linux (`.AppImage`, `.deb`) sestavuje workflow
+**Desktop (macOS, Windows, Linux)** — ručně v záložce Actions, nebo samo po zveřejnění vydání (pak je přiloží k vydání).
 Ikony aplikace se generují z `src-tauri/icon.svg` příkazem `npm run desktop:icon`.
 
 ## Licence a atribuce

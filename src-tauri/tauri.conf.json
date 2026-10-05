@@ -46,6 +46,17 @@
     "macOS": {
       "minimumSystemVersion": "11.0",
       "signingIdentity": "-"
+    },
+    "windows": {
+      "nsis": {
+        "languages": ["English", "Czech"],
+        "installMode": "currentUser"
+      }
+    },
+    "linux": {
+      "deb": {
+        "section": "games"
+      }
     }
   }
 }

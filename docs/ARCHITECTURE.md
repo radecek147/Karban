@@ -483,12 +483,14 @@ game.modifiers() })` a uložit profil i run; po pitvě / výhře / opuštění `
 
 ## 9. Desktopová aplikace (`src-tauri/`, `src/ui/desktop.ts`)
 
-- Hra jako aplikace pro macOS (a v principu Windows / Linux) přes **Tauri 2**: nativní okno se systémovým WebView
-  (na macOS WKWebView, stejný engine jako Safari), do kterého se přibalí webový build (`dist/`, `base: './'`).
+- Hra jako aplikace pro macOS, Windows a Linux přes **Tauri 2**: nativní okno se systémovým WebView (macOS WKWebView,
+  Windows WebView2, Linux WebKitGTK), do kterého se přibalí webový build (`dist/`, `base: './'`).
   Nativní kód je tenký obal (`src-tauri/src/lib.rs`), hra sama je beze změn.
 - Konfigurace `src-tauri/tauri.conf.json`: verze z `package.json`, okno 1366 × 820 (min. 1024 × 680), pozadí
   barvy sukna, `withGlobalTauri` (API na `window.__TAURI__`, žádný JS balíček navíc), `csp: null` (načítá se jen
-  přibalený obsah), balíčky `app` + `dmg`, ad hoc podpis (`signingIdentity: "-"`), macOS 11+.
+  přibalený obsah), ad hoc podpis na macOS (`signingIdentity: "-"`), macOS 11+, instalátor NSIS pro Windows
+  (angličtina / čeština podle systému, instalace pro aktuálního uživatele bez administrátora), `.deb` v sekci
+  `games`. Balíčky si volí workflow (`--bundles`).
 - Rozdíly proti webu řeší `src/ui/desktop.ts` (`isDesktopApp()` = existuje `window.__TAURI__`):
   - export uložení: `<a download>` ve WebView nefunguje → příkaz `save_export` (nativní dialog „Uložit“ přes
     `tauri-plugin-dialog`, zápis souboru v Rustu); import zůstává přes `<input type="file">`,
@@ -497,9 +499,11 @@ game.modifiers() })` a uložit profil i run; po pitvě / výhře / opuštění `
     synchronizuje i se zeleným tlačítkem macOS (`resize`),
   - service worker se v aplikaci neregistruje (hra je přibalená).
 - Uložení: `localStorage` WebView aplikace (vlastní úložiště aplikace, oddělené od prohlížeče).
-- Build: workflow `.github/workflows/desktop.yml` na `macos-latest` — `npm test`, `tauri build --target
-universal-apple-darwin --bundles app,dmg`, kontrola architektur (`lipo`) a podpisu (`codesign --verify`),
-  `.dmg` jako artefakt běhu; po zveřejnění release ho přiloží k vydání (`gh release upload`).
+- Build: workflow `.github/workflows/desktop.yml` (matice tří systémů): macOS `tauri build --target
+universal-apple-darwin --bundles app,dmg` s kontrolou architektur (`lipo`) a podpisu (`codesign --verify`),
+  Windows `--bundles nsis` (`Karban_<verze>_x64-setup.exe`), Linux na `ubuntu-22.04` (kvůli staršímu glibc)
+  `--bundles appimage,deb` s knihovnami WebKitGTK a `npm test`. Balíčky jsou artefakty běhu (Karban-macOS /
+  -Windows / -Linux); po zveřejnění release je přiloží k vydání (`gh release upload`).
 - Ikony: `src-tauri/icon.svg` → `npm run desktop:icon` (`scripts/desktop-icon.ts`: Chromium vykreslí PNG
   1024 × 1024, `tauri icon` vygeneruje PNG / ICNS / ICO).
 - Testy: `tests/unit/ui-desktop.test.ts` (export přes `save_export`, celá obrazovka) s falešným `window.__TAURI__`.

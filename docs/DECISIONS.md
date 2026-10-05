@@ -3658,3 +3658,24 @@ nestalo“. Skutečně: bubliny byly malé, karta se skoro nehnula a krok trval 
 
 **Proč:** zpětná vazba hráče. Pocitem se hra inspiruje u žánru (čitelné spouštění efektů), grafika i texty jsou
 vlastní. Údaje v enginu jsou nepovinné, takže starší uložení i simulace fungují beze změny.
+
+## 2026-10-05 — Desktopová verze i pro Windows a Linux
+
+**Co:** Vedle `.dmg` pro macOS sestavuje workflow `.github/workflows/desktop.yml` (matice tří systémů) i:
+
+- **Windows:** instalátor NSIS `Karban_<verze>_x64-setup.exe`. Jazyk instalátoru je angličtina nebo čeština podle
+  systému. Instaluje se pro aktuálního uživatele, takže nepotřebuje práva administrátora. Chybějící WebView2 si
+  instalátor stáhne sám.
+- **Linux:** `Karban_<verze>_amd64.AppImage` (běží bez instalace na většině distribucí, nese s sebou knihovny
+  WebKitGTK) a `.deb` pro Ubuntu / Debian (sekce `games`). Staví se na `ubuntu-22.04` kvůli staršímu glibc
+  a tím širší kompatibilitě.
+
+Hra i nativní obal jsou stejné pro všechny tři systémy. `src/ui/desktop.ts` (export přes nativní dialog, celá
+obrazovka přes okno, bez service workeru) platí všude.
+
+Linuxové balíčky se sestavily i lokálně (`tauri build --bundles deb,appimage`): `.deb` 2,7 MiB, `.AppImage`
+78 MiB. AppImage se spustila pod Xvfb a menu se vykreslilo správně. Windows se ověří až během workflow.
+
+**Proč:** přání hráče („exe verzi a linux verzi“). Tauri umí všechny tři systémy z jednoho kódu, takže stačilo
+přidat cíle do workflow. Bez podpisových certifikátů ukáže Windows SmartScreen a macOS Gatekeeper varování.
+Postup, jak aplikaci jednou povolit, je v README.
