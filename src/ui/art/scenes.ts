@@ -25,6 +25,12 @@ import {
   RYCHLIK,
   SNEHULAK,
   TRUHLA,
+  D1,
+  HERMELIN,
+  JUKEBOX,
+  NAHRADNI_BUS,
+  RUNDU,
+  SILVESTR,
 } from './scenes2';
 import { FIGURES } from './figures';
 import { WC, ink, inkFill, knock, paint, paintIcon, shp, wash } from './watercolor';
@@ -307,6 +313,12 @@ export const SCENES: Readonly<Record<string, readonly SceneOp[]>> = {
   rychlik: RYCHLIK,
   karluvMost: KARLUV_MOST,
   truhla: TRUHLA,
+  rundu: RUNDU,
+  hermelin: HERMELIN,
+  jukebox: JUKEBOX,
+  d1: D1,
+  silvestr: SILVESTR,
+  nahradniBus: NAHRADNI_BUS,
   ...FIGURES,
 };
 

@@ -413,6 +413,7 @@ const d1Motorway: JokerDef = {
   },
   art: {
     icon: 'traffic-cone',
+    scene: 'd1',
     prop: 'flat-tire',
     bg: '#3a3f44',
     fg: '#fff4e0',
@@ -492,6 +493,7 @@ const newYearsEve: JokerDef = {
   },
   art: {
     icon: 'firework-rocket',
+    scene: 'silvestr',
     prop: 'alarm-clock',
     bg: '#14143a',
     fg: '#fdf6e3',

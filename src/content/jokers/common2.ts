@@ -535,6 +535,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'glass-celebration',
+      scene: 'rundu',
       prop: 'beer-bottle',
       bg: '#9c6644',
       fg: '#fdf0d5',
@@ -554,6 +555,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'cheese-wedge',
+      scene: 'hermelin',
       prop: 'honey-jar',
       bg: '#e9d8a6',
       fg: '#3d2c1e',
@@ -682,6 +684,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'speaker',
+      scene: 'jukebox',
       prop: 'two-coins',
       bg: '#5a189a',
       fg: '#f3e8ff',
@@ -724,6 +727,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'bus',
+      scene: 'nahradniBus',
       prop: 'traffic-cone',
       bg: '#ee9b00',
       fg: '#2b2118',
