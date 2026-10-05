@@ -21,7 +21,7 @@ const OUT = path.join(ROOT, 'src/assets/textures');
 const MAX_BYTES = 120 * 1024;
 
 const PAPER = '#fbf8f1';
-const INK = '#2e2620';
+const INK = '#1f1a17';
 
 // ─────────────────────────── Vykreslení v prohlížeči ───────────────────────────
 
@@ -326,7 +326,10 @@ async function wash(page: Page, name: string, w: number, h: number, seed: number
   ];
 }
 
-/** Rámeček tuší pro `border-image` (9 dílů, 96 × 96 → okraj 16 px obrázku): čtyři lehce šikmé tahy s přesahem. */
+/**
+ * Rámeček tuší pro `border-image` (9 dílů, 96 × 96 → okraj 16 px obrázku): čtyři lehce šikmé tahy s přesahem.
+ * Linka E3: silný tah štětcem a vedle něj druhý, slabší tah (jako v kresbách, src/ui/art/watercolor.ts `ink`).
+ */
 async function inkFrame(page: Page): Promise<Output> {
   const s = 96;
   const lines = [
@@ -340,14 +343,17 @@ async function inkFrame(page: Page): Promise<Output> {
     `<filter id="w" ${region(s, s)}>` +
     '<feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="5" result="n"/>' +
     '<feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G"/></filter>' +
-    `<g fill="none" stroke="${INK}" stroke-width="2.3" stroke-linecap="round" opacity="0.88" filter="url(#w)">` +
+    `<g fill="none" stroke="${INK}" stroke-width="3.4" stroke-linecap="round" opacity="0.92" filter="url(#w)">` +
+    lines.map((d) => `<path d="${d}"/>`).join('') +
+    '</g>' +
+    `<g fill="none" stroke="${INK}" stroke-width="1.9" stroke-linecap="round" opacity="0.5" transform="translate(1 0.7)">` +
     lines.map((d) => `<path d="${d}"/>`).join('') +
     '</g></svg>';
   const dataUrl = await raster(page, { svg, width: s, height: s, type: 'image/webp', quality: 0.95 });
   return { file: 'ink-frame.webp', dataUrl, note: 'rámeček tuší pro border-image, 96 × 96' };
 }
 
-/** Linka tuší (oddělovač): jeden lehce zvlněný tah 512 × 8. */
+/** Linka tuší (oddělovač): lehce zvlněný tah štětcem 512 × 8 s druhým, slabším tahem (linka E3). */
 async function inkLine(page: Page): Promise<Output> {
   const w = 512;
   const h = 8;
@@ -356,7 +362,8 @@ async function inkLine(page: Page): Promise<Output> {
     `<filter id="w" ${region(w, h)}>` +
     '<feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9" result="n"/>' +
     '<feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G"/></filter>' +
-    `<path d="M3,4.4 C120,3.2 260,5.2 380,3.8 C430,3.3 470,4.6 509,4" fill="none" stroke="${INK}" stroke-width="1.8" stroke-linecap="round" opacity="0.7" filter="url(#w)"/>` +
+    `<path d="M3,4.2 C120,3 260,5 380,3.6 C430,3.1 470,4.4 509,3.8" fill="none" stroke="${INK}" stroke-width="2.6" stroke-linecap="round" opacity="0.85" filter="url(#w)"/>` +
+    `<path d="M3,4.2 C120,3 260,5 380,3.6 C430,3.1 470,4.4 509,3.8" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round" opacity="0.45" transform="translate(1.2 0.8)"/>` +
     '</svg>';
   const dataUrl = await raster(page, { svg, width: w, height: h, type: 'image/webp', quality: 0.95 });
   return { file: 'ink-line.webp', dataUrl, note: 'linka tuší (oddělovač), 512 × 8' };

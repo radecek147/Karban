@@ -29,7 +29,7 @@
     linear-gradient(90deg, rgb(226 171 63 / 30%), rgb(226 171 63 / 0%) 0.5rem),
     var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
     var(--paper);
-  border: 2px solid rgb(46 38 32 / 85%);
+  border: 2px solid rgb(31 26 23 / 85%);
   border-radius: 7px 10px 8px 9px / 9px 8px 10px 7px;
   box-shadow: 0 12px 28px rgb(6 26 16 / 45%);
 }
@@ -140,7 +140,7 @@
   width: 16px;
   height: 16px;
   background: var(--paper);
-  border: 2px solid rgb(46 38 32 / 85%);
+  border: 2px solid rgb(31 26 23 / 85%);
 }
 
 .tutorial[data-side='none'] .tutorial__arrow {

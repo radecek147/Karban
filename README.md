@@ -7,7 +7,7 @@ přežij Kontrolu z finančáku i Souseda s vrtačkou a vyhraj osm pater čím d
 > Inspirováno hrou Balatro. Mechaniky jsme obdivovali, ale názvy, texty, obrázky, zvuky i čísla jsme si
 > vymysleli sami.
 
-Grafika je jako z pohádkové knížky: tenká tuš, vodové barvy a hrubý papír. Karty, Krakonoš, Vodník, Orloj,
+Grafika je jako z pohádkové knížky: výrazná tuš tažená štětcem, vodové barvy a hrubý papír. Karty, Krakonoš, Vodník, Orloj,
 Revizor i Pivní tácek jsou kreslené přímo v kódu, žádné obrázky z generátoru ani z cizích her.
 
 **Hraj v prohlížeči:** [radecek147.github.io/FM](https://radecek147.github.io/FM/) — odkaz začne fungovat,

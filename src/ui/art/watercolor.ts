@@ -1,6 +1,7 @@
 /**
- * Akvarelová sada — výtvarný styl E1 „Pohádková knížka“ (docs/DECISIONS.md 2026-10-05): tenká hnědá tuš,
- * vodové barvy, které se v ploše mění a na krajích tmavnou, hrubý papír se zrnem.
+ * Akvarelová sada — výtvarný styl „Pohádková knížka“ (docs/DECISIONS.md 2026-10-05): barvy z varianty E1
+ * (vodové barvy, které se v ploše mění a na krajích tmavnou, hrubý papír se zrnem) a linka z varianty E3
+ * (výrazná skoro černá tuš tažená štětcem — silnější tah s druhým, slabším tahem vedle).
  *
  * Všechno je procedurální SVG (žádné bitmapy ani cizí obrázky): papír = světlem nasvícený šum
  * (`feTurbulence` + `feDiffuseLighting`), lavírování = posunutá a rozmazaná plocha s tmavším okrajem
@@ -19,7 +20,7 @@ const ID = WC_ID;
 
 /** Základní barvy stylu. */
 export const WC = {
-  ink: '#2e2620',
+  ink: '#1f1a17',
   paper: '#fbf8f1',
   paperEdge: '#d6cbb4',
   /** Studený stín (lazura přes tvary). */
@@ -207,15 +208,40 @@ export interface InkOptions {
   scale?: number;
   cap?: 'round' | 'butt';
   extra?: string;
+  /** Násobek tloušťky místo výchozího `INK_WEIGHT` (1 = přesně zadaná tloušťka, např. tuš jako výplň tvaru). */
+  weight?: number;
 }
 
-/** Linka tuší (lehce rozvlněná). */
+/**
+ * Váha linky E3: kresby jsou navržené na tloušťky varianty E1 (tuš ×0,72), linka E3 je ×1,1. Platí jen pro tuš
+ * (výchozí barva) — barevné ozdobné tahy (čárkované kroužky razítek, papírové linky) zůstávají, jak jsou.
+ */
+export const INK_WEIGHT = 1.1 / 0.72;
+
+/** Druhý tah štětce: slabší a užší tah posunutý vedle hlavního (jen u tuše, ne u čárkovaných linek). */
+const BRUSH_MIN = 0.9;
+const BRUSH_WIDTH = 0.55;
+const BRUSH_OPACITY = 0.55;
+
+/** Linka tuší (lehce rozvlněná); u tuše silnější tah štětcem s druhým tahem vedle. */
 export function ink(shape: string, width: number, o: InkOptions = {}): string {
-  const w = width / (o.scale ?? 1);
-  return (
-    `<g fill="none" stroke="${o.color ?? WC.ink}" stroke-width="${r2(w)}" stroke-linejoin="round" stroke-linecap="${o.cap ?? 'round'}"` +
-    `${o.op !== undefined && o.op < 1 ? ` opacity="${r2(o.op)}"` : ''} filter="url(#${ID}-wi)"${o.extra ? ` ${o.extra}` : ''}>${shape}</g>`
-  );
+  const color = o.color ?? WC.ink;
+  const isInk = color === WC.ink;
+  const outer = width * (o.weight ?? (isInk ? INK_WEIGHT : 1));
+  const k = o.scale ?? 1;
+  const w = outer / k;
+  const cap = o.cap ?? 'round';
+  const op = o.op ?? 1;
+  let out =
+    `<g fill="none" stroke="${color}" stroke-width="${r2(w)}" stroke-linejoin="round" stroke-linecap="${cap}"` +
+    `${op < 1 ? ` opacity="${r2(op)}"` : ''} filter="url(#${ID}-wi)"${o.extra ? ` ${o.extra}` : ''}>${shape}</g>`;
+  if (isInk && !o.extra && outer > BRUSH_MIN) {
+    // Posun úměrný tloušťce (v souřadnicích obrázku, mimo měřítko ikony), bez filtru — ostrý okraj štětce.
+    out +=
+      `<g fill="none" stroke="${color}" stroke-width="${r2(w * BRUSH_WIDTH)}" stroke-linejoin="round" stroke-linecap="round"` +
+      ` opacity="${r2(op * BRUSH_OPACITY)}" transform="translate(${r2(outer * 0.3)} ${r2(outer * 0.2)})">${shape}</g>`;
+  }
+  return out;
 }
 
 /** Plná tuš (zorničky, drobné tečky). */
@@ -225,6 +251,7 @@ export function inkFill(shape: string, color: string = WC.ink): string {
 
 /**
  * Základní tah kresby: papír přes tvar → vodovka → obrys tuší. `inkW` 0 = bez obrysu, `color` null = bez barvy.
+ * Tloušťka `inkW` je v jednotkách návrhu (×0,72 a váha linky `INK_WEIGHT` v `ink`).
  */
 export function paint(
   shape: string,

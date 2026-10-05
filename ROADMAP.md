@@ -490,6 +490,8 @@ Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba h
 - [x] Rozhraní: písmo Fraunces, papírové panely, malované sukno, akvarelová tlačítka, menu bez pixelového nápisu,
       textury `npm run gen-textures`; Pixelify Sans a Karban Digits odstraněné
 - [x] Snímky do README a `docs/media/` (11 snímků + GIF)
+- [x] Linka z varianty E3 (silnější skoro černá tuš s tahem štětcem) při barvách E1 — kresby, rámečky
+      a oddělovače rozhraní (DECISIONS 2026-10-05 „Linka z varianty E3, barvy z E1“)
 - [ ] Nové desktopové balíčky (.dmg/.exe/.AppImage) s grafikou E1 — workflow Desktop spuštěný 2026-10-05
 - [ ] Nové logo / ikona aplikace a favicona v E1 (návrhy L1–L5 čekají na volbu hráče)
 - [ ] Další ručně kreslené scény pro žolíky (postupně, obsahové patche)

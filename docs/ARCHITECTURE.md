@@ -343,10 +343,11 @@ flavor a že texty dodržují typografii.
     Hudba podle `App.onScreenChange`, hlasitosti podle `App.onSettingsChange`, výběr karet a šéf podle controlleru,
     delegovaný klik na tlačítka (bez zdvojení se zvukem akce), klávesa M = ztlumit vše (`Settings.muted`).
 - Témata a barvoslepý režim přes CSS proměnné na `:root`.
-- Obrázky (`src/ui/art/`) — výtvarný styl E1 „Pohádková knížka“ (tuš a akvarel, DECISIONS 2026-10-05):
+- Obrázky (`src/ui/art/`) — výtvarný styl „Pohádková knížka“ (barvy E1, linka E3; tuš a akvarel, DECISIONS 2026-10-05):
   - `watercolor.ts` — akvarelová sada: `wcDefs` (papír = nasvícený šum, lavírování = posunutá a rozmazaná plocha
     s tmavším okrajem a zrnem pigmentu, rozvlněná tuš, natrhlý okraj masky, zrno), primitiva `wash` / `knock` /
     `ink` / `paint` / `paintIcon`, ikona jako tvar (`iconShape`, sdílená přes `<use>` — `iconRef`) a paleta `WC_PAL`.
+    Linka E3 je celá v `ink`: váha tuše `INK_WEIGHT` a druhý tah štětcem (barevné a čárkované tahy bez nich).
   - `cards.ts` — líce (pipy, eso, figury Kluk/Dáma/Král), rohové indexy kreslené cestami, vylepšení (tón papíru,
     lavírovaný okraj), vosková pečeť, kamenná karta, rub (výchozí s tulipánem, balíčky v barvách `ArtSpec`). Barvy
     karet jsou v obrázku zapečené: schéma `classic` / `four` (barvoslepý režim, `currentSuitScheme` čte třídu

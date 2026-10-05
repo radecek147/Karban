@@ -1,6 +1,6 @@
 /*
- * Základní styly Karbanu ve stylu E1 „Pohádková knížka“: tenká hnědá tuš, vodovky, krémový papír se zrnem
- * a zelené hospodské sukno namalované vodovkou. CSS proměnné (barvoslepý režim je přepíše), reset, přístupnost
+ * Základní styly Karbanu ve stylu „Pohádková knížka“: barvy z varianty E1 a výrazná tuš z E3, vodovky,
+ * krémový papír se zrnem a zelené hospodské sukno namalované vodovkou. CSS proměnné (barvoslepý režim je přepíše), reset, přístupnost
  * (focus, prefers-reduced-motion), tlačítka (akvarelové skvrny a papírové s rámečkem tuší).
  *
  * Textury jsou statické bitmapy (src/assets/textures, `npm run gen-textures`) — žádné živé SVG filtry v CSS.
@@ -42,7 +42,7 @@
   --paper-shade: #ece3cf;
   --paper-deep: #ddd0b3;
   --paper-edge: #cfc2a6;
-  --ink: #2e2620;
+  --ink: #1f1a17;
   --ink-soft: #5c4f42;
   --on-felt: #f6efe0;
   --on-felt-muted: #d9e7db;
@@ -348,7 +348,7 @@ ol[role='list'] {
 .btn:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
-  box-shadow: 0 0 0 7.5px rgb(46 38 32 / 72%);
+  box-shadow: 0 0 0 7.5px rgb(31 26 23 / 72%);
 }
 
 /* Drobné ovládací prvky na papíře (křížek dialogu, další rada): tmavší zlatá. */
@@ -366,7 +366,7 @@ ol[role='list'] {
 .btn.btn--inert {
   --wash-fill: color-mix(in srgb, var(--wash) 30%, #e2d8c2);
 
-  color: rgb(46 38 32 / 66%);
+  color: rgb(31 26 23 / 66%);
   transform: translateY(1px);
 }
 

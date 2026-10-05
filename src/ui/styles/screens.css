@@ -1,7 +1,7 @@
 /*
  * Obrazovky mimo hru (menu, nová hra, nastavení, titulky) a společné komponenty (tlačítka, dialog,
- * oznámení). Styl E1 „Pohádková knížka“: zelené sukno namalované vodovkou, listy krémového papíru s natrhlým
- * okrajem, tenká hnědá tuš, akvarelové skvrny místo plných ploch.
+ * oznámení). Styl „Pohádková knížka“ (barvy E1, linka E3): zelené sukno namalované vodovkou, listy krémového
+ * papíru s natrhlým okrajem, výrazná skoro černá tuš, akvarelové skvrny místo plných ploch.
  * Animuje se jen transform/opacity; vypnuté animace (`html.no-anim`) a prefers-reduced-motion respektujeme.
  */
 
@@ -11,7 +11,7 @@
   --chalkboard: #1d4a33;
   --chalk: #f3ecdc;
   /* Dřívější dřevěný rám dialogů a panelů — v E1 jen měkký stín pod listem papíru. */
-  --frame-shadow: 0 0 0 1px rgb(46 38 32 / 18%);
+  --frame-shadow: 0 0 0 1px rgb(31 26 23 / 18%);
 }
 
 [hidden] {
@@ -145,7 +145,7 @@
 /* Neaktivní papírové tlačítko: tmavší „ohmataný“ papír s vybledlým textem a slabší tuší. */
 .btn--paper:disabled,
 .btn--paper.btn--inert {
-  color: rgb(46 38 32 / 58%);
+  color: rgb(31 26 23 / 58%);
   background:
     linear-gradient(rgb(120 96 60 / 16%), rgb(120 96 60 / 16%)),
     var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
@@ -181,7 +181,7 @@
 
 .btn--danger:disabled,
 .btn--danger.btn--inert {
-  color: rgb(46 38 32 / 66%);
+  color: rgb(31 26 23 / 66%);
 }
 
 .btn--small {
@@ -330,7 +330,7 @@
   background: radial-gradient(circle at 35% 32%, #f3a49a 0 18%, var(--wash-red) 45%, var(--danger-dark));
   border-radius: 50%;
   box-shadow:
-    0 0 0 1px rgb(46 38 32 / 55%),
+    0 0 0 1px rgb(31 26 23 / 55%),
     0 2px 3px rgb(0 0 0 / 35%);
 }
 
@@ -590,7 +590,7 @@
 .deck-option.is-selected {
   box-shadow:
     0 0 0 4px var(--accent),
-    0 0 0 5.5px rgb(46 38 32 / 55%),
+    0 0 0 5.5px rgb(31 26 23 / 55%),
     var(--shadow-card);
   transform: translateY(-4px);
 }
@@ -608,7 +608,7 @@
   color: var(--ink);
   background: radial-gradient(circle at 38% 34%, #f3d48a, var(--accent) 60%, #c58d22);
   border-radius: 48% 52% 45% 55% / 55% 45% 52% 48%;
-  box-shadow: 0 0 0 1.5px rgb(46 38 32 / 60%);
+  box-shadow: 0 0 0 2px rgb(31 26 23 / 60%);
 }
 
 .deck-option:focus-visible {
@@ -699,12 +699,12 @@
   font-style: italic;
   color: var(--ink);
   background:
-    radial-gradient(circle, transparent 0 58%, rgb(46 38 32 / 55%) 59% 61%, transparent 62%),
+    radial-gradient(circle, transparent 0 58%, rgb(31 26 23 / 55%) 59% 61%, transparent 62%),
     var(--tex-paper) 0 0 / 192px 192px,
     var(--paper);
   border-radius: 50%;
   box-shadow:
-    inset 0 0 0 1.5px rgb(46 38 32 / 70%),
+    inset 0 0 0 2px rgb(31 26 23 / 70%),
     0 3px 6px rgb(6 26 16 / 40%);
 }
 
@@ -721,10 +721,10 @@
 /* Vybraná síla piva: tácek „polit“ zlatou vodovkou. */
 .stake-option.is-selected .stake-option__coaster {
   background:
-    radial-gradient(circle, transparent 0 58%, rgb(46 38 32 / 60%) 59% 61%, transparent 62%),
+    radial-gradient(circle, transparent 0 58%, rgb(31 26 23 / 60%) 59% 61%, transparent 62%),
     radial-gradient(circle at 40% 36%, #f4d68e, var(--accent) 58%, #c48b22);
   box-shadow:
-    inset 0 0 0 1.5px rgb(46 38 32 / 75%),
+    inset 0 0 0 2px rgb(31 26 23 / 75%),
     0 0 0 3px var(--paper),
     0 5px 8px rgb(6 26 16 / 45%);
 }
@@ -748,7 +748,7 @@
 .stake-detail__art .art-svg {
   width: 5.5rem;
   height: 5.5rem;
-  filter: drop-shadow(0 3px 4px rgb(46 38 32 / 28%));
+  filter: drop-shadow(0 3px 4px rgb(31 26 23 / 28%));
 }
 
 .stake-detail__text {
@@ -829,7 +829,7 @@
   border: 2px solid transparent;
   border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
   border-radius: var(--radius-small);
-  box-shadow: inset 0 2px 5px rgb(46 38 32 / 18%);
+  box-shadow: inset 0 2px 5px rgb(31 26 23 / 18%);
 }
 
 .seed-field__input::placeholder {
@@ -959,8 +959,8 @@
   background: var(--paper-deep);
   border-radius: 999px;
   box-shadow:
-    inset 0 0 0 1.5px rgb(46 38 32 / 70%),
-    inset 0 2px 4px rgb(46 38 32 / 25%);
+    inset 0 0 0 2px rgb(31 26 23 / 70%),
+    inset 0 2px 4px rgb(31 26 23 / 25%);
 }
 
 .toggle__thumb {
@@ -972,8 +972,8 @@
   background: var(--paper);
   border-radius: 50%;
   box-shadow:
-    0 0 0 1.5px rgb(46 38 32 / 75%),
-    0 2px 3px rgb(46 38 32 / 30%);
+    0 0 0 2px rgb(31 26 23 / 75%),
+    0 2px 3px rgb(31 26 23 / 30%);
   transition: transform var(--t-fast) ease-out;
 }
 
@@ -1064,7 +1064,7 @@
 .keys-table td {
   padding: 0.4rem 0.5rem;
   vertical-align: top;
-  border-top: 1px solid rgb(46 38 32 / 16%);
+  border-top: 1px solid rgb(31 26 23 / 16%);
 }
 
 /* Klávesa: kousek papíru obtažený tuší. */
@@ -1079,8 +1079,8 @@ kbd {
   background: #fffdf8;
   border-radius: 4px;
   box-shadow:
-    inset 0 0 0 1.5px rgb(46 38 32 / 70%),
-    0 2px 0 rgb(46 38 32 / 25%);
+    inset 0 0 0 2px rgb(31 26 23 / 70%),
+    0 2px 0 rgb(31 26 23 / 25%);
 }
 
 /* ─────────────────────────── Titulky ─────────────────────────── */
@@ -1347,7 +1347,7 @@ html.modal-open {
 .modal__body {
   padding: 0.5rem 1.4rem 1rem;
   overflow: auto;
-  scrollbar-color: rgb(46 38 32 / 35%) transparent;
+  scrollbar-color: rgb(31 26 23 / 35%) transparent;
   scrollbar-width: thin;
 }
 
@@ -1547,7 +1547,7 @@ html.modal-open {
   color: var(--paper);
   background: var(--toast-color, var(--wash-green));
   border-radius: 48% 52% 45% 55% / 55% 45% 52% 48%;
-  box-shadow: inset 0 0 0 1px rgb(46 38 32 / 35%);
+  box-shadow: inset 0 0 0 1px rgb(31 26 23 / 35%);
 }
 
 .toast__text {

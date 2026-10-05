@@ -3728,3 +3728,22 @@ které se v ploše mění a na krajích tmavnou, hrubý krémový papír se zrne
 
 **Proč:** volba hráče. Ruční „knižní“ akvarel je vlastní a čitelný i na malých kartách a k hospodskému humoru
 sedí. Bitmapová keš drží 60 fps i s drahými filtry a nepotřebuje žádné binární assety.
+
+## 2026-10-05 — Linka z varianty E3, barvy z E1
+
+**Co:** Po přestylování do E1 si hráč řekl o „linku z E3 a barvy z E1“. Vodovky, papír, paleta, rub i barvy
+karet zůstávají z E1, mění se jen tuš:
+
+- **Kresby** (`src/ui/art/watercolor.ts`, `ink`): tuš skoro černá `#1f1a17` místo hnědé `#2e2620`. Tloušťka je
+  ×1,1 místo ×0,72 tloušťky návrhu, tedy `INK_WEIGHT` ≈ 1,53. Ke každému tahu silnějšímu než 0,9 přibude druhý
+  tah štětcem: 55 % šířky a 55 % krytí, posunutý o 0,3 / 0,2 tloušťky, bez filtru, takže má ostrý okraj. Váha platí
+  jen pro tuš ve výchozí barvě. Barevné ozdobné tahy (čárkované kroužky razítek, papírové linky žetonů)
+  a čárkované linky zůstávají, jak byly. Tuš použitá jako výplň tvaru (žezlo Krále) má `weight: 1`.
+- **Rozhraní:** `--ink` a všechny průhledné odstíny tuše v CSS jsou `rgb(31 26 23 / …)`. Plné rámečky tuší
+  mají 2 px místo 1,5 px. Textury `ink-frame.webp` a `ink-line.webp` (`npm run gen-textures`) mají silnější tah
+  (3,4 / 2,6 místo 2,3 / 1,8) s druhým, slabším tahem štětcem.
+- Kresby se nemusely předělávat: všechny tahy jdou přes `ink` / `paint`, takže stačila změna na jednom místě.
+  Bitmapová keš má klíč podle markupu a přepočítá se sama.
+
+**Proč:** volba hráče. Výraznější linka je čitelnější na malých kartách v ruce, což byla i původní výhoda E3.
+Teplé barvy E1 zůstávají.

@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 /**
- * Styl E1 (tuš a akvarel): akvarelová sada, stabilní markup (klíč bitmapové keše), scény, barevná schémata karet
+ * Styl „Pohádková knížka“ (barvy E1, linka E3): akvarelová sada, stabilní markup (klíč bitmapové keše), scény, barevná schémata karet
  * a bitmapová keš bez canvasu (happy-dom).
  */
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
@@ -23,7 +23,17 @@ import {
 } from '../../src/ui/art/raster';
 import { hasScene, SCENES, sceneMarkup } from '../../src/ui/art/scenes';
 import { stamgastMarkup } from '../../src/ui/art/stamgast';
-import { beginArt, iconRef, ink, mixColor, paint, wash, wcDefs } from '../../src/ui/art/watercolor';
+import {
+  beginArt,
+  iconRef,
+  ink,
+  INK_WEIGHT,
+  mixColor,
+  paint,
+  wash,
+  WC,
+  wcDefs,
+} from '../../src/ui/art/watercolor';
 import { createCardView, refreshCardColors } from '../../src/ui/components/card';
 
 const REG = registry();
@@ -63,7 +73,20 @@ describe('akvarelová sada', () => {
     expect(w).toContain('filter="url(#%ID%-we)"');
     expect(w).toContain('fill="#c8463a"');
     expect(w).toContain('opacity="0.5"');
-    expect(ink('<path d="M0 0L5 5"/>', 2)).toContain('stroke-width="2"');
+    // Linka E3: tuš je silnější (×1,1 / 0,72) a má druhý, slabší tah štětcem bez filtru.
+    const line = ink('<path d="M0 0L5 5"/>', 2);
+    expect(line).toContain(`stroke-width="${Math.round(2 * INK_WEIGHT * 100) / 100}"`);
+    expect(line).toContain(`stroke="${WC.ink}"`);
+    expect(line.match(/<g /g)).toHaveLength(2);
+    expect(line).toContain('opacity="0.55"');
+    // Barevné ozdobné tahy, čárkované linky a přesná tloušťka (`weight: 1`) zůstávají bez váhy a bez druhého tahu.
+    expect(ink('<path/>', 2, { color: '#3d6ab0' })).toBe(
+      '<g fill="none" stroke="#3d6ab0" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" filter="url(#%ID%-wi)"><path/></g>',
+    );
+    expect(ink('<path/>', 2, { extra: 'stroke-dasharray="3 7"' }).match(/<g /g)).toHaveLength(1);
+    expect(ink('<path/>', 6.6, { weight: 1 })).toContain('stroke-width="6.6"');
+    // Tenká linka (pod 0,9) druhý tah nemá.
+    expect(ink('<path/>', 0.5).match(/<g /g)).toHaveLength(1);
     const p = paint('<circle r="4"/>', '#3d6ab0', 2);
     expect(p).toContain('url(#%ID%-pp)');
     expect(p).toContain('#3d6ab0');

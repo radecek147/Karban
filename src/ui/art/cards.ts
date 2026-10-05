@@ -386,7 +386,7 @@ function kingHalf(cloth: string): string {
     .join('');
   const rod = 'M72 175L90 116';
   return (
-    ink(shp.path(rod), 6.6) +
+    ink(shp.path(rod), 6.6, { weight: 1 }) +
     knock(`<path d="${rod}" fill="none" stroke="url(#${ID}-pp)" stroke-width="4" stroke-linecap="round"/>`) +
     wash(
       `<path d="${rod}" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>`,

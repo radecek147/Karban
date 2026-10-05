@@ -336,7 +336,7 @@ button.kcard[aria-disabled='true'] {
   background: radial-gradient(ellipse at 40% 42%, #f6dc9a, var(--money) 58%, #d9a53a);
   border-radius: 3px 8px 4px 7px / 7px 4px 8px 3px;
   box-shadow:
-    0 0 0 1px rgb(46 38 32 / 55%),
+    0 0 0 1px rgb(31 26 23 / 55%),
     0 2px 4px rgb(6 26 16 / 35%);
   transform: translateX(-50%);
   pointer-events: none;
