@@ -157,6 +157,7 @@ const impersonator: JokerDef = {
   },
   art: {
     icon: 'drama-masks',
+    scene: 'fig-impersonator',
     bg: '#312e81',
     fg: '#eef2ff',
     accent: '#f59e0b',

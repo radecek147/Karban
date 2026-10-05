@@ -130,6 +130,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'stamper',
+      scene: 'fig-office_connection',
       prop: 'key',
       bg: '#3b4a5c',
       fg: '#eef2f7',
@@ -580,6 +581,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'smartphone',
+      scene: 'fig-viral_video',
       prop: 'play-button',
       bg: '#7a1f5c',
       fg: '#ffe9f6',

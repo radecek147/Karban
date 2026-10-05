@@ -82,6 +82,7 @@ const oldGuard: JokerDef = {
   },
   art: {
     icon: 'shield',
+    scene: 'fig-old_guard',
     bg: '#4a3b2a',
     fg: '#efe2c4',
     accent: '#8c2f2f',
@@ -207,6 +208,7 @@ const beerBelly: JokerDef = {
   },
   art: {
     icon: 'barrel',
+    scene: 'fig-beer_belly',
     bg: '#6b4a1f',
     fg: '#fbefd5',
     accent: '#f2c14e',

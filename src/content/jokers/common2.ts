@@ -444,6 +444,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'pine-tree',
+      scene: 'fig-hejkal',
       prop: 'megaphone',
       bg: '#1b4332',
       fg: '#d8f3dc',
@@ -783,6 +784,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'trumpet',
+      scene: 'fig-derby_fans',
       prop: 'crossed-swords',
       bg: '#14213d',
       fg: '#e5e5e5',
@@ -808,6 +810,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'help',
+      scene: 'fig-pub_quiz',
       prop: 'microphone',
       bg: '#3c1642',
       fg: '#f7ebf9',

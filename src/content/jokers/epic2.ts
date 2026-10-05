@@ -222,6 +222,7 @@ const spartakiada: JokerDef = {
   },
   art: {
     icon: 'cycle',
+    scene: 'fig-spartakiada',
     prop: 'megaphone',
     bg: '#8b1e3f',
     fg: '#fff5e1',
@@ -343,6 +344,7 @@ const brassBand: JokerDef = {
   },
   art: {
     icon: 'drum',
+    scene: 'fig-brass_band',
     prop: 'musical-notes',
     bg: '#7a1f1f',
     fg: '#fff1d6',

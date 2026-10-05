@@ -3699,11 +3699,11 @@ které se v ploše mění a na krajích tmavnou, hrubý krémový papír se zrne
   místo ikony celou ilustraci — všech 8 legendárních (Praotec Čech, Kněžna Libuše, Blaničtí rytíři, Bruncvíkův meč,
   Doktor Faust, Krakonoš, Hloupý Honza, Orloj) a Zahrádkář Venca, Golem, Pivní tácek, Vodník, Kominík, Hostinský,
   Pan vrchní. Podoba postav je vlastní (pověsti jsou volné dílo, žádné předlohy).
-- **Portréty postav** (`src/ui/art/figures.ts`): dalších 51 žolíků-lidí (Revizor, Pošťák, Učitelka, Rybář,
+- **Portréty postav** (`src/ui/art/figures.ts`): dalších 61 žolíků-lidí (Revizor, Pošťák, Učitelka, Rybář,
   Čarodějnice, Polednice, Pan farář…) má portrét složený z ručně kreslených dílů — pozadí s motivem (ulice,
   hospoda, tramvaj, hřbitov, třída, les…), oblečení s límcem, obličej s výrazem, účes, vousy, brýle, pokrývka hlavy
   a rekvizita. Liší se čepicí, účesem, barvami, pozadím a tím, co drží. Klíč scény `fig-<id žolíka>`.
-  Ikonu z knihovny tak má už jen ~35 žolíků-věcí (Pokladnička je portrét, Rundu všem, Sekera, Silvestr… ne).
+  Spolu se scénami má vlastní ilustraci 80 ze 101 žolíků; ikonu z knihovny mají jen věci a pojmy (Rundu všem, Sekera, Silvestr…).
   Švejk zůstává ikonou (podoba podle Josefa Lady je chráněná do konce roku 2027).
 - **Štamgast** (tutoriál) je nová kresba ve stejném stylu (bez ikon).
 - **Technika:** procedurální SVG — papír `feTurbulence` + `feDiffuseLighting`, lavírování `feDisplacementMap`
