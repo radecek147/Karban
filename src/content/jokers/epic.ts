@@ -89,6 +89,7 @@ const mushroomPicker: JokerDef = {
   },
   art: {
     icon: 'mushroom',
+    scene: 'fig-mushroom_picker',
     bg: '#3f2a1d',
     fg: '#f7e8d0',
     accent: '#c0392b',

@@ -135,6 +135,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'hearts',
+      scene: 'fig-hearts_man',
       prop: 'wallet',
       bg: '#8e1b2c',
       fg: '#ffe4e6',
@@ -154,6 +155,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'spades',
+      scene: 'fig-gravedigger',
       prop: 'death-skull',
       bg: '#1f2421',
       fg: '#d9e0d6',
@@ -177,6 +179,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'diamonds',
+      scene: 'fig-jeweler',
       prop: 'magnifying-glass',
       bg: '#0f4c5c',
       fg: '#e0fbfc',
@@ -199,6 +202,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'broadsword',
+      scene: 'fig-crusader',
       prop: 'clubs',
       bg: '#2d3a4a',
       fg: '#f1f5f9',
@@ -216,7 +220,15 @@ export const COMMON_JOKERS: JokerDef[] = [
     hooks: {
       onHandPlayed: (ctx) => (ctx.firstHand ? { mult: EARLY_BIRD_MULT } : null),
     },
-    art: { icon: 'rooster', prop: 'sun', bg: '#f4a259', fg: '#3d2c1e', accent: '#fff3b0', pattern: 'rays' },
+    art: {
+      icon: 'rooster',
+      scene: 'fig-early_bird',
+      prop: 'sun',
+      bg: '#f4a259',
+      fg: '#3d2c1e',
+      accent: '#fff3b0',
+      pattern: 'rays',
+    },
   },
   {
     // 7 — „kolo šéfa“ = kolo s šéfem (`round.bossId`), tedy i Velká útrata se šéfem na Imperialu; vypnutý šéf
@@ -231,6 +243,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'moon',
+      scene: 'fig-night_shift',
       prop: 'alarm-clock',
       bg: '#151a3b',
       fg: '#e8e6ff',
@@ -253,6 +266,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'raining',
+      scene: 'fig-meteorologist',
       prop: 'umbrella',
       bg: '#3a6ea5',
       fg: '#f0f7ff',
@@ -272,6 +286,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'stopwatch',
+      scene: 'fig-pe_teacher',
       prop: 'megaphone',
       bg: '#1d3557',
       fg: '#f1faee',
@@ -292,6 +307,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'wine-glass',
+      scene: 'fig-party_for_two',
       prop: 'musical-notes',
       bg: '#5b2a86',
       fg: '#f8e9ff',
@@ -401,6 +417,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'piggy-bank',
+      scene: 'fig-piggy_bank',
       prop: 'claw-hammer',
       bg: '#e78fa0',
       fg: '#3b1f2b',
@@ -422,6 +439,7 @@ export const COMMON_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'wheelbarrow',
+      scene: 'fig-flea_trader',
       prop: 'coins-pile',
       bg: '#7b5e3b',
       fg: '#fff4e0',

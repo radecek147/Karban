@@ -43,6 +43,7 @@ const beerSommelier: JokerDef = {
   },
   art: {
     icon: 'beer-bottle',
+    scene: 'fig-beer_sommelier',
     prop: 'stars-stack',
     bg: '#5a3410',
     fg: '#fdf1d8',
@@ -93,6 +94,7 @@ const archivist: JokerDef = {
   },
   art: {
     icon: 'papers',
+    scene: 'fig-archivist',
     prop: 'spectacles',
     bg: '#3d3a33',
     fg: '#f2ecdc',
@@ -144,6 +146,7 @@ const fairMagician: JokerDef = {
   },
   art: {
     icon: 'magic-hat',
+    scene: 'fig-fair_magician',
     prop: 'rabbit',
     bg: '#2a1846',
     fg: '#f5ecff',
@@ -189,6 +192,7 @@ const tourGuide: JokerDef = {
   },
   art: {
     icon: 'umbrella',
+    scene: 'fig-tour_guide',
     prop: 'footprint',
     bg: '#2f5d3a',
     fg: '#f4f7e8',
@@ -300,6 +304,7 @@ const spaGuest: JokerDef = {
   },
   art: {
     icon: 'bathtub',
+    scene: 'fig-spa_guest',
     prop: 'top-hat',
     bg: '#e6f2ef',
     fg: '#24433d',

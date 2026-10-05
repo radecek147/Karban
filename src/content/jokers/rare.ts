@@ -130,6 +130,7 @@ const herbalist: JokerDef = {
   },
   art: {
     icon: 'linden-leaf',
+    scene: 'fig-herbalist',
     bg: '#2f4a2a',
     fg: '#f3f0d0',
     accent: '#a8c66c',
@@ -169,6 +170,7 @@ const regular: JokerDef = {
   },
   art: {
     icon: 'tavern-sign',
+    scene: 'fig-regular',
     bg: '#5a3a22',
     fg: '#f6e7c8',
     accent: '#e0b057',

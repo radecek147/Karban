@@ -160,6 +160,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'rotary-phone',
+      scene: 'fig-helpline_aunt',
       prop: 'flower-pot',
       bg: '#7b3f61',
       fg: '#fde8f1',
@@ -181,6 +182,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'wood-cabin',
+      scene: 'fig-weekend_cottager',
       prop: 'canoe',
       bg: '#40562f',
       fg: '#f1ead2',
@@ -203,6 +205,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'trophy',
+      scene: 'fig-shooting_gallery',
       prop: 'round-star',
       bg: '#9b2335',
       fg: '#fff1e0',
@@ -227,6 +230,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'newspaper',
+      scene: 'fig-tobacconist',
       prop: 'cigar',
       bg: '#4b3b2b',
       fg: '#f6ecd9',
@@ -246,6 +250,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'ticket',
+      scene: 'fig-ticket_inspector',
       prop: 'magnifying-glass',
       bg: '#2c4a6b',
       fg: '#e8f0fa',
@@ -266,6 +271,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'key',
+      scene: 'fig-doorman',
       prop: 'imperial-crown',
       bg: '#3d405b',
       fg: '#f4f1de',
@@ -290,6 +296,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'gold-bar',
+      scene: 'fig-goldsmith',
       prop: 'anvil',
       bg: '#8a6d1d',
       fg: '#fff8dc',
@@ -318,6 +325,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'stone-block',
+      scene: 'fig-paver',
       prop: 'warhammer',
       bg: '#5c5552',
       fg: '#efe9e4',
@@ -343,6 +351,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'present',
+      scene: 'fig-postman',
       prop: 'dutch-bike',
       bg: '#c8553d',
       fg: '#fff4e6',
@@ -366,7 +375,15 @@ export const COMMON2_JOKERS: JokerDef[] = [
         return others > 0 ? { mult: others * GROCER_MULT } : null;
       },
     },
-    art: { icon: 'shop', prop: 'potato', bg: '#6a994e', fg: '#f2f7e8', accent: '#bc4749', pattern: 'grid' },
+    art: {
+      icon: 'shop',
+      scene: 'fig-grocer',
+      prop: 'potato',
+      bg: '#6a994e',
+      fg: '#f2f7e8',
+      accent: '#bc4749',
+      pattern: 'grid',
+    },
   },
   {
     // Počítá jen zahození hráčem (`round.discardsUsed`), ne zahození efektem.
@@ -380,6 +397,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'roast-chicken',
+      scene: 'fig-grill_dad',
       prop: 'fire',
       bg: '#7f2f1d',
       fg: '#fde9d9',
@@ -407,6 +425,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'light-bulb',
+      scene: 'fig-teacher',
       prop: 'open-book',
       bg: '#264653',
       fg: '#eef6f4',
@@ -443,6 +462,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'subway-train',
+      scene: 'fig-tram_driver',
       prop: 'ringing-bell',
       bg: '#b23a48',
       fg: '#fff0f0',
@@ -464,6 +484,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'coinflip',
+      scene: 'fig-punter',
       prop: 'take-my-money',
       bg: '#2d6a4f',
       fg: '#f1faee',
@@ -490,6 +511,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'window',
+      scene: 'fig-pavlac_gossip',
       prop: 'eyeball',
       bg: '#6d597a',
       fg: '#f7ede2',
@@ -573,6 +595,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'wheat',
+      scene: 'fig-temp_worker',
       prop: 'coins',
       bg: '#a7792f',
       fg: '#fff8e7',
@@ -596,6 +619,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'tropical-fish',
+      scene: 'fig-fisherman',
       prop: 'anchor',
       bg: '#355070',
       fg: '#eaf4f4',
@@ -628,6 +652,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'broken-bottle',
+      scene: 'fig-garbage_man',
       prop: 'card-discard',
       bg: '#3a5a40',
       fg: '#e9f5db',
@@ -734,6 +759,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'pig',
+      scene: 'fig-pig_slaughter',
       prop: 'sausage',
       bg: '#f4acb7',
       fg: '#4a1c26',

@@ -161,6 +161,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'open-book',
+      scene: 'fig-chronicler',
       prop: 'quill-ink',
       bg: '#4b3621',
       fg: '#f6ead2',
@@ -234,6 +235,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'wine-bottle',
+      scene: 'fig-glassblower',
       prop: 'fire',
       bg: '#1f5f6b',
       fg: '#e6fbff',
@@ -264,6 +266,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'scroll-unfurled',
+      scene: 'fig-notary_public',
       prop: 'coins',
       bg: '#2e2a4f',
       fg: '#f3efff',
@@ -286,6 +289,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'witch-face',
+      scene: 'fig-witch',
       prop: 'stamper',
       bg: '#2d1e3e',
       fg: '#efe3ff',
@@ -337,6 +341,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'lantern',
+      scene: 'fig-will_o_wisp',
       prop: 'sparkles',
       bg: '#16261f',
       fg: '#e9ffe0',
@@ -356,6 +361,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'sun',
+      scene: 'fig-noon_witch',
       prop: 'scythe',
       bg: '#b5651d',
       fg: '#fff6e0',
@@ -376,6 +382,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'ringing-bell',
+      scene: 'fig-klekanice',
       prop: 'ghost',
       bg: '#232a4a',
       fg: '#e8ecff',
@@ -401,6 +408,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'church',
+      scene: 'fig-parish_priest',
       prop: 'candle-light',
       bg: '#3a3a3a',
       fg: '#fafafa',
@@ -424,6 +432,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'eyeball',
+      scene: 'fig-seer',
       prop: 'crystal-ball',
       bg: '#3d1f47',
       fg: '#fbeaff',
@@ -451,6 +460,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'king',
+      scene: 'fig-court_painter',
       prop: 'window',
       bg: '#5c2a3a',
       fg: '#ffeef2',
@@ -471,6 +481,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'spectacles',
+      scene: 'fig-colorblind_uncle',
       prop: 'diamonds',
       bg: '#6b5b3e',
       fg: '#fff7e6',
@@ -546,6 +557,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'laptop',
+      scene: 'fig-anonymous_commenter',
       prop: 'thumb-down',
       bg: '#24303f',
       fg: '#e9f1fb',
@@ -648,6 +660,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'dragon-head',
+      scene: 'fig-brno_native',
       prop: 'trophy',
       bg: '#8c1c2b',
       fg: '#fff0f0',

@@ -354,7 +354,9 @@ flavor a že texty dodržují typografii.
   - `art.ts` — obrázky obsahu z `ArtSpec`: lavírované pozadí `bg`, jemně namalovaný vzor `pattern`, ikona jako
     světlá silueta s nádechem `fg` a obrysem tuší, rekvizita v kroužku, rámečky podle druhu; žolík s `scene`
     dostane ručně kreslenou scénu (`scenes.ts` + `scenes2.ts`, 15 scén: legendární žolíci a výrazné postavy;
-    tahy `f` plocha / `l` tuš / `h` stín / `s` lavírovaná linka). `stamgast.ts` — Štamgast.
+    tahy `f` plocha / `l` tuš / `h` stín / `s` lavírovaná linka / `i` ikona-rekvizita; role z palety nebo `#rrggbb`).
+    `figures.ts` skládá portréty žolíků-lidí z dílů (pozadí, oblečení, obličej, účes, vousy, brýle, čepice,
+    rekvizita) do stejných tahů — scény `fig-<id>`. `stamgast.ts` — Štamgast.
   - `raster.ts` — bitmapová keš: markup (s placeholdery `%ID%`) je klíč, obrázek se jednou vykreslí do canvasu
     (SVG → `<img>` → canvas → WebP/PNG blob, fronta v době nečinnosti) a v DOM zůstane kořenové `<svg>` (třídy,
     `data-*`, přístupnost) s jediným `<image>`. Do té doby se ukáže tentýž obrázek bez filtrů. Živé SVG filtry by se
