@@ -381,6 +381,7 @@ const charlesBridge: JokerDef = {
   },
   art: {
     icon: 'old-lantern',
+    scene: 'karluvMost',
     prop: 'crown',
     bg: '#2b2a3a',
     fg: '#f3e9d2',

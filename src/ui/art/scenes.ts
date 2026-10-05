@@ -21,6 +21,10 @@ import {
   ORLOJ,
   VODNIK,
   VRCHNI,
+  KARLUV_MOST,
+  RYCHLIK,
+  SNEHULAK,
+  TRUHLA,
 } from './scenes2';
 import { FIGURES } from './figures';
 import { WC, ink, inkFill, knock, paint, paintIcon, shp, wash } from './watercolor';
@@ -299,6 +303,10 @@ export const SCENES: Readonly<Record<string, readonly SceneOp[]>> = {
   kominik: KOMINIK,
   hostinsky: HOSTINSKY,
   vrchni: VRCHNI,
+  snehulak: SNEHULAK,
+  rychlik: RYCHLIK,
+  karluvMost: KARLUV_MOST,
+  truhla: TRUHLA,
   ...FIGURES,
 };
 

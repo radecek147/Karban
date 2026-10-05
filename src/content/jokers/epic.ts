@@ -47,6 +47,7 @@ const snowman: JokerDef = {
   },
   art: {
     icon: 'snowman',
+    scene: 'snehulak',
     bg: '#dbeafe',
     fg: '#1e3a5f',
     accent: '#f97316',
@@ -206,6 +207,7 @@ const grandmasChest: JokerDef = {
   },
   art: {
     icon: 'locked-chest',
+    scene: 'truhla',
     bg: '#4a2e1a',
     fg: '#f8ead2',
     accent: '#b7791f',

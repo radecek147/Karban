@@ -29,6 +29,7 @@ const lateTrain: JokerDef = {
   },
   art: {
     icon: 'steam-locomotive',
+    scene: 'rychlik',
     bg: '#1f3a2e',
     fg: '#f1e6c8',
     accent: '#d9a441',
