@@ -477,6 +477,19 @@ simulacemi. Seřazeno podle priority.
 - [x] Windows (`.exe`, NSIS) a Linux (`.AppImage`, `.deb`) ve stejném workflow; Linux ověřený lokálně (AppImage pod Xvfb)
 - [ ] Instalátor `.exe` vyzkoušený na Windows
 
+## Výtvarný styl E1 „Pohádková knížka“ (tuš a akvarel)
+
+Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba hráče = E1 (DECISIONS 2026-10-05).
+
+- [x] Akvarelová sada `src/ui/art/watercolor.ts` (papír, lavírování, tuš, natrhlý okraj, zrno) + bitmapová keš
+      `src/ui/art/raster.ts` (fronta se 3 souběžnými vykresleními, náhrada bez filtrů, předkreslení balíčku)
+- [x] Hrací karty, figury, rub, vylepšení, pečetě, kamenná karta; barvy zapečené podle schématu (barvoslepý režim)
+- [x] Všechny obrázky obsahu (`art.ts`) + ručně kreslené scény (Zahrádkář Venca, Golem, Pivní tácek) + Štamgast
+- [x] Testy `tests/unit/art-e1.test.ts`; výkon ověřený (animace 60 fps, sbírka do ~170 ms blokování)
+- [ ] Rozhraní: písmo Fraunces, papírové panely, malované sukno, akvarelová tlačítka, menu bez pixelového nápisu
+- [ ] Snímky do README a `docs/media/`, nové desktopové balíčky
+- [ ] Další ručně kreslené scény pro žolíky (postupně, obsahové patche)
+
 ---
 
 ## Obsahové patche (po 1.0)
