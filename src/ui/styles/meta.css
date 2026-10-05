@@ -86,7 +86,7 @@
   font-size: 1.35rem;
   font-weight: 700;
   font-style: italic;
-  color: var(--money);
+  color: var(--money-light);
 }
 
 .codex-controls {
@@ -961,7 +961,7 @@
   font-weight: 600;
   font-style: italic;
   /* Světlejší pivní zlatá: drobný nadpis na suknu má v `--accent` kontrast jen 3,8 : 1. */
-  color: var(--money);
+  color: var(--money-light);
 }
 
 .challenges__items {

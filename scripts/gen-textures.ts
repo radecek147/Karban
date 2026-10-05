@@ -254,10 +254,10 @@ async function felt(page: Page): Promise<Output> {
     }) +
     noiseAlphaFilter('grain', size, { freq: 0.62, octaves: 2, seed: 7, slope: 7, intercept: -4.4 }) +
     '</defs>' +
-    `<rect width="${size}" height="${size}" fill="#2c7350"/>` +
+    `<rect width="${size}" height="${size}" fill="#286b4a"/>` +
     `<rect width="${size}" height="${size}" fill="#164a31" opacity="0.5" filter="url(#dark)"/>` +
     `<rect width="${size}" height="${size}" fill="#1d5a3b" opacity="0.32" filter="url(#mid)"/>` +
-    `<rect width="${size}" height="${size}" fill="#4f9670" opacity="0.3" filter="url(#light)"/>` +
+    `<rect width="${size}" height="${size}" fill="#4a8f69" opacity="0.28" filter="url(#light)"/>` +
     `<rect width="${size}" height="${size}" fill="#0e3220" opacity="0.2" filter="url(#tide)"/>` +
     `<image href="${lit}" width="${size}" height="${size}" opacity="0.6" style="mix-blend-mode:soft-light"/>` +
     `<rect width="${size}" height="${size}" fill="#0b2a1a" opacity="0.28" filter="url(#grain)"/>` +

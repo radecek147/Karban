@@ -26,7 +26,7 @@
   --paper-tile: 384px;
 
   /* Stůl — zelené sukno namalované vodovkou na papíře */
-  --felt: #2a6c4a;
+  --felt: #276647;
   --felt-light: #3b8560;
   --felt-dark: #164430;
   --felt-shadow: rgb(0 0 0 / 35%);
@@ -45,7 +45,7 @@
   --ink: #2e2620;
   --ink-soft: #5c4f42;
   --on-felt: #f6efe0;
-  --on-felt-muted: #d4e3d7;
+  --on-felt-muted: #d9e7db;
 
   /* Vodovky (akvarelové skvrny tlačítek a políček) */
   --wash-green: #5f9a46;
@@ -61,6 +61,7 @@
   --chips: #3d6ab0; /* čipy = modrá */
   --mult: #c43d32; /* mult = červená */
   --money: #f0c94a;
+  --money-light: #f8dc8a; /* zlaté písmo na suknu (kontrast ≥ 4,5 : 1) */
   --money-ink: #8a6408; /* peníze tuší na papíře (kontrast ≥ 4,5 : 1) */
 
   /* Barvy karet (barvoslepý režim přepíše na 4 barvy) */
@@ -162,7 +163,7 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 72% 62% at 54% 44%, rgb(255 248 222 / 9%), transparent 72%),
+    radial-gradient(ellipse 72% 62% at 54% 44%, rgb(255 248 222 / 7%), transparent 72%),
     radial-gradient(ellipse at 50% 46%, transparent 50%, rgb(6 26 16 / 40%) 100%),
     var(--tex-felt) 0 0 / 960px 960px repeat,
     var(--felt);
@@ -288,6 +289,8 @@ ol[role='list'] {
  */
 .btn {
   --wash: var(--wash-gold);
+  /* Skutečná výplň skvrny; neaktivní stav ji rozředí papírem (výchozí = `--wash`). */
+  --wash-fill: initial;
   --wash-shape: var(--tex-wash-shape);
   --wash-tone: var(--tex-wash-tone);
 
@@ -321,7 +324,7 @@ ol[role='list'] {
   pointer-events: none;
   background:
     var(--wash-tone) 0 0 / 100% 100% no-repeat,
-    var(--wash);
+    var(--wash-fill, var(--wash));
   -webkit-mask: var(--wash-shape) 0 0 / 100% 100% no-repeat;
   mask: var(--wash-shape) 0 0 / 100% 100% no-repeat;
 }
@@ -341,15 +344,27 @@ ol[role='list'] {
   transform: translateY(1px);
 }
 
+/* Focus: zlatý kroužek s tmavým lemem tuší — dobře vidět na suknu i na papíře. */
 .btn:focus-visible {
   outline: 3px solid var(--accent);
-  outline-offset: 4px;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 7.5px rgb(46 38 32 / 72%);
 }
 
-/* Neaktivní tlačítko: vybledlá „vymytá“ skvrna a tlumený text, zamáčknuté — neprůhledné (sukno neprosvítá). */
+/* Drobné ovládací prvky na papíře (křížek dialogu, další rada): tmavší zlatá. */
+.modal__close:focus-visible,
+.menu__tip-next:focus-visible,
+.toast__close:focus-visible {
+  outline-color: var(--accent-dark);
+}
+
+/*
+ * Neaktivní tlačítko: „vymytá“ skvrna (vlastní barva rozředěná papírem — Zahrát zůstane nazelenalé, Zahodit
+ * načervenalé), tlumený text, zamáčknuté. Neprůhledné, sukno neprosvítá.
+ */
 .btn:disabled,
 .btn.btn--inert {
-  --wash: var(--wash-paper);
+  --wash-fill: color-mix(in srgb, var(--wash) 30%, #e2d8c2);
 
   color: rgb(46 38 32 / 66%);
   transform: translateY(1px);

@@ -266,7 +266,7 @@
   font-size: clamp(1.1rem, 3vw, 1.5rem);
   font-weight: 600;
   font-style: italic;
-  color: var(--money);
+  color: var(--money-light);
 }
 
 .menu__tagline {
@@ -731,7 +731,7 @@
 
 .stake-option.is-selected .stake-option__name {
   font-weight: 700;
-  color: var(--money);
+  color: var(--money-light);
 }
 
 .stake-detail {
@@ -1690,7 +1690,7 @@ html.modal-open {
 
   /* Podtitul pod 24 px už není „velký text“ — `--accent` na suknu má jen 3,8 : 1, světlejší zlatá stačí. */
   .menu__subtitle {
-    color: var(--money);
+    color: var(--money-light);
   }
 }
 

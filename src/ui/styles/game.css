@@ -48,7 +48,7 @@
 
 /* Během animace vypadají jako neaktivní (stejně jako `.btn:disabled` — vymytá skvrna, sukno neprosvítá). */
 .game.is-busy .gb-controls .btn {
-  --wash: var(--wash-paper);
+  --wash-fill: color-mix(in srgb, var(--wash) 30%, #e2d8c2);
 
   color: rgb(46 38 32 / 66%);
 }
@@ -1391,7 +1391,7 @@
 .booster__picks {
   font-size: 1.2rem;
   font-style: italic;
-  color: var(--money);
+  color: var(--money-light);
 }
 
 .booster__header {
