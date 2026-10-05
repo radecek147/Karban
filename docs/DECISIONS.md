@@ -3703,7 +3703,7 @@ které se v ploše mění a na krajích tmavnou, hrubý krémový papír se zrne
   Čarodějnice, Polednice, Pan farář…) má portrét složený z ručně kreslených dílů — pozadí s motivem (ulice,
   hospoda, tramvaj, hřbitov, třída, les…), oblečení s límcem, obličej s výrazem, účes, vousy, brýle, pokrývka hlavy
   a rekvizita. Liší se čepicí, účesem, barvami, pozadím a tím, co drží. Klíč scény `fig-<id žolíka>`.
-  Spolu se scénami má vlastní ilustraci 80 ze 101 žolíků; ikonu z knihovny mají jen věci a pojmy (Rundu všem, Sekera, Silvestr…).
+  Spolu se scénami má vlastní ilustraci 92 ze 101 žolíků; ikonu z knihovny mají jen věci a pojmy (Rundu všem, Sekera, Silvestr…).
   Švejk zůstává ikonou (podoba podle Josefa Lady je chráněná do konce roku 2027).
 - **Štamgast** (tutoriál) je nová kresba ve stejném stylu (bez ikon).
 - **Technika:** procedurální SVG — papír `feTurbulence` + `feDiffuseLighting`, lavírování `feDisplacementMap`

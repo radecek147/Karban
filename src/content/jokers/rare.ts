@@ -236,6 +236,7 @@ const carousel: JokerDef = {
   },
   art: {
     icon: 'anticlockwise-rotation',
+    scene: 'kolotoc',
     bg: '#7a2a5a',
     fg: '#fde9f3',
     accent: '#f4c542',
@@ -260,6 +261,7 @@ const echo: JokerDef = {
   },
   art: {
     icon: 'mountains',
+    scene: 'ozvena',
     bg: '#25303f',
     fg: '#dfe8f2',
     accent: '#7fa7c9',
@@ -289,6 +291,7 @@ const luckySeven: JokerDef = {
   },
   art: {
     icon: 'rolling-dices',
+    scene: 'sedmicka',
     bg: '#14532d',
     fg: '#ecfccb',
     accent: '#facc15',
@@ -322,6 +325,7 @@ const tab: JokerDef = {
   },
   art: {
     icon: 'battle-axe',
+    scene: 'sekera',
     bg: '#3d2b1f',
     fg: '#f4e9d8',
     accent: '#b5523b',

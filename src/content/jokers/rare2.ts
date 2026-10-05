@@ -641,6 +641,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'exit-door',
+      scene: 'defenestrace',
       prop: 'king',
       bg: '#4a3f6b',
       fg: '#f1edff',

@@ -705,6 +705,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'toolbox',
+      scene: 'kulna',
       prop: 'screwdriver',
       bg: '#6b4226',
       fg: '#f5e6d3',

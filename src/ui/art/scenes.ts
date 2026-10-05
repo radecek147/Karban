@@ -31,6 +31,12 @@ import {
   NAHRADNI_BUS,
   RUNDU,
   SILVESTR,
+  DEFENESTRACE,
+  KOLOTOC,
+  KULNA,
+  OZVENA,
+  SEDMICKA,
+  SEKERA,
 } from './scenes2';
 import { FIGURES } from './figures';
 import { WC, ink, inkFill, knock, paint, paintIcon, shp, wash } from './watercolor';
@@ -108,6 +114,7 @@ const SCENE_PAL: Readonly<Record<string, string | null>> = {
   soot: '#6a6a70',
   pubwall: '#c9a26a',
   night2: '#4a4f62',
+  pine: '#3f6a3a',
 };
 
 /** Zahrádkář Venca: bekovka, knír, tílko a cuketa před plotem. */
@@ -319,6 +326,12 @@ export const SCENES: Readonly<Record<string, readonly SceneOp[]>> = {
   d1: D1,
   silvestr: SILVESTR,
   nahradniBus: NAHRADNI_BUS,
+  defenestrace: DEFENESTRACE,
+  sekera: SEKERA,
+  kolotoc: KOLOTOC,
+  ozvena: OZVENA,
+  sedmicka: SEDMICKA,
+  kulna: KULNA,
   ...FIGURES,
 };
 
