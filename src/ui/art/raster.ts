@@ -49,7 +49,6 @@ interface Entry {
 
 const cache = new Map<string, Entry>();
 const queue: (() => Promise<void>)[] = [];
-let running = false;
 let uid = 0;
 
 function nextPrefix(): string {
@@ -95,21 +94,31 @@ function idle(): Promise<void> {
   });
 }
 
-async function pump(): Promise<void> {
-  if (running) return;
-  running = true;
-  while (queue.length > 0) {
-    const job = queue.shift();
-    if (job) {
-      try {
-        await job();
-      } catch {
-        /* chyba jednoho obrázku nesmí zastavit frontu */
+/** Počet souběžných vykreslení (dekódování SVG a kódování bitmapy běží mimo hlavní vlákno). */
+const WORKERS = 3;
+let active = 0;
+
+async function worker(): Promise<void> {
+  active += 1;
+  try {
+    while (queue.length > 0) {
+      const job = queue.shift();
+      if (job) {
+        try {
+          await job();
+        } catch {
+          /* chyba jednoho obrázku nesmí zastavit frontu */
+        }
       }
+      await idle();
     }
-    await idle();
+  } finally {
+    active -= 1;
   }
-  running = false;
+}
+
+function pump(): void {
+  while (active < WORKERS && queue.length > active) void worker();
 }
 
 async function toBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
@@ -157,9 +166,10 @@ function applyRaster(root: SVGSVGElement, url: string): void {
   root.setAttribute('data-raster', '1');
 }
 
-/** Rychlá náhrada: tentýž obrázek bez filtrů. */
+/** Rychlá náhrada: tentýž obrázek bez filtrů a prolínání (multiply), ať se první vykreslení nezdrží. */
 function stripFilters(root: SVGSVGElement): void {
   for (const el of root.querySelectorAll('[filter]')) el.removeAttribute('filter');
+  for (const el of root.querySelectorAll('[style*="mix-blend-mode"]')) el.removeAttribute('style');
 }
 
 function schedule(markup: string, entry: Entry): void {
@@ -177,7 +187,7 @@ function schedule(markup: string, entry: Entry): void {
     }
     entry.waiters.clear();
   });
-  void pump();
+  pump();
 }
 
 /**
