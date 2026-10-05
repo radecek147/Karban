@@ -120,7 +120,8 @@ describe('ručně kreslené scény', () => {
     }
     expect(hasScene('neexistuje')).toBe(false);
     expect(hasScene(undefined)).toBe(false);
-    for (const id of ['gardener', 'golem', 'beer_mat']) {
+    expect(Object.values(REG.jokers).filter((j) => j.art.scene).length).toBeGreaterThanOrEqual(15);
+    for (const id of Object.keys(REG.jokers).filter((j) => REG.jokers[j]?.art.scene)) {
       const scene = REG.jokers[id]?.art.scene;
       expect(hasScene(scene), id).toBe(true);
       const el = contentArt('joker', id);

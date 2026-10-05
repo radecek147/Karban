@@ -50,6 +50,7 @@ const forefather: JokerDef = {
   },
   art: {
     icon: 'beard',
+    scene: 'cech',
     prop: 'house',
     bg: '#4a3a24',
     fg: '#f6ead0',
@@ -94,6 +95,7 @@ const libuse: JokerDef = {
   },
   art: {
     icon: 'crystal-ball',
+    scene: 'libuse',
     prop: 'crown',
     bg: '#3b1f4a',
     fg: '#f7e9ff',
@@ -122,6 +124,7 @@ const blanikKnights: JokerDef = {
   },
   art: {
     icon: 'crossed-swords',
+    scene: 'blanik',
     prop: 'mountains',
     bg: '#2b3326',
     fg: '#e9efdc',
@@ -176,6 +179,7 @@ const bruncvikSword: JokerDef = {
   },
   art: {
     icon: 'crown',
+    scene: 'bruncvik',
     prop: 'broadsword',
     bg: '#6b1d1d',
     fg: '#fde8c8',
@@ -209,6 +213,7 @@ const faust: JokerDef = {
   },
   art: {
     icon: 'contract',
+    scene: 'faust',
     prop: 'devil-mask',
     bg: '#1f1a2e',
     fg: '#f4e4c1',
@@ -244,6 +249,7 @@ const krakonos: JokerDef = {
   },
   art: {
     icon: 'lightning-storm',
+    scene: 'krakonos',
     prop: 'pine-tree',
     bg: '#1d3b34',
     fg: '#e3f4ec',
@@ -271,6 +277,7 @@ const sillyHonza: JokerDef = {
   },
   art: {
     icon: 'farmer',
+    scene: 'honza',
     prop: 'bread',
     bg: '#7a4b1e',
     fg: '#fff1d6',
@@ -304,6 +311,7 @@ const astroClock: JokerDef = {
   },
   art: {
     icon: 'hourglass',
+    scene: 'orloj',
     prop: 'death-skull',
     bg: '#14213d',
     fg: '#fdf0d5',

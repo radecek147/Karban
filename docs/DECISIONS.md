@@ -3695,8 +3695,11 @@ které se v ploše mění a na krajích tmavnou, hrubý krémový papír se zrne
   tácky obtížností, výzvy, dlaždice) — lavírované pozadí v barvě `ArtSpec.bg`, vzor obsahu jemně namalovaný,
   ikona jako světlá silueta s nádechem `fg` a obrysem tuší, rámečky podle druhu (vzácnost = barevný okraj
   a drahokamy). Ikony z game-icons.net zůstávají (CC BY 3.0), jen se malují.
-- **Ručně kreslené scény** (`src/ui/art/scenes.ts`, nové nepovinné `ArtSpec.scene`): Zahrádkář Venca, Golem
-  a Pivní tácek mají místo ikony celou ilustraci. Další žolíky lze přidávat postupně (obsahové patche).
+- **Ručně kreslené scény** (`src/ui/art/scenes.ts`, `scenes2.ts`, nové nepovinné `ArtSpec.scene`): 15 žolíků má
+  místo ikony celou ilustraci — všech 8 legendárních (Praotec Čech, Kněžna Libuše, Blaničtí rytíři, Bruncvíkův meč,
+  Doktor Faust, Krakonoš, Hloupý Honza, Orloj) a Zahrádkář Venca, Golem, Pivní tácek, Vodník, Kominík, Hostinský,
+  Pan vrchní. Podoba postav je vlastní (pověsti jsou volné dílo, žádné předlohy). Další přibudou v obsahových
+  patchích.
 - **Štamgast** (tutoriál) je nová kresba ve stejném stylu (bez ikon).
 - **Technika:** procedurální SVG — papír `feTurbulence` + `feDiffuseLighting`, lavírování `feDisplacementMap`
   - rozmazání + tmavší okraj (`feMorphology`) + zrno pigmentu, tuš lehce rozvlněná. Žádné bitmapy ani cizí obrázky.

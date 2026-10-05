@@ -353,7 +353,8 @@ flavor a že texty dodržují typografii.
     `.colorblind`), komponenta karty ho má v klíči vzhledu a po přepnutí režimu karty překreslí.
   - `art.ts` — obrázky obsahu z `ArtSpec`: lavírované pozadí `bg`, jemně namalovaný vzor `pattern`, ikona jako
     světlá silueta s nádechem `fg` a obrysem tuší, rekvizita v kroužku, rámečky podle druhu; žolík s `scene`
-    dostane ručně kreslenou scénu (`scenes.ts`: Zahrádkář Venca, Golem, Pivní tácek). `stamgast.ts` — Štamgast.
+    dostane ručně kreslenou scénu (`scenes.ts` + `scenes2.ts`, 15 scén: legendární žolíci a výrazné postavy;
+    tahy `f` plocha / `l` tuš / `h` stín / `s` lavírovaná linka). `stamgast.ts` — Štamgast.
   - `raster.ts` — bitmapová keš: markup (s placeholdery `%ID%`) je klíč, obrázek se jednou vykreslí do canvasu
     (SVG → `<img>` → canvas → WebP/PNG blob, fronta v době nečinnosti) a v DOM zůstane kořenové `<svg>` (třídy,
     `data-*`, přístupnost) s jediným `<image>`. Do té doby se ukáže tentýž obrázek bez filtrů. Živé SVG filtry by se

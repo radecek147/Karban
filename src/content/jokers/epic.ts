@@ -179,6 +179,7 @@ const innkeeper: JokerDef = {
   },
   art: {
     icon: 'tap',
+    scene: 'hostinsky',
     bg: '#5b2c06',
     fg: '#fff3dc',
     accent: '#fbbf24',

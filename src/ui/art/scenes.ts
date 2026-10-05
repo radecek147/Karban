@@ -8,10 +8,27 @@
  *  - `['h', d, úhel]` stín (studená lazura přes tvar).
  * Vlastní dílo (Karban, 2026), žádné cizí předlohy.
  */
+import {
+  BLANIK,
+  BRUNCVIK,
+  CECH,
+  FAUST,
+  HONZA,
+  HOSTINSKY,
+  KOMINIK,
+  KRAKONOS,
+  LIBUSE,
+  ORLOJ,
+  VODNIK,
+  VRCHNI,
+} from './scenes2';
 import { WC, ink, inkFill, knock, paint, shp, wash } from './watercolor';
 
 export type SceneOp =
-  readonly ['f', string, string, number] | readonly ['l', string, number] | readonly ['h', string, number];
+  | readonly ['f', string, string, number]
+  | readonly ['l', string, number]
+  | readonly ['h', string, number]
+  | readonly ['s', string, string, number];
 
 /** Barvy rolí (null = papír bez barvy, INK = plná tuš). */
 const SCENE_PAL: Readonly<Record<string, string | null>> = {
@@ -42,6 +59,43 @@ const SCENE_PAL: Readonly<Record<string, string | null>> = {
   gold2: '#c08f2e',
   hair2: '#5e3a20',
   glass: '#c9dbe0',
+  cloud: null,
+  daysky: '#a9c4de',
+  mount: '#8aa0b8',
+  beard: '#dcd8cc',
+  hatd: '#4a5a3a',
+  pond: '#9dbbb0',
+  reed: '#6a8a4a',
+  vgreen: '#5a8a6a',
+  vgreen2: '#3f6a4e',
+  vskin: '#a6c79e',
+  vskin2: '#86ad80',
+  water: '#6f9fc0',
+  blue: '#3d6ab0',
+  stone: '#b9ab92',
+  dialblue: '#4f7fb8',
+  dusk: '#e8a86a',
+  night: '#2e3550',
+  iron: '#aab2bd',
+  plaster: '#eadfc6',
+  brick: '#b5653f',
+  straw: '#e4c46a',
+  bun: '#d9a050',
+  dusksky: '#ecc59a',
+  fur: '#8a6a4a',
+  fur2: '#b08a62',
+  nightsky: '#56679a',
+  stone2: '#8f8577',
+  cave: '#3e3a3a',
+  iron2: '#c5ccd4',
+  study: '#7a6450',
+  purple: '#7b4fb0',
+  beardd: '#4a4038',
+  devil: '#c0392b',
+  fire: '#f0a040',
+  soot: '#6a6a70',
+  pubwall: '#c9a26a',
+  night2: '#4a4f62',
 };
 
 /** Zahrádkář Venca: bekovka, knír, tílko a cuketa před plotem. */
@@ -231,6 +285,18 @@ export const SCENES: Readonly<Record<string, readonly SceneOp[]>> = {
   gardener: GARDENER,
   golem: GOLEM,
   beerMat: BEER_MAT,
+  krakonos: KRAKONOS,
+  vodnik: VODNIK,
+  orloj: ORLOJ,
+  honza: HONZA,
+  cech: CECH,
+  libuse: LIBUSE,
+  blanik: BLANIK,
+  bruncvik: BRUNCVIK,
+  faust: FAUST,
+  kominik: KOMINIK,
+  hostinsky: HOSTINSKY,
+  vrchni: VRCHNI,
 };
 
 /** Existuje scéna? */
@@ -252,6 +318,16 @@ export function sceneMarkup(name: string): string {
       else out += paint(shape, color, w);
     } else if (op[0] === 'l') {
       out += ink(shp.path(op[1]), op[2] * 0.77);
+    } else if (op[0] === 's') {
+      // Lavírovaná linka: papír pod ni (ať se barva nemíchá s podkladem), vodovka, tenký obrys tuší po okrajích.
+      const [, role, d, w] = op;
+      const color = SCENE_PAL[role] ?? '#888888';
+      const line = (stroke: string, width: number): string =>
+        `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${width}"/>`;
+      out +=
+        line('url(#%ID%-pp)', w) +
+        wash(line('currentColor', w), color === 'INK' ? WC.ink : (color ?? '#888888'), { op: 0.75 }) +
+        ink(shp.path(d), 0.7, { op: 0.5 });
     } else {
       out += wash(shp.path(op[1]), WC.shadow, { op: 0.24, dx: 0, dy: 0 });
     }

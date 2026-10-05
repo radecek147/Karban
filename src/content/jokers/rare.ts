@@ -54,6 +54,7 @@ const headWaiter: JokerDef = {
   },
   art: {
     icon: 'wallet',
+    scene: 'vrchni',
     bg: '#2b2b33',
     fg: '#f5f0e6',
     accent: '#c9a227',

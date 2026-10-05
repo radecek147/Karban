@@ -186,6 +186,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'top-hat',
+      scene: 'kominik',
       prop: 'clover',
       bg: '#1c1c22',
       fg: '#f2f2f2',
@@ -315,6 +316,7 @@ export const RARE2_JOKERS: JokerDef[] = [
     },
     art: {
       icon: 'frog',
+      scene: 'vodnik',
       prop: 'hearts',
       bg: '#1d4d3a',
       fg: '#e2f7ea',
