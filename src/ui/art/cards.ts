@@ -19,7 +19,7 @@ import type { Card, Rank, Suit } from '../../engine/types';
 import { registry as defaultRegistry } from '../../content';
 import { t } from '../../i18n/cs';
 import { SUIT_PATH_D, escapeXml, iconsLoaded, safeColor } from './icons';
-import { rasterSvg } from './raster';
+import { prewarmRaster, rasterSvg } from './raster';
 import {
   WC,
   WC_PAL,
@@ -796,6 +796,16 @@ export function cardFaceElement(
 /** SVG element rubu karty (balíček, karty lícem dolů). */
 export function cardBackElement(opts: { label?: string; spec?: ArtSpec } = {}): SVGSVGElement {
   return labelSvg(rasterSvg(cardBackMarkupRaw(opts.spec)), opts.label);
+}
+
+/**
+ * Předpřipraví bitmapy líců karet (např. celého balíčku na začátku runu) a rubu, aby se při rozdání nemusely
+ * kreslit. Běží v době nečinnosti prohlížeče (raster.ts); bez canvasu nic nedělá.
+ */
+export function prewarmCardArt(cards: readonly CardFace[], reg: ContentRegistry = defaultRegistry()): void {
+  const markups = new Set<string>([cardBackMarkupRaw()]);
+  for (const c of cards) markups.add(cardFaceMarkupRaw(c, reg));
+  prewarmRaster([...markups]);
 }
 
 /** Vyprázdní keš líců (např. po načtení ikon, aby odznaky dostaly skutečné ikony). */

@@ -16,7 +16,7 @@ import '../styles/cards.css';
 import type { ArtSpec, ContentRegistry } from '../../engine/content-types';
 import type { Card, Modifiers } from '../../engine/types';
 import { registry as defaultRegistry } from '../../content';
-import { cardFaceElement, cardFaceKey } from '../art/cards';
+import { cardFaceElement, cardFaceKey, currentSuitScheme, type SuitScheme } from '../art/cards';
 import { cardLabel } from '../describe';
 import { h } from '../dom';
 import { bindTilt } from '../fx/tilt';
@@ -42,6 +42,8 @@ export interface CardViewOptions {
   reason?: string | null;
   registry?: ContentRegistry;
   className?: string;
+  /** Barvy karet (jinak podle barvoslepého režimu na <html>) — galerie porovnává obě schémata. */
+  scheme?: SuitScheme;
 }
 
 type CardEl = HTMLElement & {
@@ -52,8 +54,34 @@ type CardEl = HTMLElement & {
   __hold?: Readonly<Card>;
 };
 
-function visualKey(card: Readonly<Card>): string {
-  return `${cardFaceKey(card)}|${card.faceDown ? 'down' : 'up'}`;
+/** Barvy jsou v obrázku karty zapečené (bitmapová keš), proto je schéma součástí klíče vzhledu. */
+function visualKey(card: Readonly<Card>, scheme: SuitScheme): string {
+  return `${cardFaceKey(card)}|${scheme}|${card.faceDown ? 'down' : 'up'}`;
+}
+
+const schemeOf = (opts: CardViewOptions): SuitScheme => opts.scheme ?? currentSuitScheme();
+
+let schemeWatched = false;
+
+/** Přepnutí barvoslepého režimu (třída na <html>) překreslí karty, které už jsou na obrazovce. */
+function watchSuitScheme(): void {
+  if (schemeWatched || typeof MutationObserver === 'undefined' || typeof document === 'undefined') return;
+  schemeWatched = true;
+  let last = currentSuitScheme();
+  new MutationObserver(() => {
+    const now = currentSuitScheme();
+    if (now === last) return;
+    last = now;
+    refreshCardColors();
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+}
+
+/** Překreslí hrací karty v `root`, jejichž barvy neodpovídají aktuálnímu schématu. */
+export function refreshCardColors(root: ParentNode = document): void {
+  for (const el of root.querySelectorAll<HTMLElement>('.pcard')) {
+    const cel = el as CardEl;
+    if (cel.__card) updateCardView(cel, cel.__card);
+  }
 }
 
 function applyState(el: CardEl, card: Readonly<Card>, opts: CardViewOptions): void {
@@ -85,11 +113,12 @@ function applyState(el: CardEl, card: Readonly<Card>, opts: CardViewOptions): vo
 function renderArt(el: CardEl, card: Readonly<Card>, opts: CardViewOptions): void {
   const inner = el.querySelector<HTMLElement>('.pcard__inner');
   if (!inner) return;
-  const svgEl = cardFaceElement(card, { registry: opts.registry, back: opts.back });
+  const scheme = schemeOf(opts);
+  const svgEl = cardFaceElement(card, { registry: opts.registry, back: opts.back, scheme });
   const old = inner.querySelector('svg');
   if (old) old.replaceWith(svgEl);
   else inner.prepend(svgEl);
-  el.dataset.visual = visualKey(card);
+  el.dataset.visual = visualKey(card, scheme);
 }
 
 /** Vytvoří hrací kartu. */
@@ -108,6 +137,7 @@ export function createCardView(card: Readonly<Card>, opts: CardViewOptions = {})
   ) as CardEl;
   el.__card = card;
   el.__opts = opts;
+  watchSuitScheme();
   renderArt(el, card, opts);
   applyState(el, card, opts);
   bindTilt(el);
@@ -156,7 +186,7 @@ export function updateCardView(
   // výběr, zkratka a klik podle skutečné karty.
   const shown = cel.__hold ?? card;
   const before = cel.dataset.visual;
-  if (before !== visualKey(shown)) {
+  if (before !== visualKey(shown, schemeOf(merged))) {
     renderArt(cel, shown, merged);
     // Karta se otočila (Bílá paní, odkrytí zahrané karty lícem dolů) — krátké „překlopení“ (jen transform).
     if (before !== undefined && before.endsWith('|down') !== shown.faceDown) flipCard(cel);

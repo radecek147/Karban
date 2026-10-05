@@ -343,7 +343,22 @@ flavor a že texty dodržují typografii.
     Hudba podle `App.onScreenChange`, hlasitosti podle `App.onSettingsChange`, výběr karet a šéf podle controlleru,
     delegovaný klik na tlačítka (bez zdvojení se zvukem akce), klávesa M = ztlumit vše (`Settings.muted`).
 - Témata a barvoslepý režim přes CSS proměnné na `:root`.
-- Obrázky: `src/ui/art/` skládá SVG žolíků z `ArtSpec` (ikona + paleta + vzor), karty jsou SVG.
+- Obrázky (`src/ui/art/`) — výtvarný styl E1 „Pohádková knížka“ (tuš a akvarel, DECISIONS 2026-10-05):
+  - `watercolor.ts` — akvarelová sada: `wcDefs` (papír = nasvícený šum, lavírování = posunutá a rozmazaná plocha
+    s tmavším okrajem a zrnem pigmentu, rozvlněná tuš, natrhlý okraj masky, zrno), primitiva `wash` / `knock` /
+    `ink` / `paint` / `paintIcon`, ikona jako tvar (`iconShape`, sdílená přes `<use>` — `iconRef`) a paleta `WC_PAL`.
+  - `cards.ts` — líce (pipy, eso, figury Kluk/Dáma/Král), rohové indexy kreslené cestami, vylepšení (tón papíru,
+    lavírovaný okraj), vosková pečeť, kamenná karta, rub (výchozí s tulipánem, balíčky v barvách `ArtSpec`). Barvy
+    karet jsou v obrázku zapečené: schéma `classic` / `four` (barvoslepý režim, `currentSuitScheme` čte třídu
+    `.colorblind`), komponenta karty ho má v klíči vzhledu a po přepnutí režimu karty překreslí.
+  - `art.ts` — obrázky obsahu z `ArtSpec`: lavírované pozadí `bg`, jemně namalovaný vzor `pattern`, ikona jako
+    světlá silueta s nádechem `fg` a obrysem tuší, rekvizita v kroužku, rámečky podle druhu; žolík s `scene`
+    dostane ručně kreslenou scénu (`scenes.ts`: Zahrádkář Venca, Golem, Pivní tácek). `stamgast.ts` — Štamgast.
+  - `raster.ts` — bitmapová keš: markup (s placeholdery `%ID%`) je klíč, obrázek se jednou vykreslí do canvasu
+    (SVG → `<img>` → canvas → WebP/PNG blob, fronta v době nečinnosti) a v DOM zůstane kořenové `<svg>` (třídy,
+    `data-*`, přístupnost) s jediným `<image>`. Do té doby se ukáže tentýž obrázek bez filtrů. Živé SVG filtry by se
+    přepočítávaly při každém překreslení vrstvy (animace karet by se trhaly). Bez canvasu (testy) plný markup.
+    `prewarmCardArt` předkreslí balíček na začátku runu.
 - Šéfové a štítky v UI (fáze 6): texty přes `describe.ts` (`bossTexts` dosazuje `BossDef.params`, `bossReasonText`
   = „Šéf X: pravidlo“ jen když pravidlo v kole platí). Příchod šéfa = plakát nad stolem (`screens/game/bossBanner.ts`,
   `PresentView.showBossIntro`, neblokuje a zmizí sám), porážka a použitý štítek = oznámení se žetonem (`toast` s

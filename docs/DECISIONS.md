@@ -3679,3 +3679,36 @@ Linuxové balíčky se sestavily i lokálně (`tauri build --bundles deb,appimag
 **Proč:** přání hráče („exe verzi a linux verzi“). Tauri umí všechny tři systémy z jednoho kódu, takže stačilo
 přidat cíle do workflow. Bez podpisových certifikátů ukáže Windows SmartScreen a macOS Gatekeeper varování.
 Postup, jak aplikaci jednou povolit, je v README.
+
+## 2026-10-05 — Výtvarný styl E1 „Pohádková knížka“ (tuš a akvarel)
+
+**Co:** Hráč chtěl grafiku, která „nevypadá jako AI“ (ikony z knihovny na barevném přechodu se vzorkem působily
+šablonovitě). Dostal tři kola náhledů na stejných kartách: A–D (propiska na účtence, staré mariášky / dřevoryt,
+ruční pixel art, risograf), E–I (tuš a akvarel, papírová koláž, zápalkové nálepky, křída na tabuli, modrotisk)
+a varianty akvarelu E1–E4 s náhledem celé obrazovky. Vybral **E1 „Pohádková knížka“**: tenká hnědá tuš, vodové barvy,
+které se v ploše mění a na krajích tmavnou, hrubý krémový papír se zrnem.
+
+- **Karty** (`src/ui/art/cards.ts`): pipy lavírované vodovkou s obrysem tuší, figury (Kluk, Dáma, Král — stejná
+  česká stylizace jako dřív) namalované stejnou technikou, rohové indexy tuší, vylepšení jako tón papíru
+  a lavírovaný okraj, pečeť jako vosková pečeť, rub indigový s rozpitými srdíčky a tulipánem.
+- **Obsah** (`src/ui/art/art.ts`): všech ~300 obrázků (žolíci, spotřebky, kupóny, obálky, žetony šéfů, štítky,
+  tácky obtížností, výzvy, dlaždice) — lavírované pozadí v barvě `ArtSpec.bg`, vzor obsahu jemně namalovaný,
+  ikona jako světlá silueta s nádechem `fg` a obrysem tuší, rámečky podle druhu (vzácnost = barevný okraj
+  a drahokamy). Ikony z game-icons.net zůstávají (CC BY 3.0), jen se malují.
+- **Ručně kreslené scény** (`src/ui/art/scenes.ts`, nové nepovinné `ArtSpec.scene`): Zahrádkář Venca, Golem
+  a Pivní tácek mají místo ikony celou ilustraci. Další žolíky lze přidávat postupně (obsahové patche).
+- **Štamgast** (tutoriál) je nová kresba ve stejném stylu (bez ikon).
+- **Technika:** procedurální SVG — papír `feTurbulence` + `feDiffuseLighting`, lavírování `feDisplacementMap`
+  - rozmazání + tmavší okraj (`feMorphology`) + zrno pigmentu, tuš lehce rozvlněná. Žádné bitmapy ani cizí obrázky.
+- **Výkon** (`src/ui/art/raster.ts`): živé filtry v DOM se přepočítávaly při každém překreslení vrstvy. Měřeno
+  v Chromiu se softwarovým vykreslováním: animace stolu s ~20 akvarelovými kartami 120–220 ms na snímek. Proto se
+  každý obrázek (klíčem je markup) jednou vykreslí do bitmapy a sdílí se, se stejnou animací 16,7 ms na snímek.
+  Vykreslení jedné karty trvá ~6–30 ms ve frontě v době nečinnosti, celý stůl se ukáže pod 1 s. Do té doby je
+  vidět tentýž obrázek bez filtrů. Balíček se předkreslí na začátku runu.
+- **Barvy karet** jsou v bitmapě zapečené (CSS proměnné do obrázku nedosáhnou). Schéma `classic` / `four` se čte
+  z třídy `.colorblind`, je v klíči vzhledu karty a přepnutí barvoslepého režimu karty na obrazovce překreslí.
+- **Testy:** struktura markupu se změnila (symbol barvy u indexu = `.pc-csuit`, drahokamy `.art-gems[data-gems]`).
+  Sbírka v happy-dom vykresluje stovky větších SVG, proto mají její dva testy delší časový limit.
+
+**Proč:** volba hráče. Ruční „knižní“ akvarel je vlastní a čitelný i na malých kartách a k hospodskému humoru
+sedí. Bitmapová keš drží 60 fps i s drahými filtry a nepotřebuje žádné binární assety.

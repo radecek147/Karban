@@ -622,17 +622,16 @@ describe('tutoriál ve hře', () => {
     expect(bubble().hasAttribute('data-overlay-avoid')).toBe(true);
   });
 
-  it('Štamgast v bublině se při připojení ke hře překreslí (tutoriál vzniká dřív, než dorazí ikony)', async () => {
+  it('Štamgast v bublině se při připojení ke hře překreslí (vlastní kresba E1, bez ikon)', async () => {
     await loadIcons();
     const avatar = q('[data-testid="tutorial"] .tutorial__avatar');
-    // Stav po startu bez ikon: náhradní glyf místo kníru a půllitru.
+    // Prázdný stav (např. po starší verzi) se při připojení ke hře nahradí celou kresbou.
     avatar.innerHTML = '<svg class="stamgast"></svg>';
     app.controller = app.profiles.newRun({ deckId: 'pub', stake: 1, seed: 'TUTORIAL' });
     app.go('game');
     expect(avatar.querySelector('svg.stamgast')).not.toBeNull();
-    expect(avatar.querySelector('[data-icon="fallback"]')).toBeNull();
-    expect(avatar.querySelector('[data-icon="mustache"]')).not.toBeNull();
-    expect(avatar.querySelector('[data-icon="beer-stein"]')).not.toBeNull();
+    expect(avatar.querySelectorAll('svg.stamgast path, svg.stamgast ellipse').length).toBeGreaterThan(10);
+    expect(avatar.querySelector('[data-icon]')).toBeNull();
   });
 
   it('přeskočit tutoriál vypne rady; Nastavení → Zapnout tutoriál znovu ho vrátí od začátku', async () => {

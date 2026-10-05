@@ -12,6 +12,7 @@ import { RANKS, SUITS } from '../../engine/types';
 import { t } from '../../i18n/cs';
 import type { ScreenFactory } from '../app';
 import { artElement, BLIND_ART, blindArt, RARITY_COLORS, type ArtKind, type ArtOptions } from '../art/art';
+import type { SuitScheme } from '../art/cards';
 import { iconsLoaded, loadIcons } from '../art/icons';
 import { createCardBack, createCardView, updateCardView } from '../components/card';
 import { backButton } from '../components/button';
@@ -114,9 +115,10 @@ function grid(children: Child[], tight = false): HTMLElement {
 }
 
 /** Interaktivní karta, která se klikem vybírá (ukázka výběru, aria-pressed). */
-function toggleCard(c: Card): HTMLElement {
+function toggleCard(c: Card, scheme?: SuitScheme): HTMLElement {
   let selected = false;
   const el = createCardView(c, {
+    scheme,
     onClick: () => {
       selected = !selected;
       updateCardView(el, c, { selected });
@@ -125,13 +127,13 @@ function toggleCard(c: Card): HTMLElement {
   return el;
 }
 
-function deckOfCards(): HTMLElement[] {
+function deckOfCards(scheme?: SuitScheme): HTMLElement[] {
   let id = 1;
   return SUITS.map((suit) =>
     h(
       'div',
       { class: 'gallery__row' },
-      RANKS.map((rank) => toggleCard(card(rank, suit, {}, id++))),
+      RANKS.map((rank) => toggleCard(card(rank, suit, {}, id++), scheme)),
     ),
   );
 }
@@ -144,14 +146,14 @@ function buildSections(reg: ContentRegistry): HTMLElement[] {
     section(
       'classic',
       t('art.gallery.sections.classic'),
-      h('div', { class: 'classic-suits' }, grid(deckOfCards(), true)),
+      h('div', { class: 'classic-suits' }, grid(deckOfCards('classic'), true)),
     ),
   );
   out.push(
     section(
       'colorblind',
       t('art.gallery.sections.colorblind'),
-      h('div', { class: 'colorblind' }, grid(deckOfCards(), true)),
+      h('div', { class: 'colorblind' }, grid(deckOfCards('four'), true)),
     ),
   );
 
