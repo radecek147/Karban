@@ -7,6 +7,9 @@ přežij Kontrolu z finančáku i Souseda s vrtačkou a vyhraj osm pater čím d
 > Inspirováno hrou Balatro. Mechaniky jsme obdivovali, ale názvy, texty, obrázky, zvuky i čísla jsme si
 > vymysleli sami.
 
+Grafika je jako z pohádkové knížky: tenká tuš, vodové barvy a hrubý papír. Karty, Krakonoš, Vodník, Orloj,
+Revizor i Pivní tácek jsou kreslené přímo v kódu, žádné obrázky z generátoru ani z cizích her.
+
 **Hraj v prohlížeči:** [radecek147.github.io/FM](https://radecek147.github.io/FM/) — odkaz začne fungovat,
 jakmile se v repozitáři zapnou GitHub Pages (viz [Nasazení](#nasazení)). Po prvním načtení jde hra i offline.
 
@@ -274,9 +277,9 @@ Ikony aplikace se generují z `src-tauri/icon.svg` příkazem `npm run desktop:i
   Faithtoken, Guard13007, Cathelineau a Willdabeast, licence
   [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Ikony jsou přebarvené a skládané do obrázků
   karet; zůstávají pod CC BY 3.0. Rozpis ikon podle autorů je v [ASSETS.md](ASSETS.md).
-- **Hrací karty, obrázky žolíků, šéfů a dalších karet, textury rozhraní, zvukové efekty i hudba** vznikají
-  přímo v kódu (procedurální SVG a bitmapy z `npm run gen-textures`, syntezátor ve Web Audio) a patří pod
-  licenci projektu.
+- **Hrací karty, ilustrace a portréty žolíků, obrázky šéfů a dalších karet, textury rozhraní, zvukové efekty
+  i hudba** vznikají přímo v kódu (akvarelové SVG v `src/ui/art/`, bitmapy z `npm run gen-textures`,
+  syntezátor ve Web Audio) a patří pod licenci projektu.
 - **Žádné assety, texty, jména ani čísla z Balatra** ani jiné komerční hry. Balatro je jen inspirace
   mechanikami.
 
