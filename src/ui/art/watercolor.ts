@@ -183,10 +183,40 @@ export interface WashOptions {
   extra?: string;
 }
 
+/**
+ * Sytost a krytí vodovek: kresby jsou navržené na bledší náhled E1, hráč chtěl výraznější odstíny (DECISIONS
+ * 2026-10-05 „Sytější odstíny“). Barva se odtáhne od své šedi (`WASH_SATURATION`), krytí se zvedne křivkou
+ * 1 − (1 − op)^`WASH_DEPTH` — slabé lazury zesílí víc než skoro plné plochy, rozdíly mezi vrstvami zůstanou.
+ */
+export const WASH_SATURATION = 1.25;
+export const WASH_DEPTH = 1.55;
+
+/** Sytější odstín barvy `#rrggbb` (jiné zápisy vrací beze změny). */
+export function vivid(color: string, k: number = WASH_SATURATION): string {
+  const m = /^#([0-9a-f]{6})$/i.exec(color);
+  if (!m) return color;
+  const v = m[1] as string;
+  const rgb = [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16));
+  const [r = 0, g = 0, b = 0] = rgb;
+  const grey = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return (
+    '#' +
+    rgb
+      .map((x) => Math.round(Math.min(255, Math.max(0, grey + (x - grey) * k))))
+      .map((x) => x.toString(16).padStart(2, '0'))
+      .join('')
+  );
+}
+
+/** Krytí lavírování po zesílení (viz `WASH_DEPTH`). */
+export function washOpacity(op: number): number {
+  return 1 - Math.pow(1 - Math.min(1, Math.max(0, op)), WASH_DEPTH);
+}
+
 /** Lavírování: plocha vodovou barvou (multiply přes papír), okraje rozpité a tmavší. */
 export function wash(shape: string, color: string, o: WashOptions = {}): string {
-  const c = safeColor(color, '#888888');
-  const op = o.op ?? 0.62;
+  const c = vivid(safeColor(color, '#888888'));
+  const op = washOpacity(o.op ?? 0.62);
   const dx = o.dx ?? 1.6;
   const dy = o.dy ?? 1.1;
   const move = dx || dy ? ` transform="translate(${r2(dx)} ${r2(dy)})"` : '';

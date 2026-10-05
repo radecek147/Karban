@@ -47,19 +47,19 @@
   --on-felt: #f6efe0;
   --on-felt-muted: #d9e7db;
 
-  /* Vodovky (akvarelové skvrny tlačítek a políček) */
-  --wash-green: #5f9a46;
-  --wash-red: #c43d32;
-  --wash-blue: #3d6ab0;
-  --wash-gold: #e2ab3f;
+  /* Vodovky (akvarelové skvrny tlačítek a políček) — sytější odstíny, kontrast textu ≥ 4,5 : 1 zůstává */
+  --wash-green: #559f36;
+  --wash-red: #c9301f;
+  --wash-blue: #336bc3;
+  --wash-gold: #efaa23;
   --wash-paper: #d9cfb9;
 
   /* Akcenty */
   --accent: #e2ab3f; /* pivní zlatá */
   --accent-dark: #9a6d0e;
-  --danger: #c43d32;
+  --danger: #c9301f;
   --chips: #3d6ab0; /* čipy = modrá */
-  --mult: #c43d32; /* mult = červená */
+  --mult: #c9301f; /* mult = červená */
   --money: #f0c94a;
   --money-light: #f8dc8a; /* zlaté písmo na suknu (kontrast ≥ 4,5 : 1) */
   --money-ink: #8a6408; /* peníze tuší na papíře (kontrast ≥ 4,5 : 1) */

@@ -348,6 +348,7 @@ flavor a že texty dodržují typografii.
     s tmavším okrajem a zrnem pigmentu, rozvlněná tuš, natrhlý okraj masky, zrno), primitiva `wash` / `knock` /
     `ink` / `paint` / `paintIcon`, ikona jako tvar (`iconShape`, sdílená přes `<use>` — `iconRef`) a paleta `WC_PAL`.
     Linka E3 je celá v `ink`: váha tuše `INK_WEIGHT` a druhý tah štětcem (barevné a čárkované tahy bez nich).
+    Sytost vodovek je celá ve `wash`: `vivid` (odtažení od šedi) a `washOpacity` (zesílené krytí).
   - `cards.ts` — líce (pipy, eso, figury Kluk/Dáma/Král), rohové indexy kreslené cestami, vylepšení (tón papíru,
     lavírovaný okraj), vosková pečeť, kamenná karta, rub (výchozí s tulipánem, balíčky v barvách `ArtSpec`). Barvy
     karet jsou v obrázku zapečené: schéma `classic` / `four` (barvoslepý režim, `currentSuitScheme` čte třídu

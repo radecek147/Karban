@@ -3747,3 +3747,21 @@ karet zůstávají z E1, mění se jen tuš:
 
 **Proč:** volba hráče. Výraznější linka je čitelnější na malých kartách v ruce, což byla i původní výhoda E3.
 Teplé barvy E1 zůstávají.
+
+## 2026-10-05 — Sytější odstíny
+
+**Co:** Hráčovi přišly barvy s linkou E3 „moc vyblité“ a chtěl výraznější odstíny. Paleta zůstává (odstíny E1),
+zesílené je jen podání vodovek:
+
+- **Kresby** (`src/ui/art/watercolor.ts`, `wash`): barva se odtáhne od vlastní šedi (jas podle Rec. 709)
+  o `WASH_SATURATION` = 1,25. Šedé, bílé a jiné zápisy než `#rrggbb` se nemění. Krytí lavírování jde křivkou
+  1 − (1 − op)^`WASH_DEPTH` (1,55), takže z 0,62 je 0,78 a z 0,4 je 0,55. Slabé lazury zesílí víc než skoro plné
+  plochy a pořadí vrstev zůstane. Zase je to změna na jednom místě, data kreseb se nemění.
+- **Rozhraní** (`base.css`): vodovky tlačítek a políček jsou sytější (`--wash-green` #559f36, `--wash-blue` #336bc3,
+  `--wash-gold` #efaa23). Červenou (`--wash-red`, `--mult`, `--danger` #c9301f) jsem nevzal stejným vzorcem, protože
+  bílý text na ní by spadl pod kontrast 4,5 : 1. Je proto sytější a o něco tmavší (5,0 : 1 na papíře).
+- Barvy karet v rohových indexech (cesty tuší ve vlastní barvě) zůstávají. Pipy a figury jdou přes `wash`, takže
+  jsou sytější.
+
+**Proč:** volba hráče. Silnější linka E3 vedle bledých lazur působila vybledle. Sytější vodovky jsou blíž
+náhledu E3 a teplé odstíny E1 si nechávají.

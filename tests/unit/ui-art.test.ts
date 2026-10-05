@@ -14,6 +14,7 @@ import { NBSP } from '../../src/i18n/format';
 import { artMarkup, blindArt, contentArt, RARITY_COLORS, type ArtKind } from '../../src/ui/art/art';
 import { cardBackMarkup, cardFaceElement, cardFaceMarkup, SUIT_VARS } from '../../src/ui/art/cards';
 import { hasIcon, iconMarkup, iconsLoaded, loadIcons, safeColor } from '../../src/ui/art/icons';
+import { vivid } from '../../src/ui/art/watercolor';
 import { createCardView, updateCardView } from '../../src/ui/components/card';
 import { createConsumableCard, createContentCard } from '../../src/ui/components/consumableCard';
 import { createJokerCard, previewJoker } from '../../src/ui/components/jokerCard';
@@ -226,7 +227,7 @@ describe('renderer ArtSpec', () => {
       const markup = artMarkup('joker', SPEC, { rarity: rarity as keyof typeof RARITY_COLORS });
       const doc = expectValidSvg(markup, rarity);
       expect(doc.documentElement.getAttribute('data-rarity')).toBe(rarity);
-      expect(markup).toContain(colors.frame);
+      expect(markup).toContain(vivid(colors.frame));
       expect(doc.querySelector('.art-gems')?.getAttribute('data-gems'), rarity).toBe(String(colors.gems));
     }
   });

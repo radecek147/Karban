@@ -30,7 +30,9 @@ import {
   INK_WEIGHT,
   mixColor,
   paint,
+  vivid,
   wash,
+  washOpacity,
   WC,
   wcDefs,
 } from '../../src/ui/art/watercolor';
@@ -71,8 +73,9 @@ describe('akvarelová sada', () => {
   it('lavírování, tuš a malba mají filtr a barvu; po odstranění filtrů zůstane plochá kresba', () => {
     const w = wash('<rect width="10" height="10"/>', '#c8463a', { op: 0.5 });
     expect(w).toContain('filter="url(#%ID%-we)"');
-    expect(w).toContain('fill="#c8463a"');
-    expect(w).toContain('opacity="0.5"');
+    // Sytější odstíny: barva odtažená od šedi, krytí zesílené křivkou (0,5 → 0,66).
+    expect(w).toContain(`fill="${vivid('#c8463a')}"`);
+    expect(w).toContain('opacity="0.66"');
     // Linka E3: tuš je silnější (×1,1 / 0,72) a má druhý, slabší tah štětcem bez filtru.
     const line = ink('<path d="M0 0L5 5"/>', 2);
     expect(line).toContain(`stroke-width="${Math.round(2 * INK_WEIGHT * 100) / 100}"`);
@@ -89,7 +92,7 @@ describe('akvarelová sada', () => {
     expect(ink('<path/>', 0.5).match(/<g /g)).toHaveLength(1);
     const p = paint('<circle r="4"/>', '#3d6ab0', 2);
     expect(p).toContain('url(#%ID%-pp)');
-    expect(p).toContain('#3d6ab0');
+    expect(p).toContain(vivid('#3d6ab0'));
     // Nebezpečná barva z dat se nepropustí.
     expect(wash('<rect/>', 'red;"><script>')).not.toContain('<script>');
   });
@@ -106,6 +109,21 @@ describe('akvarelová sada', () => {
   it('míchání barev', () => {
     expect(mixColor('#000000', '#ffffff', 0.5)).toBe('#808080');
     expect(mixColor('#c8463a', '#c8463a', 0.3)).toBe('#c8463a');
+  });
+
+  it('sytější odstíny: šedá a jiné zápisy beze změny, barva se odtáhne od šedi, krytí roste a drží pořadí', () => {
+    expect(vivid('#808080')).toBe('#808080');
+    expect(vivid('currentColor')).toBe('currentColor');
+    expect(vivid('#5f9a46', 1)).toBe('#5f9a46');
+    // Zelená: zelený kanál nahoru, červený a modrý dolů.
+    const g = vivid('#5f9a46');
+    expect(parseInt(g.slice(3, 5), 16)).toBeGreaterThan(0x9a);
+    expect(parseInt(g.slice(1, 3), 16)).toBeLessThan(0x5f);
+    expect(vivid('#ffffff')).toBe('#ffffff');
+    expect(washOpacity(0)).toBe(0);
+    expect(washOpacity(1)).toBe(1);
+    expect(washOpacity(0.62)).toBeGreaterThan(0.62);
+    expect(washOpacity(0.4)).toBeLessThan(washOpacity(0.62));
   });
 });
 
@@ -126,8 +144,8 @@ describe('stabilní markup (klíč bitmapové keše)', () => {
     const classic = cardFaceMarkupRaw(card(7, 'D'), REG, 'classic');
     const four = cardFaceMarkupRaw(card(7, 'D'), REG, 'four');
     expect(classic).not.toBe(four);
-    expect(classic).toContain('#c8463a');
-    expect(four).toContain('#2f62b8');
+    expect(classic).toContain(vivid('#c8463a'));
+    expect(four).toContain(vivid('#2f62b8'));
     // Srdce jsou v obou schématech stejná.
     expect(cardFaceMarkupRaw(card(7, 'H'), REG, 'classic')).toBe(
       cardFaceMarkupRaw(card(7, 'H'), REG, 'four'),
@@ -186,7 +204,7 @@ describe('bitmapová keš', () => {
   it('cardFaceElement respektuje schéma a popisek', () => {
     const el = cardFaceElement(card(9, 'C'), { scheme: 'four', label: 'Křížová devítka' });
     expect(el.getAttribute('aria-label')).toBe('Křížová devítka');
-    expect(el.outerHTML).toContain('#2f8a4a');
+    expect(el.outerHTML).toContain(vivid('#2f8a4a'));
   });
 });
 
@@ -200,7 +218,7 @@ describe('komponenta karty a barvoslepý režim', () => {
     await new Promise((r) => setTimeout(r, 0)); // MutationObserver
     expect(el.dataset.visual).toContain('|four|');
     expect(el.querySelector('svg')).not.toBe(before);
-    expect(el.querySelector('svg')?.outerHTML).toContain('#2f62b8');
+    expect(el.querySelector('svg')?.outerHTML).toContain(vivid('#2f62b8'));
     // Ruční obnovení je bezpečné i bez změny.
     refreshCardColors();
     expect(el.dataset.visual).toContain('|four|');
@@ -210,6 +228,6 @@ describe('komponenta karty a barvoslepý režim', () => {
   it('galerie může schéma vynutit', () => {
     const el = createCardView(card(5, 'D'), { scheme: 'four' });
     expect(el.dataset.visual).toContain('|four|');
-    expect(el.querySelector('svg')?.outerHTML).toContain('#2f62b8');
+    expect(el.querySelector('svg')?.outerHTML).toContain(vivid('#2f62b8'));
   });
 });
