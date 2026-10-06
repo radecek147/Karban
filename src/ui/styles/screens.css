@@ -221,19 +221,23 @@
   text-align: center;
 }
 
+/* Logo se přizpůsobí šířce svého sloupce (kontejner) — na šířku i při velkém UI se vejde vedle lístku. */
 .menu__logo {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  width: 100%;
+  container-type: inline-size;
 }
 
 /* Nápis „Karban“: zápalková nálepka — kartonový štítek s dvojí linkou, verzálky a rumělkový blok vedle (soutisk). */
 .menu__title {
   position: relative;
   isolation: isolate;
+  margin-bottom: 0.6rem;
   padding: 0.12em 0.55em 0.16em;
-  font-size: clamp(3.75rem, 11vw, 7.25rem);
+  font-size: clamp(3.25rem, 17cqi, 7.25rem);
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0.06em;
@@ -257,26 +261,50 @@
 }
 
 .menu__subtitle {
-  font-size: clamp(1.1rem, 3vw, 1.5rem);
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 3vw, 1.65rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--money-light);
 }
 
 .menu__tagline {
   max-width: 36rem;
+  font-size: 1.05rem;
   color: var(--on-felt-muted);
 }
 
-/* List papíru s natrhlým okrajem (styl `.sheet`, base.css) a s papírovými tlačítky orámovanými tuší. */
+/*
+ * Lístek s položkami: kartonový list (`.sheet`, base.css) s rumělkovým záhlavím přes celou šířku (jako nápojový
+ * lístek nebo nálepka na krabičce sirek), pod ním tlačítka.
+ */
 .menu__board {
+  --board-pad: 1.4rem;
+
   width: min(100%, 26rem);
-  padding: 1.6rem 1.6rem 1.2rem;
+  padding: 0 var(--board-pad) 1.1rem;
+}
+
+.menu__board-title {
+  margin: 0 calc(var(--board-pad) * -1) 1.1rem;
+  padding: 0.5rem 1rem 0.55rem;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: var(--ink-red);
+  border-bottom: var(--line-bold) solid var(--ink);
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
 }
 
 .menu__list {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.6rem;
 }
 
 .menu__item {
@@ -292,70 +320,74 @@
   transform: translateY(-50%) rotate(-4deg);
 }
 
-/* Nápověda k položce pod kurzorem / fokusem: kurzívou tuší pod linkou na spodku listu. */
+/* Nápověda k položce pod kurzorem / fokusem: pod silnou linkou na spodku lístku. */
 .menu__hint {
   min-height: 3.2em;
   margin-top: 1rem;
   padding: 0.6rem 0.25rem 0;
   font-size: 0.95rem;
+  font-weight: 600;
   line-height: 1.35;
   color: var(--ink-soft);
   background: linear-gradient(var(--ink), var(--ink)) 0 0 / 100% 3px no-repeat;
 }
 
-/* Papírová cedulka s radou Štamgasta (list s natrhlým okrajem), připíchnutá špendlíkem. */
+/* Rada Štamgasta: kartonová cedulka nakřivo s rumělkovým štítkem, který přečnívá přes horní hranu. */
 .menu__tip {
   max-width: 34rem;
-  padding: 1.1rem 3rem 1.05rem 1.35rem;
+  margin-top: 0.75rem;
+  padding: 1.35rem 3.25rem 1rem 1.25rem;
   text-align: left;
-  transform: rotate(-1deg);
-}
-
-/* Špendlík: rumělková kulička s linkou. */
-.menu__tip-pin {
-  position: absolute;
-  top: -0.5rem;
-  left: 50%;
-  width: 1rem;
-  height: 1rem;
-  background: var(--ink-red);
-  border: 3px solid var(--ink);
-  border-radius: 50%;
+  transform: rotate(-1.5deg);
 }
 
 .menu__tip-label {
-  display: block;
-  margin-bottom: 0.2rem;
+  position: absolute;
+  top: -0.95rem;
+  left: 1rem;
+  padding: 0.12rem 0.6rem 0.16rem;
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 800;
-  letter-spacing: 0.05em;
+  line-height: 1.1;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ink-red);
+  color: var(--paper);
+  background: var(--ink-red);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius-small);
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: rotate(-3deg);
 }
 
+.menu__tip-text {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* Další rada: kolečko kartonu s linkou. */
 .menu__tip-next {
   position: absolute;
   top: 50%;
-  right: 0.5rem;
+  right: 0.6rem;
   display: grid;
   place-items: center;
   width: 2.25rem;
   height: 2.25rem;
   margin-top: -1.125rem;
-  font-size: 1.25rem;
-  color: var(--ink-soft);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--paper-shade);
+  border: 2px solid var(--ink);
   border-radius: 50%;
   transition: transform var(--t-fast) ease-out;
 }
 
 .menu__tip-next:hover {
   transform: rotate(90deg);
-}
-
-.menu__typo {
-  font-size: 1rem;
-  color: var(--on-felt-muted);
 }
 
 .menu__footer {
@@ -366,64 +398,92 @@
   justify-content: center;
   gap: 0.25rem 1.5rem;
   padding: 0.75rem 1rem;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--on-felt-muted);
 }
 
 /*
- * Na šířku (notebook 1366 × 768, monitor 1920 × 1080): logo, rada a kontrolní věta vlevo, deska s menu vpravo
- * — celé menu se vejde do okna bez posouvání. Na výšku (tablet, telefon) a při velkém UI (`html.ui-large`)
- * zůstává jeden sloupec.
+ * Na šířku (notebook 1366 × 768, monitor 1920 × 1080): logo a rada vlevo, lístek s menu vpravo — celé menu se vejde
+ * do okna bez posouvání. Práh je v rem, takže platí i pro velké UI (120–140 %), dokud se oba sloupce vejdou
+ * (1366 px při 140 % ano, 1024 px při 120 % už ne). Na výšku (tablet, telefon) zůstává jeden sloupec.
  */
 @media (min-aspect-ratio: 4/3) {
-  @container app (min-width: 1000px) {
-    :root:not(.ui-large) .menu {
+  @container app (min-width: 52rem) {
+    .menu {
       display: grid;
       grid-template-areas:
         '. board'
         'logo board'
         'tip board'
-        'typo board'
         '. board';
-      grid-template-rows: 1fr auto auto auto 1fr;
-      grid-template-columns: minmax(0, 34rem) 24rem;
-      gap: 1.5rem clamp(2rem, 6vw, 6rem);
+      grid-template-rows: 1fr auto auto 1fr;
+      grid-template-columns: minmax(0, 34rem) minmax(17rem, 24rem);
+      gap: 1.5rem clamp(1.5rem, 5vw, 6rem);
       place-content: stretch center;
       padding-block: 1.5rem 3.5rem;
     }
 
-    :root:not(.ui-large) .menu__logo {
+    .menu__logo {
       grid-area: logo;
     }
 
-    :root:not(.ui-large) .menu__board {
+    .menu__board {
       grid-area: board;
       align-self: center;
       width: 100%;
     }
 
-    :root:not(.ui-large) .menu__tip {
+    .menu__tip {
       grid-area: tip;
       justify-self: center;
-      margin-top: 0.75rem;
+      margin-top: 1rem;
     }
 
-    :root:not(.ui-large) .menu__typo {
-      grid-area: typo;
-    }
-
-    :root:not(.ui-large) .menu__list {
+    .menu__list {
       gap: 0.5rem;
     }
 
-    :root:not(.ui-large) .menu__item.btn--large {
+    .menu__item.btn--large {
       min-height: 2.8rem;
       font-size: 1.2rem;
     }
 
-    :root:not(.ui-large) .menu__hint {
+    .menu__hint {
       min-height: 2.9em;
       margin-top: 0.8rem;
+    }
+
+    /* Velké UI: nižší položky, ať se lístek vejde na výšku okna notebooku. */
+    :root.ui-large .menu {
+      gap: 1rem clamp(1.25rem, 4vw, 4rem);
+      padding-block: 0.75rem 2.25rem;
+    }
+
+    :root.ui-large .menu__board-title {
+      margin-bottom: 0.8rem;
+      padding-block: 0.35rem 0.4rem;
+      font-size: 1.15rem;
+    }
+
+    :root.ui-large .menu__list {
+      gap: 0.4rem;
+    }
+
+    :root.ui-large .menu__item.btn--large {
+      min-height: 2.2rem;
+      padding-block: 0.2em 0.25em;
+      font-size: 1rem;
+    }
+
+    :root.ui-large .menu__board {
+      padding-bottom: 0.8rem;
+    }
+
+    :root.ui-large .menu__hint {
+      min-height: 2.7em;
+      margin-top: 0.6rem;
+      padding-top: 0.45rem;
+      font-size: 0.85rem;
     }
   }
 }
@@ -488,6 +548,10 @@
 
 /* ─────────────────────────── Nová hra ─────────────────────────── */
 
+/*
+ * Rozvržení: vlevo balíčky, vpravo lístek se silou piva, seedem a „Rozdat karty“ — síla piva je od tabletu výš
+ * hned nahoře, ne pod všemi balíčky. Na telefonu pod sebou, balíčky ve vodorovném pásu.
+ */
 .newgame__form {
   display: flex;
   flex-direction: column;
@@ -496,10 +560,21 @@
   max-width: 72rem;
 }
 
-.deck-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-  gap: 1rem;
+.newgame__side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+  container: newgame-side / inline-size;
+}
+
+@container app (min-width: 700px) {
+  .newgame__form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(18rem, 30vw, 24rem);
+    align-items: start;
+    gap: 1.5rem clamp(1.25rem, 2.5vw, 2rem);
+  }
 }
 
 .deck-picker {
@@ -508,32 +583,140 @@
   gap: 1rem;
 }
 
-/* Zamčené balíčky: malé dlaždice v hustší mřížce (podmínka a průběh zůstávají čitelné). */
+.deck-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16.5rem), 1fr));
+  gap: 0.8rem;
+}
+
+/*
+ * Balíček: kartonová dlaždice s linkou — vlevo rub balíčku na vzoru, vpravo název, popis a hláška. Vybraný balíček
+ * je hořčicový, povystoupí a dostane razítko ✓.
+ */
+.deck-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+  overflow: hidden;
+  color: var(--ink);
+  background: var(--paper);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius-small);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition:
+    transform var(--t-fast) ease-out,
+    box-shadow var(--t-fast) ease-out;
+}
+
+@media (hover: hover) {
+  .deck-option:hover:not(.is-selected, .is-locked) {
+    box-shadow: 4px 6px 0 rgb(5 9 18 / 55%);
+    transform: translate(-1px, -2px);
+  }
+}
+
+.deck-option.is-selected {
+  background: var(--ink-mustard);
+  box-shadow: 5px 5px 0 var(--ink);
+  transform: translate(-2px, -2px);
+}
+
+.deck-option.is-selected::after {
+  content: '✓' / '';
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ink-mustard);
+  background: var(--ink);
+  border-radius: 50%;
+}
+
+.deck-option:focus-visible {
+  outline: 3px solid var(--paper);
+  outline-offset: 4px;
+}
+
+.deck-option__art {
+  min-height: 6.2rem;
+  border-right: var(--line) solid var(--ink);
+}
+
+/* Rub karty balíčku leží na stole trochu nakřivo; vybraný se srovná. */
+.deck-option__art .art-svg {
+  width: 72%;
+  height: auto;
+  transform: rotate(-6deg);
+  transition: transform var(--t-fast) ease-out;
+}
+
+.deck-option.is-selected .art-svg {
+  transform: rotate(0deg) scale(1.06);
+}
+
+.deck-option__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: 0.55rem 0.8rem 0.65rem;
+}
+
+.deck-option__name {
+  padding-right: 1.9rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.deck-option__desc {
+  font-size: 0.92rem;
+  line-height: 1.3;
+}
+
+.deck-option__flavor {
+  margin-top: auto;
+  padding-top: 0.15rem;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  color: var(--ink-soft);
+}
+
+.deck-option.is-selected .deck-option__flavor {
+  color: var(--ink);
+}
+
+/* Zamčené balíčky: menší dlaždice v hustší mřížce (podmínka a průběh zůstávají čitelné). */
 .deck-locked__title {
-  margin-bottom: 0.4rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.45rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--on-felt-muted);
 }
 
 .deck-grid--locked {
-  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
   gap: 0.6rem;
 }
 
 .deck-grid--locked .deck-option {
-  flex-direction: row;
-  box-shadow: 0 2px 6px rgb(10 30 20 / 28%);
+  grid-template-columns: 3rem minmax(0, 1fr);
 }
 
 .deck-grid--locked .deck-option__art {
-  flex: 0 0 3.6rem;
-  height: auto;
-  min-height: 4.6rem;
-}
-
-.deck-grid--locked .deck-option__art .deck-option__lock {
-  width: 1.6rem;
-  height: 1.6rem;
+  min-height: 4.4rem;
 }
 
 .deck-grid--locked .deck-option__text {
@@ -542,11 +725,12 @@
 }
 
 .deck-grid--locked .deck-option__name {
-  font-size: 0.95rem;
+  padding-right: 0;
+  font-size: 1.05rem;
 }
 
 .deck-grid--locked .deck-option__condition {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   line-height: 1.3;
 }
 
@@ -554,100 +738,11 @@
   display: none;
 }
 
-.deck-option {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  color: var(--ink);
-  background: var(--paper);
-  border-radius: var(--radius-small);
-  box-shadow: var(--shadow-card);
-  cursor: pointer;
-  transition: transform var(--t-fast) ease-out;
-}
-
-.deck-option:hover:not(.is-selected) {
-  transform: translateY(-3px);
-}
-
-/* Vybraný balíček: zlatý akvarelový lem kolem listu, tuší obtažený. */
-.deck-option.is-selected {
-  box-shadow:
-    0 0 0 4px var(--accent),
-    0 0 0 5.5px rgb(31 26 23 / 55%),
-    var(--shadow-card);
-  transform: translateY(-4px);
-}
-
-.deck-option.is-selected::after {
-  content: '✓' / '';
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  display: grid;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  font-weight: 700;
-  color: var(--ink);
-  background: radial-gradient(circle at 38% 34%, #f3d48a, var(--accent) 60%, #c58d22);
-  border-radius: 48% 52% 45% 55% / 55% 45% 52% 48%;
-  box-shadow: 0 0 0 2px rgb(31 26 23 / 60%);
-}
-
-.deck-option:focus-visible {
-  outline: 3px solid var(--paper);
-  outline-offset: 5px;
-}
-
-.deck-option__art {
-  height: 8.5rem;
-}
-
-/* Rub karty balíčku leží na suknu, trochu nakřivo */
-.deck-option__art .art-svg {
-  width: auto;
-  height: 86%;
-  filter: drop-shadow(2px 4px 4px rgb(6 26 16 / 40%));
-  transform: rotate(-5deg);
-  transition: transform var(--t-fast) ease-out;
-}
-
-.deck-option.is-selected .art-svg {
-  transform: rotate(0deg) scale(1.04);
-}
-
-.deck-option__text {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.8rem 1rem 1rem;
-}
-
-.deck-option__name {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--wood);
-}
-
-.deck-option__desc {
-  font-size: 0.95rem;
-  line-height: 1.35;
-}
-
-.deck-option__flavor {
-  margin-top: auto;
-  font-size: 0.85rem;
-  color: var(--ink-soft);
-}
-
-/* Síla piva: tácky s číslem úrovně */
+/* Síla piva: pivní tácky s číslem úrovně, na lístku po čtyřech. */
 .stake-row {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem 0.4rem;
   margin-bottom: 1rem;
 }
 
@@ -655,16 +750,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.2rem;
+  gap: 0.35rem;
+  padding: 0.3rem 0.1rem;
   text-align: center;
   border-radius: var(--radius);
   cursor: pointer;
   transition: transform var(--t-fast) ease-out;
 }
 
-.stake-option:hover:not(.is-selected) {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .stake-option:hover:not(.is-selected, .is-locked) {
+    transform: translateY(-2px);
+  }
 }
 
 .stake-option:focus-visible {
@@ -672,63 +769,66 @@
   outline-offset: 2px;
 }
 
-/* Tácek: kolečko papíru s dvojitým kroužkem tuší (jako pivní tácek z hospody). */
+/* Tácek: kolečko kartonu s linkou a vnitřním kroužkem (jako pivní tácek z hospody), tvrdý stín do stolu. */
 .stake-option__coaster {
   display: grid;
   place-items: center;
-  width: clamp(3rem, 6vw, 4.25rem);
+  width: 3.6rem;
   aspect-ratio: 1;
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
   color: var(--ink);
-  background:
-    radial-gradient(circle, transparent 0 58%, rgb(31 26 23 / 55%) 59% 61%, transparent 62%), var(--paper);
+  background: var(--paper);
+  border: var(--line) solid var(--ink);
   border-radius: 50%;
   box-shadow:
-    inset 0 0 0 2px rgb(31 26 23 / 70%),
-    0 3px 6px rgb(6 26 16 / 40%);
+    inset 0 0 0 3px var(--paper),
+    inset 0 0 0 5px var(--ink),
+    3px 3px 0 rgb(5 9 18 / 55%);
 }
 
 .stake-option__name {
-  font-size: 0.85rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   color: var(--on-felt);
 }
 
 .stake-option.is-selected {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
-/* Vybraná síla piva: tácek „polit“ zlatou vodovkou. */
+/* Vybraná síla piva: hořčicový tácek s tvrdým černým stínem. */
 .stake-option.is-selected .stake-option__coaster {
-  background:
-    radial-gradient(circle, transparent 0 58%, rgb(31 26 23 / 60%) 59% 61%, transparent 62%),
-    radial-gradient(circle at 40% 36%, #f4d68e, var(--accent) 58%, #c48b22);
+  background: var(--ink-mustard);
   box-shadow:
-    inset 0 0 0 2px rgb(31 26 23 / 75%),
-    0 0 0 3px var(--paper),
-    0 5px 8px rgb(6 26 16 / 45%);
+    inset 0 0 0 3px var(--ink-mustard),
+    inset 0 0 0 5px var(--ink),
+    4px 4px 0 var(--ink);
 }
 
 .stake-option.is-selected .stake-option__name {
-  font-weight: 700;
+  font-weight: 800;
   color: var(--money-light);
 }
 
 .stake-detail {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
+  gap: 0.9rem;
+  padding: 0.9rem 1.1rem 1rem;
 }
 
 .stake-detail__art {
-  flex: 0 0 5.5rem;
+  flex: 0 0 4.5rem;
 }
 
 .stake-detail__art .art-svg {
-  width: 5.5rem;
-  height: 5.5rem;
-  filter: drop-shadow(0 3px 4px rgb(31 26 23 / 28%));
+  width: 4.5rem;
+  height: 4.5rem;
 }
 
 .stake-detail__text {
@@ -738,19 +838,24 @@
 
 .stake-detail__name {
   font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--wood);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
 .stake-detail__flavor {
-  margin: 0.2rem 0 0.7rem;
+  margin: 0.2rem 0 0.6rem;
   color: var(--ink-soft);
 }
 
 .stake-detail__rules-title {
   margin-bottom: 0.35rem;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--ink-soft);
 }
 
@@ -758,66 +863,110 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  padding-left: 1.4rem;
+  padding-left: 1.3rem;
 }
 
 .stake-detail__rule {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   line-height: 1.35;
+}
+
+.stake-detail__rule::marker {
+  font-weight: 700;
 }
 
 .stake-detail__rule-name {
   margin-right: 0.45em;
 }
 
+/* Úzký lístek (notebook 1024 px, velké UI): menší odznak, ať pravidla nejsou ve sloupečku. */
+@container newgame-side (max-width: 21rem) {
+  .stake-detail {
+    gap: 0.7rem;
+    padding-inline: 0.85rem;
+  }
+
+  .stake-detail__art {
+    flex-basis: 3.25rem;
+  }
+
+  .stake-detail__art .art-svg {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+}
+
 .stake-detail__new {
   display: inline-block;
   margin-left: 0.5em;
-  padding: 0.05em 0.55em 0.1em;
-  font-size: 0.78rem;
-  font-weight: 700;
-  vertical-align: middle;
-  color: var(--paper);
-  background: var(--wash-red);
-  border-radius: 40% 55% 45% 60% / 60% 45% 55% 40%;
+  padding: 0.02em 0.45em 0.06em;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 0.05em;
+  color: var(--ink);
+  background: var(--ink-mustard);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
 }
 
 /* Seed */
 .seed-field {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
-/* Pole na papíře s rámečkem tuší (jako políčko formuláře na úřadě, jen hezčí). */
+.seed-field .btn {
+  min-width: 0;
+  padding-inline: 0.85em;
+}
+
+/* Pole na kartonu s linkou (jako políčko formuláře na úřadě, jen hezčí). */
 .seed-field__input {
-  flex: 1 1 14rem;
+  flex: 1 1 9rem;
+  min-width: 0;
   max-width: 24rem;
   min-height: 2.75rem;
-  padding: 0.5rem 0.9rem;
-  font-size: 1.25rem;
-  font-weight: 600;
+  padding: 0.35rem 0.85rem 0.4rem;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink);
   background: var(--paper);
   border: var(--line) solid var(--ink);
   border-radius: var(--radius-small);
-  box-shadow: inset 0 2px 5px rgb(31 26 23 / 18%);
+  box-shadow: 3px 3px 0 rgb(5 9 18 / 55%);
 }
 
 .seed-field__input::placeholder {
+  font-family: var(--font-game);
+  font-size: 1.05rem;
+  font-weight: 600;
   letter-spacing: normal;
   text-transform: none;
   color: var(--ink-soft);
-  opacity: 0.8;
+  opacity: 1;
 }
 
-/* Tlačítko „Rozdat karty“ na konci formuláře (už neplave přes obsah — zakrývalo pole seedu a jeho chybu). */
+.seed-field__input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Tlačítko „Rozdat karty“ na konci lístku (neplave přes obsah — dřív zakrývalo pole seedu a jeho chybu). */
 .newgame__actions {
   display: flex;
   justify-content: center;
   padding: 0.25rem 0 1rem;
+}
+
+.newgame__actions .btn {
+  width: 100%;
 }
 
 /* Druhé „Rozdat karty“ v záhlaví — po ruce bez posouvání. */
@@ -844,19 +993,46 @@
   min-width: 0;
 }
 
+/* Sekce = kartonový list s barevným záhlavím přes celou šířku (každá sekce jinou tiskovou barvou). */
 .settings__section {
+  --sec-color: var(--ink-navy);
+  --sec-text: var(--paper);
+
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1rem 1.25rem 1.25rem;
+  padding: 0 1.25rem 1.25rem;
+}
+
+.settings__section[aria-labelledby='settings-sec-sound'] {
+  --sec-color: var(--ink-teal);
+}
+
+.settings__section[aria-labelledby='settings-sec-game'] {
+  --sec-color: var(--ink-red);
+}
+
+.settings__section[aria-labelledby='settings-sec-display'] {
+  --sec-color: var(--ink-sky);
+  --sec-text: var(--ink);
+}
+
+.settings__section[aria-labelledby='settings-sec-keys'] {
+  --sec-color: var(--ink-mustard);
+  --sec-text: var(--ink);
 }
 
 .settings__section-title {
-  padding-bottom: 0.45rem;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--wood);
-  background: linear-gradient(var(--ink), var(--ink)) 0 100% / 100% 3px no-repeat;
+  margin: 0 -1.25rem;
+  padding: 0.5rem 1.25rem 0.5rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sec-text);
+  background: var(--sec-color);
+  border-bottom: var(--line) solid var(--ink);
+  border-radius: calc(var(--radius) - 3px) calc(var(--radius) - 3px) 0 0;
 }
 
 .setting {
@@ -869,23 +1045,27 @@
 }
 
 .setting__label {
-  font-weight: 600;
+  font-size: 1.02rem;
+  font-weight: 700;
 }
 
 .setting__hint {
-  font-size: 0.88rem;
+  font-size: 0.9rem;
+  line-height: 1.35;
   color: var(--ink-soft);
 }
 
 .setting__control {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.9rem;
 }
 
 .setting__value {
   min-width: 3.75rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -894,12 +1074,65 @@
   align-items: flex-start;
 }
 
+/*
+ * Posuvník: drážka s linkou, vyplněná část hořčicová (`--fill` dosazuje settings.ts), jezdec = kolečko kartonu
+ * s linkou a tvrdým stínem.
+ */
 .range {
+  --fill: 50%;
+
   flex: 1;
   min-width: 0;
   height: 2rem;
-  accent-color: var(--accent-dark);
+  margin: 0;
+  background: none;
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.range::-webkit-slider-runnable-track {
+  height: 0.8rem;
+  background:
+    linear-gradient(var(--ink-mustard), var(--ink-mustard)) 0 0 / var(--fill) 100% no-repeat,
+    var(--paper-shade);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+}
+
+.range::-moz-range-track {
+  height: 0.8rem;
+  background: var(--paper-shade);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+}
+
+.range::-moz-range-progress {
+  height: 0.8rem;
+  background: var(--ink-mustard);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+}
+
+.range::-webkit-slider-thumb {
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: calc(-0.7rem + 0.4rem - 2px);
+  background: var(--paper);
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  box-shadow: 2px 2px 0 var(--ink);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.range::-moz-range-thumb {
+  width: 1.4rem;
+  height: 1.4rem;
+  background: var(--paper);
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  box-shadow: 2px 2px 0 var(--ink);
 }
 
 .range:focus-visible {
@@ -907,7 +1140,7 @@
   outline-offset: 2px;
 }
 
-/* Přepínač (checkbox s role="switch") */
+/* Přepínač (checkbox s role="switch"): drážka s linkou, zapnutý = hořčicová plocha; jezdec je kolečko kartonu. */
 .toggle {
   position: relative;
   display: flex;
@@ -923,38 +1156,35 @@
   opacity: 0;
 }
 
-/* Přepínač: drážka obtažená tuší, zapnutý = zelená vodovka; jezdec je kolečko papíru. */
 .toggle__track {
   position: relative;
-  flex: 0 0 3.25rem;
-  height: 1.8rem;
+  flex: 0 0 3.4rem;
+  height: 1.9rem;
   background: var(--paper-deep);
+  border: var(--line) solid var(--ink);
   border-radius: 999px;
-  box-shadow:
-    inset 0 0 0 2px rgb(31 26 23 / 70%),
-    inset 0 2px 4px rgb(31 26 23 / 25%);
 }
 
 .toggle__thumb {
   position: absolute;
-  top: 0.2rem;
-  left: 0.2rem;
-  width: 1.4rem;
-  height: 1.4rem;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: calc(1.9rem - 0.3rem - 6px);
+  height: calc(1.9rem - 0.3rem - 6px);
   background: var(--paper);
+  border: 2px solid var(--ink);
   border-radius: 50%;
-  box-shadow:
-    0 0 0 2px rgb(31 26 23 / 75%),
-    0 2px 3px rgb(31 26 23 / 30%);
   transition: transform var(--t-fast) ease-out;
 }
 
 .toggle__input:checked + .toggle__track {
-  background: radial-gradient(ellipse at 35% 40%, #7cb562, var(--wash-green) 65%, #4b8236);
+  background: var(--ink-mustard);
 }
 
 .toggle__input:checked + .toggle__track .toggle__thumb {
-  transform: translateX(1.45rem);
+  background: var(--ink);
+  border-color: var(--ink);
+  transform: translateX(1.5rem);
 }
 
 .toggle__input:focus-visible + .toggle__track {
@@ -963,14 +1193,19 @@
 }
 
 .toggle__input:disabled + .toggle__track {
-  opacity: 0.5;
+  background: var(--paper-shade);
+  border-color: rgb(26 23 20 / 45%);
+}
+
+.toggle__input:disabled + .toggle__track .toggle__thumb {
+  border-color: rgb(26 23 20 / 45%);
 }
 
 .toggle:has(.toggle__input:disabled) {
   cursor: not-allowed;
 }
 
-/* Segmentový výběr (rychlost hry) */
+/* Segmentový výběr (rychlost hry): pás s linkou, vybraný díl hořčicový. */
 .setting--segments legend {
   margin-bottom: 0.35rem;
   padding: 0;
@@ -982,12 +1217,19 @@
   width: fit-content;
   max-width: 100%;
   overflow: hidden;
+  background: var(--paper);
   border: var(--line) solid var(--ink);
+  border-radius: var(--radius-small);
+  box-shadow: 3px 3px 0 var(--ink);
 }
 
 .segment {
   position: relative;
   cursor: pointer;
+}
+
+.segment + .segment {
+  border-left: 2px solid var(--ink);
 }
 
 .segment__input {
@@ -1001,19 +1243,46 @@
 .segment__label {
   display: block;
   min-width: 3.5rem;
-  padding: 0.45rem 0.9rem;
-  font-weight: 700;
+  padding: 0.35rem 0.9rem 0.4rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
   text-align: center;
 }
 
 .segment__input:checked + .segment__label {
   color: var(--ink);
-  background: radial-gradient(ellipse at 40% 40%, #efc874, var(--accent) 60%, #cf9530);
+  background: var(--ink-mustard);
 }
 
 .segment__input:focus-visible + .segment__label {
-  outline: 3px solid var(--accent-dark);
-  outline-offset: -3px;
+  outline: 3px solid var(--ink);
+  outline-offset: -5px;
+}
+
+/* Ukázka písma: obě písma rozhraní na kousku kartonu (plakátové verzálky a textové). */
+.font-sample {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.65rem 0.85rem 0.7rem;
+  background: var(--paper-shade);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-small);
+}
+
+.font-sample__display {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.font-sample__text {
+  font-size: 1.05rem;
+  font-weight: 600;
 }
 
 /* Klávesové zkratky */
@@ -1025,19 +1294,22 @@
 
 .keys-table th {
   padding: 0.25rem 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   text-align: left;
+  text-transform: uppercase;
   color: var(--ink-soft);
 }
 
 .keys-table td {
-  padding: 0.4rem 0.5rem;
+  padding: 0.45rem 0.5rem;
   vertical-align: top;
-  border-top: 1px solid rgb(31 26 23 / 16%);
+  border-top: 1px solid rgb(26 23 20 / 22%);
 }
 
-/* Klávesa: kousek papíru obtažený tuší. */
+/* Klávesa: kousek kartonu s linkou a tvrdým stínem. */
 kbd {
   display: inline-block;
   min-width: 2rem;
@@ -1046,11 +1318,10 @@ kbd {
   font-weight: 700;
   text-align: center;
   white-space: nowrap;
-  background: #fffdf8;
+  background: var(--paper);
+  border: 2px solid var(--ink);
   border-radius: 4px;
-  box-shadow:
-    inset 0 0 0 2px rgb(31 26 23 / 70%),
-    0 2px 0 rgb(31 26 23 / 25%);
+  box-shadow: 2px 2px 0 var(--ink);
 }
 
 /* ─────────────────────────── Titulky ─────────────────────────── */
@@ -1063,7 +1334,7 @@ kbd {
   max-width: 48rem;
 }
 
-/* Titulky jako poslední strana pohádkové knížky: papír, tuš, sépiové nadpisy. */
+/* Titulky jako tištěný plakát: kartonový list se silnou linkou, nadpisy bloků jako barevné štítky. */
 .credits__viewport {
   position: relative;
   width: min(100%, 48rem);
@@ -1071,9 +1342,9 @@ kbd {
   height: min(72dvh, 44rem);
   overflow: hidden;
   color: var(--ink);
-  background: radial-gradient(ellipse at 50% 50%, transparent 62%, rgb(138 90 34 / 10%) 100%), var(--paper);
-  border: var(--line) solid var(--ink);
-  border-radius: var(--radius-small);
+  background: var(--paper);
+  border: var(--line-bold) solid var(--ink);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-sheet);
 }
 
@@ -1082,7 +1353,7 @@ kbd {
   outline-offset: 10px;
 }
 
-/* Zeslabení nahoře a dole (jen při rolování) */
+/* Zeslabení nahoře a dole (jen při rolování): text zajede pod karton. */
 .credits--rolling .credits__viewport::before,
 .credits--rolling .credits__viewport::after {
   content: '';
@@ -1096,12 +1367,12 @@ kbd {
 
 .credits--rolling .credits__viewport::before {
   top: 0;
-  background: linear-gradient(rgb(251 248 241 / 96%), rgb(251 248 241 / 0%));
+  background: linear-gradient(var(--paper) 15%, rgb(243 232 207 / 0%));
 }
 
 .credits--rolling .credits__viewport::after {
   bottom: 0;
-  background: linear-gradient(rgb(251 248 241 / 0%), rgb(251 248 241 / 96%));
+  background: linear-gradient(rgb(243 232 207 / 0%), var(--paper) 85%);
 }
 
 .credits--static .credits__viewport {
@@ -1113,7 +1384,7 @@ kbd {
   display: flex;
   flex-direction: column;
   gap: 2.25rem;
-  padding: 2rem 1.5rem 3rem;
+  padding: 2.5rem 1.5rem 3rem;
   text-align: center;
 }
 
@@ -1137,16 +1408,49 @@ kbd {
   }
 }
 
+.credits__logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+/* Název hry: menší zápalková nálepka jako v menu (dvojí linka, rumělkový soutisk). */
 .credits__game {
-  font-size: clamp(2.5rem, 8vw, 4.5rem);
-  font-weight: 700;
-  letter-spacing: -0.015em;
+  position: relative;
+  isolation: isolate;
+  padding: 0.1em 0.5em 0.14em;
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 8vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--ink);
+  background: var(--paper);
+  border: 5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 8px 8px 0 var(--ink-red);
+  transform: rotate(-2deg);
+}
+
+.credits__game::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  z-index: -1;
+  pointer-events: none;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
 }
 
 .credits__subtitle {
-  font-size: 1.2rem;
-  color: var(--wood);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--mult);
 }
 
 .credits__block {
@@ -1160,26 +1464,57 @@ kbd {
   max-width: 36rem;
 }
 
-/* Nadpis bloku: sépiová kurzíva s linkou tuší pod sebou. */
+/* Nadpis bloku: barevný štítek s linkou a tvrdým stínem, trochu nakřivo (barvy se střídají). */
 .credits__heading {
-  margin-bottom: 0.3rem;
-  padding: 0 1.5rem 0.35rem;
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: var(--wood);
-  background: linear-gradient(var(--ink), var(--ink)) 50% 100% / 100% 3px no-repeat;
+  --label: var(--ink-mustard);
+  --label-text: var(--ink);
+
+  margin-bottom: 0.5rem;
+  padding: 0.15rem 0.75rem 0.2rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--label-text);
+  background: var(--label);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius-small);
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: rotate(-1.5deg);
+}
+
+.credits__block:nth-of-type(4n + 2) .credits__heading {
+  --label: var(--ink-sky);
+
+  transform: rotate(1.5deg);
+}
+
+.credits__block:nth-of-type(4n + 3) .credits__heading {
+  --label: var(--ink-teal);
+  --label-text: var(--paper);
+}
+
+.credits__block:nth-of-type(4n + 4) .credits__heading {
+  --label: var(--ink-red);
+  --label-text: var(--paper);
+
+  transform: rotate(1deg);
 }
 
 .credits__subheading {
-  margin-top: 0.6rem;
-  font-size: 1rem;
-  font-weight: 600;
+  margin-top: 0.8rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--ink-soft);
 }
 
 .credits__name {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
   color: var(--ink);
 }
 
@@ -1188,8 +1523,20 @@ kbd {
   color: var(--ink-soft);
 }
 
+.credits__role {
+  font-weight: 600;
+}
+
 .credits__small {
   font-size: 0.9rem;
+}
+
+.credits__font {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  margin-bottom: 0.6rem;
 }
 
 .credits__list {
@@ -1207,17 +1554,20 @@ kbd {
 }
 
 .credits__link {
-  color: #8f2a21;
+  color: var(--danger-dark);
   text-decoration: underline;
-  text-decoration-thickness: 1px;
+  text-decoration-thickness: 2px;
   text-underline-offset: 3px;
 }
 
 .credits__end {
   padding-top: 2rem;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--wood);
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
 /* ─────────────────────────── Dialog ─────────────────────────── */
@@ -1645,17 +1995,6 @@ html.modal-open {
 
 /* ─────────────────────────── Menší obrazovky (tablet, telefon) ─────────────────────────── */
 
-@media (max-width: 860px) {
-  .stake-row {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  /* Podtitul pod 24 px už není „velký text“ — `--accent` na suknu má jen 3,8 : 1, světlejší zlatá stačí. */
-  .menu__subtitle {
-    color: var(--money-light);
-  }
-}
-
 @media (max-width: 600px) {
   .screen {
     gap: 1.25rem;
@@ -1667,39 +2006,52 @@ html.modal-open {
   }
 
   .menu__board {
-    padding: 1.4rem 1rem 1rem;
+    --board-pad: 1rem;
+
+    padding: 0 var(--board-pad) 1rem;
   }
 
-  .deck-grid {
-    grid-template-columns: 1fr;
+  .menu__tip {
+    padding-right: 3rem;
   }
 
-  /* Zamčené na telefonu ve dvou sloupcích jen s názvem a podmínkou (obrázek se zámkem by sebral půlku šířky). */
-  .deck-grid.deck-grid--locked {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  /*
+   * Nová hra na telefonu: balíčky ve vodorovném pásu (posun prstem, přichytávání), ať síla piva a seed nejsou
+   * tři obrazovky pod nimi. Odemčené i zamčené jsou v jednom pásu, vybraný se při otevření posune do záběru.
+   */
+  .deck-picker {
+    flex-direction: row;
+    gap: 0.6rem;
+    margin-inline: -1rem;
+    padding: 0.35rem 1rem 0.9rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 1rem;
+    scrollbar-width: thin;
   }
 
-  .deck-grid--locked .deck-option__art {
+  .deck-picker .deck-grid,
+  .deck-picker .deck-locked {
+    display: contents;
+  }
+
+  .deck-locked__title {
     display: none;
   }
 
   .deck-option {
-    flex-direction: row;
+    flex: 0 0 min(86%, 20rem);
+    grid-template-columns: 3.6rem minmax(0, 1fr);
+    scroll-snap-align: start;
   }
 
-  .deck-option__art {
-    flex: 0 0 5.5rem;
-    height: auto;
-    min-height: 7rem;
+  .deck-option__art .art-svg {
+    width: 78%;
   }
 
-  .stake-detail {
-    flex-direction: column;
-  }
-
-  /* Na úzkém displeji jen tácky — název vybrané síly piva je v detailu pod nimi. */
   .stake-option__name {
-    display: none;
+    font-size: 0.8rem;
   }
 
   .menu__item .btn__badge {

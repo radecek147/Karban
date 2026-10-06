@@ -89,7 +89,10 @@ export function interpretSeed(raw: string, generated: string | null, todayKey?: 
   return { kind: 'custom', seed: res.seed };
 }
 
-/** Balíček na suknu: rub karty v barvách balíčku (src/ui/art) na pozadí se vzorem balíčku — dekorativní. */
+/**
+ * Balíček na stole: rub karty v barvách balíčku (src/ui/art) na pozadí se vzorem balíčku — dekorativní. Zamčený
+ * balíček rub nekreslí (jen vzor a zámek) — obrázek se odhalí až po odemčení.
+ */
 function deckStage(spec: ArtSpec, locked: boolean): HTMLElement {
   return h(
     'div',
@@ -98,8 +101,7 @@ function deckStage(spec: ArtSpec, locked: boolean): HTMLElement {
       style: { '--art-accent': safeColor(spec.accent ?? spec.fg, '#e8a92a') },
       'aria-hidden': 'true',
     },
-    artElement('deck', spec),
-    locked ? iconElement('padlock', { className: 'deck-option__lock' }) : null,
+    locked ? iconElement('padlock', { className: 'deck-option__lock' }) : artElement('deck', spec),
   );
 }
 
@@ -501,6 +503,8 @@ export const newGameScreen: ScreenFactory = (app) => {
     seedStatus,
   );
 
+  // Rozvržení: vlevo balíčky, vpravo „lístek“ se silou piva, seedem a tlačítkem Rozdat karty (na šířku je síla piva
+  // hned nahoře, ne pod všemi balíčky); na úzké obrazovce pod sebou, balíčky na telefonu ve vodorovném pásu.
   const form = h(
     'form',
     {
@@ -513,7 +517,7 @@ export const newGameScreen: ScreenFactory = (app) => {
     },
     h(
       'section',
-      { class: 'newgame__section', 'aria-labelledby': 'newgame-deck-title' },
+      { class: 'newgame__section newgame__section--deck', 'aria-labelledby': 'newgame-deck-title' },
       h(
         'h2',
         { id: 'newgame-deck-title', class: 'section-title' },
@@ -529,23 +533,27 @@ export const newGameScreen: ScreenFactory = (app) => {
       deckGroup,
     ),
     h(
-      'section',
-      { class: 'newgame__section', 'aria-labelledby': 'newgame-stake-title' },
-      h('h2', { id: 'newgame-stake-title', class: 'section-title' }, t('newGame.stake.title')),
-      stakeGroup,
-      stakeDetail,
-    ),
-    seedField,
-    h(
       'div',
-      { class: 'newgame__actions' },
-      button({
-        label: t('newGame.start'),
-        type: 'submit',
-        variant: 'primary',
-        size: 'large',
-        testId: 'newgame-start',
-      }),
+      { class: 'newgame__side' },
+      h(
+        'section',
+        { class: 'newgame__section newgame__section--stake', 'aria-labelledby': 'newgame-stake-title' },
+        h('h2', { id: 'newgame-stake-title', class: 'section-title' }, t('newGame.stake.title')),
+        stakeGroup,
+        stakeDetail,
+      ),
+      seedField,
+      h(
+        'div',
+        { class: 'newgame__actions' },
+        button({
+          label: t('newGame.start'),
+          type: 'submit',
+          variant: 'primary',
+          size: 'large',
+          testId: 'newgame-start',
+        }),
+      ),
     ),
   );
 
@@ -585,7 +593,17 @@ export const newGameScreen: ScreenFactory = (app) => {
   updateSeedStatus();
   // Focus na vybraný balíček (klávesnicí se hned dá vybírat šipkami).
   const selectedDeck = deckItems.find((d) => d.tabIndex === 0);
-  if (selectedDeck) focusWhenMounted(selectedDeck);
+  if (selectedDeck) {
+    focusWhenMounted(selectedDeck);
+    // Telefon: balíčky jsou ve vodorovném pásu — vybraný balíček do záběru (focus se kvůli stránce neposouvá).
+    queueMicrotask(() => {
+      if (deckGroup.isConnected && deckGroup.scrollWidth > deckGroup.clientWidth + 1)
+        deckGroup.scrollLeft = Math.max(
+          0,
+          selectedDeck.getBoundingClientRect().left - deckGroup.getBoundingClientRect().left - 16,
+        );
+    });
+  }
 
   return {
     el,

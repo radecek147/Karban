@@ -31,6 +31,8 @@ export const common = {
 /** Hlavní menu. */
 export const menu = {
   label: 'Hlavní menu',
+  /** Záhlaví lístku s položkami menu (ozdoba, jako u výčepu). */
+  boardTitle: 'Tak co to bude?',
   newGame: { label: 'Nová hra', hint: 'Zamíchat, rozdat a jde se na to.' },
   continue: {
     label: 'Pokračovat',
@@ -175,6 +177,9 @@ export const settings = {
   colorblind: 'Barvoslepý režim',
   colorblindHint: 'Čtyřbarevný balíček: piky černé, srdce červená, káry modré, kříže zelené.',
   uiScale: 'Velikost rozhraní',
+  /** Ukázka písma s celou českou diakritikou (kontrola, že se písmo načetlo). */
+  fontSample: 'Ukázka písma',
+  fontSampleHint: 'Kdyby tu chyběl háček nebo čárka, písmo se nenačetlo. Pak pomůže znovu načíst stránku.',
   tutorial: 'Rady Štamgasta',
   tutorialHint: 'Štamgast tě provede prvním runem. Jde vypnout a kdykoli zase zapnout.',
   tutorialRestart: 'Zapnout tutoriál znovu',
@@ -276,6 +281,18 @@ export const credits = {
     title: 'Písmo',
     license: 'Licence SIL Open Font License 1.1',
     note: 'Patkové písmo jako z pohádkové knížky. Háčky i čárky má na svém místě, což se o leckterém úředním dopise říct nedá.',
+  },
+  /** Písma stylu „Sirkárna“ (jména a autoři jsou data v credits.ts). */
+  fonts: {
+    title: 'Písma',
+    display: 'Nadpisy, čísla a tlačítka',
+    text: 'Text, popisky a hlášky',
+    note: 'Zúžené plakátové písmo jako na zápalkových nálepkách a k němu čitelné na drobný text. Háčky i čárky mají na svém místě, což se o leckterém úředním dopise říct nedá.',
+  },
+  /** Obrázky ve stylu retro tisku. */
+  print: {
+    title: 'Obrázky',
+    text: 'Plné tiskové barvy, silné černé linky a tvrdé stíny jako na zápalkách a plakátech ze šedesátých let. Všechno je nakreslené v kódu – tiskárna nebyla zneužita, jen procesor se zapotil.',
   },
   art: {
     title: 'Obrázky a textury',

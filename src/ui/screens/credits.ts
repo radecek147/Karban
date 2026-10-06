@@ -1,6 +1,7 @@
 /**
- * Titulky: autoři, nástroje, atribuce písma (Fraunces, OFL) a ikon (game-icons.net, CC BY 3.0, autoři
- * podle `src/assets/icons/authors.json`), „inspirováno hrou Balatro“ a poděkování.
+ * Titulky: autoři, nástroje, atribuce písem (Big Shoulders Display a Barlow Semi Condensed, OFL) a ikon
+ * (game-icons.net, CC BY 3.0, autoři podle `src/assets/icons/authors.json`), „inspirováno hrou Balatro“
+ * a poděkování.
  *
  * Titulky pomalu rolují (CSS transform). Bez animací, s `prefers-reduced-motion` nebo po „Zastavit“ jsou statické
  * a dají se posouvat. Najetí myší nebo focus uvnitř rolování pozastaví. Esc / Zpět vrátí do menu.
@@ -12,14 +13,24 @@ import type { ScreenFactory } from '../app';
 import { backButton, button } from '../components/button';
 import { h } from '../dom';
 
-/** Písmo (ASSETS.md). */
-const FONT_CREDIT = {
-  name: 'Fraunces',
-  author: 'Undercase Type (Phaedra Charles, Flavia Zimbardi)',
-  copyright: '© 2020 The Fraunces Project Authors',
-  url: 'https://github.com/undercasetype/Fraunces',
-  licenseUrl: 'https://openfontlicense.org',
-};
+/** Písma (ASSETS.md): plakátové na nadpisy a čísla, textové na popisky. */
+const FONT_CREDITS = [
+  {
+    name: 'Big Shoulders Display',
+    role: 'display',
+    author: 'Patric King (XO Type Co.)',
+    copyright: '© 2019 The Big Shoulders Project Authors',
+    url: 'https://github.com/xotypeco/big_shoulders',
+  },
+  {
+    name: 'Barlow Semi Condensed',
+    role: 'text',
+    author: 'Jeremy Tribby',
+    copyright: '© 2017 The Barlow Project Authors',
+    url: 'https://github.com/jpt/barlow',
+  },
+] as const;
+const FONT_LICENSE_URL = 'https://openfontlicense.org';
 
 /** Ikony (ASSETS.md). */
 const ICON_CREDIT = {
@@ -94,12 +105,19 @@ export const creditsScreen: ScreenFactory = (app) => {
       ),
     ),
     block(
-      t('credits.font.title'),
-      h('p', { class: 'credits__name' }, link(FONT_CREDIT.url, FONT_CREDIT.name)),
-      h('p', null, FONT_CREDIT.author),
-      h('p', { class: 'credits__small' }, FONT_CREDIT.copyright),
-      h('p', { class: 'credits__small' }, link(FONT_CREDIT.licenseUrl, t('credits.font.license'))),
-      h('p', { class: 'credits__small' }, t('credits.font.note')),
+      t('credits.fonts.title'),
+      ...FONT_CREDITS.map((font) =>
+        h(
+          'div',
+          { class: 'credits__font' },
+          h('p', { class: 'credits__name' }, link(font.url, font.name)),
+          h('p', { class: 'credits__role' }, t(`credits.fonts.${font.role}`)),
+          h('p', null, font.author),
+          h('p', { class: 'credits__small' }, font.copyright),
+        ),
+      ),
+      h('p', { class: 'credits__small' }, link(FONT_LICENSE_URL, t('credits.font.license'))),
+      h('p', { class: 'credits__small' }, t('credits.fonts.note')),
     ),
     block(
       t('credits.icons.title'),
@@ -126,7 +144,7 @@ export const creditsScreen: ScreenFactory = (app) => {
         ),
       ),
     ),
-    block(t('credits.art.title'), h('p', null, t('credits.art.text'))),
+    block(t('credits.print.title'), h('p', null, t('credits.print.text'))),
     block(t('credits.sound.title'), h('p', null, t('credits.sound.text'))),
     block(
       t('credits.inspiration.title'),
