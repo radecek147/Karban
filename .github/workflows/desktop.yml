@@ -4,12 +4,19 @@ name: Desktop (macOS, Windows, Linux)
 # - macOS: univerzální .dmg (Apple Silicon i Intel), podepsané jen ad hoc,
 # - Windows: instalátor .exe (NSIS, 64bit), nepodepsaný,
 # - Linux: .AppImage (spustitelné bez instalace) a .deb (Ubuntu / Debian).
-# Ručně (Actions → Desktop → Run workflow): balíčky ke stažení v artefaktech běhu.
+# Ručně (Actions → Desktop → Run workflow): balíčky ke stažení v artefaktech běhu (ZIP, jen po přihlášení).
+# S volbou „nightly“ se navíc zveřejní jako testovací verze (pre-release `nightly`, přepisuje se) — soubory
+# mají přímé odkazy, např. releases/download/nightly/Karban_<verze>_x64-setup.exe.
 # Po zveřejnění release na GitHubu se balíčky navíc přiloží k release.
 # Bez podpisových certifikátů systémy aplikaci při prvním spuštění neověří (postup v README „Desktopová verze“).
 
 on:
   workflow_dispatch:
+    inputs:
+      nightly:
+        description: 'Zveřejnit jako testovací verzi (pre-release „nightly“ s přímými odkazy ke stažení)'
+        type: boolean
+        default: false
   release:
     types: [published]
 
@@ -21,8 +28,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Testovací verze: release `nightly` se pokaždé smaže a založí znovu na tomhle commitu (stejný štítek a stejná
+  # jména souborů = odkazy ke stažení se nemění). Balíčky do něj nahrají joby `build`.
+  nightly:
+    name: Testovací verze (nightly)
+    if: github.event_name == 'workflow_dispatch' && inputs.nightly
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recreate the nightly pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release delete nightly --cleanup-tag --yes || true
+          gh release create nightly --target "$GITHUB_SHA" --prerelease --title "Testovací verze" \
+            --notes "Automatický build z větve ${GITHUB_REF_NAME} (commit ${GITHUB_SHA::7}). Instalátory nejsou podepsané — postup prvního spuštění je v README v části Desktopová verze."
+
   build:
     name: ${{ matrix.name }}
+    needs: nightly
+    # Bez testovací verze je job `nightly` přeskočený — build běží i tak (jen ne po jeho selhání).
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     strategy:
@@ -107,6 +133,13 @@ jobs:
           path: ${{ matrix.upload }}
           if-no-files-found: error
           retention-days: 30
+
+      - name: Attach packages to the nightly pre-release
+        if: github.event_name == 'workflow_dispatch' && inputs.nightly
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload nightly ${{ matrix.files }} --clobber
 
       - name: Attach packages to the release
         if: github.event_name == 'release'

@@ -151,9 +151,13 @@ Karban jde hrát i jako běžná aplikace — bez prohlížeče, Node.js a Termi
 [Tauri](https://tauri.app/) do okna se systémovým prohlížečovým jádrem.
 
 **Stažení:** balíčky sestavuje GitHub Actions ([.github/workflows/desktop.yml](.github/workflows/desktop.yml)).
-Jsou přiložené k [vydání (Releases)](https://github.com/radecek147/FM/releases). Když vydání ještě není, najdeš je
-v záložce **Actions → Desktop (macOS, Windows, Linux)** u posledního běhu v části **Artifacts**. Stáhnou se jako ZIP
-a stažení vyžaduje přihlášení na GitHub.
+Jsou přiložené k [vydání (Releases)](https://github.com/radecek147/Karban/releases). Nejnovější build je ve
+**[Testovací verzi](https://github.com/radecek147/Karban/releases/tag/nightly)** s přímými odkazy, třeba
+[Karban_1.0.1_x64-setup.exe](https://github.com/radecek147/Karban/releases/download/nightly/Karban_1.0.1_x64-setup.exe)
+pro Windows nebo
+[Karban_1.0.1_universal.dmg](https://github.com/radecek147/Karban/releases/download/nightly/Karban_1.0.1_universal.dmg)
+pro macOS (spustí ji **Actions → Desktop → Run workflow** se zaškrtnutou volbou „nightly“). Balíčky každého běhu
+jsou navíc v záložce **Actions → Desktop (macOS, Windows, Linux)** v části **Artifacts** (ZIP, jen po přihlášení).
 
 | Systém                            | Soubor                                      | Artefakt       |
 | --------------------------------- | ------------------------------------------- | -------------- |
