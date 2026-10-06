@@ -1,9 +1,10 @@
 /**
- * Ručně kreslené scény (tuš a akvarel, styl E1) pro vybrané žolíky — místo ikony z knihovny celá ilustrace.
+ * Ručně kreslené scény (tisk ve stylu Sirkárna, src/ui/art/print.ts) pro vybrané žolíky — místo ikony z knihovny
+ * celá ilustrace.
  * `ArtSpec.scene` v datech obsahu odkazuje na klíč v `SCENES`; neznámá scéna → obyčejná ikona.
  *
  * Kresba je seznam tahů v souřadnicích karty 250 × 350 (okno obrázku 16–234 × 16–284):
- *  - `['f', role, d, tuš]` plocha (papír → vodovka v barvě role → obrys tuší dané tloušťky, 0 = bez obrysu),
+ *  - `['f', role, d, linka]` plocha (papír → inkoust v barvě role → obrys dané tloušťky, 0 = bez obrysu),
  *  - `['l', d, tuš]` linka tuší,
  *  - `['h', d, úhel]` stín (studená lazura přes tvar).
  * Vlastní dílo (Karban, 2026), žádné cizí předlohy.
@@ -39,7 +40,7 @@ import {
   SEKERA,
 } from './scenes2';
 import { FIGURES } from './figures';
-import { WC, ink, inkFill, knock, paint, paintIcon, shp, wash } from './watercolor';
+import { PR, ink, inkFill, knock, paint, paintIcon, shp, wash } from './print';
 
 export type SceneOp =
   | readonly ['f', string, string, number]
@@ -340,7 +341,7 @@ export function hasScene(name: string | undefined): name is string {
   return name !== undefined && Object.hasOwn(SCENES, name);
 }
 
-/** Markup scény (bez `<defs>` — potřebuje akvarelovou sadu `wcDefs` obrázku). */
+/** Markup scény (bez `<defs>` — potřebuje papír z `printDefs` obrázku). */
 export function sceneMarkup(name: string): string {
   const ops = SCENES[name] ?? [];
   /** Role z palety, nebo přímo barva `#rrggbb` (postavy z `figures.ts`). */
@@ -357,21 +358,21 @@ export function sceneMarkup(name: string): string {
     } else if (op[0] === 'l') {
       out += ink(shp.path(op[1]), op[2] * 0.77);
     } else if (op[0] === 's') {
-      // Lavírovaná linka: papír pod ni (ať se barva nemíchá s podkladem), vodovka, tenký obrys tuší po okrajích.
+      // Barevná linka: papír pod ni (ať se barva nemíchá s podkladem), inkoust, tenký obrys po okrajích.
       const [, role, d, w] = op;
       const color = pal(role) ?? '#888888';
       const line = (stroke: string, width: number): string =>
         `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${width}"/>`;
       out +=
         line('url(#%ID%-pp)', w) +
-        wash(line('currentColor', w), color === 'INK' ? WC.ink : (color ?? '#888888'), { op: 0.75 }) +
+        wash(line('currentColor', w), color === 'INK' ? PR.ink : (color ?? '#888888'), { op: 0.75 }) +
         ink(shp.path(d), 0.7, { op: 0.5 });
     } else if (op[0] === 'i') {
-      // Rekvizita z knihovny ikon, namalovaná vodovkou s obrysem tuší.
+      // Rekvizita z knihovny ikon, vytištěná plnou barvou s obrysem.
       const [, icon, x, y, size, role] = op;
       out += paintIcon(icon, { x, y, size }, pal(role) ?? '#888888', { knock: true, op: 0.75 });
     } else {
-      out += wash(shp.path(op[1]), WC.shadow, { op: 0.24, dx: 0, dy: 0 });
+      out += wash(shp.path(op[1]), PR.shadow, { op: 0.24, dx: 0, dy: 0 });
     }
   }
   return out;

@@ -1,9 +1,9 @@
 /**
- * Obecný renderer `ArtSpec` → SVG ve stylu E1 „Pohádková knížka“ (tuš a akvarel, src/ui/art/watercolor.ts;
- * CLAUDE.md kap. 7, ARCHITECTURE 4): ikona + paleta + vzor pozadí + rekvizita, namalované vodovkou na papír
+ * Obecný renderer `ArtSpec` → SVG ve stylu „Sirkárna“ (retro tisk, src/ui/art/print.ts; CLAUDE.md kap. 7,
+ * ARCHITECTURE 4): ikona + paleta + vzor pozadí + rekvizita, vytištěné plnými barvami se silnou linkou
  * a zasazené do rámečku podle druhu obsahu:
  *
- *  - **žolík** — papírová karta s vpitou vinětou, okraj a drahokamy 1–4 v barvě vzácnosti,
+ *  - **žolík** — kartonová karta s oknem obrázku, dole štítek se jménem v barvě vzácnosti, drahokamy 1–4,
  *  - **spotřebky** — pranostika = list kalendáře s kroužky, babská rada = papír z notýsku s izolepou,
  *    úřední razítko = perforovaná známka s otiskem razítka,
  *  - **kupón** — lístek s výřezy a ústřižkem, **obálka** — dopisní obálka / tlustá obálka / krabice od bot,
@@ -11,34 +11,35 @@
  *  - **síla piva** — pivní tácek, **balíček** — rub karty, **výzva** — karta s šachovnicovým rámem,
  *  - **vylepšení / pečeť** — malý dlaždicový odznak (sbírka, tooltipy).
  *
- * Pozadí je lavírování v `bg`, ikona světlá silueta (papír) s nádechem `fg` a obrysem tuší, vzor obsahu
- * (`pattern`) je jemně namalovaný do pozadí. Žolík s `scene` dostane místo ikony ručně kreslenou scénu.
+ * Pozadí je plná barva `bg`, ikona světlá silueta v barvě `fg` s rastrovým stínem a obrysem, vzor obsahu
+ * (`pattern`) je přetisk v barvě `accent`. Žolík s `scene` dostane místo ikony ručně kreslenou scénu.
  *
- * Markup je řetězec s placeholdery `%ID%` (`artMarkupRaw`), `artMarkup` id zunikátní; v prohlížeči se obrázek
- * kreslí jen jednou do bitmapy (raster.ts). Barvy z obsahu procházejí `safeColor`.
+ * Markup je řetězec s placeholdery `%ID%` (`artMarkupRaw`), `artMarkup` id zunikátní; do stránky se vkládá přímo
+ * jako SVG (svg.ts). Barvy z obsahu procházejí `safeColor` a přitahují se k tiskovým inkoustům (`inkOf`).
  */
 import type { ArtSpec, BoosterDef, ContentRegistry, JokerRarity } from '../../engine/content-types';
 import type { BlindKind, ConsumableKind } from '../../engine/types';
 import { registry as defaultRegistry } from '../../content';
-import { cardBackMarkupRaw, labelSvg, withUniqueIds } from './cards';
+import { hasKey, t } from '../../i18n/cs';
+import { cardBackMarkupRaw, labelSvg } from './cards';
 import { escapeXml, safeColor } from './icons';
-import { rasterSvg } from './raster';
 import { hasScene, sceneMarkup } from './scenes';
+import { svgElement, withUniqueIds } from './svg';
 import {
-  WC,
+  PR,
   beginArt,
-  grainOver,
   iconRef,
   iconShape,
   ink,
+  inkOf,
   knock,
   mixColor,
   paint,
   paintIcon,
   shp,
   wash,
-  wcDefs,
-} from './watercolor';
+  printDefs,
+} from './print';
 
 export type ArtKind =
   | 'joker'
@@ -67,19 +68,24 @@ export interface ArtOptions {
   color?: string;
   /** Přístupný popisek (`role="img"`); bez něj je obrázek dekorativní. */
   label?: string;
+  /** Žolík: jméno na štítku karty (bez něj štítek jen v barvě vzácnosti). */
+  title?: string;
 }
 
 const ID = '%ID%';
-const INK = WC.ink;
+const INK = PR.ink;
 
-/** Barvy vzácností žolíků: cín, modrá, fialová, zlato (`frame` = okraj a drahokamy). */
+/**
+ * Barvy vzácností žolíků (tiskové inkousty): námořnická, petrolejová, fialová, zlatá. `frame` = štítek se jménem
+ * a drahokamy, `text` = barva jména na štítku.
+ */
 export const RARITY_COLORS: Readonly<
-  Record<JokerRarity, { frame: string; light: string; dark: string; gems: number }>
+  Record<JokerRarity, { frame: string; light: string; dark: string; text: string; gems: number }>
 > = {
-  common: { frame: '#7d8a96', light: '#d3dae0', dark: '#46505a', gems: 1 },
-  rare: { frame: '#3d6ab0', light: '#a8cbef', dark: '#1b4272', gems: 2 },
-  epic: { frame: '#7b4fb0', light: '#d4b3f0', dark: '#4a2370', gems: 3 },
-  legendary: { frame: '#d6a21e', light: '#ffe69a', dark: '#7f5a0c', gems: 4 },
+  common: { frame: '#22365c', light: '#bcd6e6', dark: '#1a1714', text: '#f3e8cf', gems: 1 },
+  rare: { frame: '#2f8077', light: '#9fd0c4', dark: '#1a1714', text: '#f3e8cf', gems: 2 },
+  epic: { frame: '#6b4a9e', light: '#cbb8e3', dark: '#1a1714', text: '#f3e8cf', gems: 3 },
+  legendary: { frame: '#e9b030', light: '#f6e3a1', dark: '#1a1714', text: '#1a1714', gems: 4 },
 };
 
 /** Barvy typů spotřebek. */
@@ -189,7 +195,7 @@ function shapeBox(shape: Shape): {
       };
 }
 
-/** Jemně namalovaný vzor pozadí (barva `accent`) v boxu okna. */
+/** Přetisk vzoru pozadí v barvě `accent` (poloprůhledný inkoust přes plnou barvu okna) v boxu okna. */
 function patternPaint(
   pattern: ArtSpec['pattern'],
   color: string,
@@ -197,28 +203,28 @@ function patternPaint(
   k: number,
 ): string {
   const s = (n: number): number => n * k;
+  const c = inkOf(color);
+  const over = (shape: string, op = 0.32): string => `<g fill="${c}" opacity="${op}">${shape}</g>`;
+  const lines = (d: string, w: number, op = 0.32): string =>
+    `<path d="${d}" fill="none" stroke="${c}" stroke-width="${r1(w)}" stroke-linejoin="round" opacity="${op}"/>`;
   let d = '';
   switch (pattern) {
     case 'stripes':
       for (let x = b.x - b.h; x < b.x + b.w; x += s(30))
         d += `M${r1(x)} ${r1(b.y + b.h)}L${r1(x + b.h * 0.7)} ${r1(b.y)}`;
-      return wash(`<path d="${d}" fill="none" stroke="currentColor" stroke-width="${r1(s(11))}"/>`, color, {
-        op: 0.22,
-        dx: 0,
-        dy: 0,
-      });
+      return lines(d, s(11), 0.28);
     case 'dots': {
       let dots = '';
       for (let y = b.y + s(12), j = 0; y < b.y + b.h; y += s(24), j++)
         for (let x = b.x + s(12) + (j % 2) * s(12); x < b.x + b.w; x += s(24))
           dots += shp.circle(x, y, s(4.5));
-      return wash(dots, color, { op: 0.3, dx: 0, dy: 0 });
+      return over(dots, 0.4);
     }
     case 'checker': {
       let sq = '';
       for (let y = b.y, j = 0; y < b.y + b.h; y += s(28), j++)
         for (let x = b.x + (j % 2) * s(28); x < b.x + b.w; x += s(56)) sq += shp.rect(x, y, s(28), s(28));
-      return wash(sq, color, { op: 0.2, dx: 0, dy: 0 });
+      return over(sq, 0.22);
     }
     case 'waves':
       for (let y = b.y + s(14); y < b.y + b.h; y += s(22)) {
@@ -226,31 +232,19 @@ function patternPaint(
         for (let x = b.x - s(10); x < b.x + b.w + s(20); x += s(40))
           d += `q${r1(s(10))} ${r1(-s(9))} ${r1(s(20))} 0t${r1(s(20))} 0`;
       }
-      return wash(`<path d="${d}" fill="none" stroke="currentColor" stroke-width="${r1(s(4))}"/>`, color, {
-        op: 0.3,
-        dx: 0,
-        dy: 0,
-      });
+      return lines(d, s(4), 0.38);
     case 'grid':
       for (let x = b.x + s(11); x < b.x + b.w; x += s(22)) d += `M${r1(x)} ${r1(b.y)}V${r1(b.y + b.h)}`;
       for (let y = b.y + s(11); y < b.y + b.h; y += s(22)) d += `M${r1(b.x)} ${r1(y)}H${r1(b.x + b.w)}`;
-      return ink(shp.path(d), s(1.1), { color, op: 0.35 });
+      return lines(d, s(1.6), 0.4);
     case 'zigzag':
       for (let y = b.y + s(16); y < b.y + b.h; y += s(22)) {
         d += `M${r1(b.x)} ${r1(y)}`;
         for (let x = b.x; x < b.x + b.w; x += s(16)) d += `l${r1(s(8))} ${r1(-s(8))}l${r1(s(8))} ${r1(s(8))}`;
       }
-      return wash(
-        `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${r1(s(4))}" stroke-linejoin="round"/>`,
-        color,
-        {
-          op: 0.3,
-          dx: 0,
-          dy: 0,
-        },
-      );
+      return lines(d, s(4), 0.38);
     case 'rays':
-      return wash(rayShape(b.cx, b.cy, b.half * 1.6), color, { op: 0.16, dx: 0, dy: 0 });
+      return over(rayShape(b.cx, b.cy, b.half * 1.6), 0.22);
     default:
       return '';
   }
@@ -267,28 +261,23 @@ interface WindowOpts {
   k?: number;
   /** Kreslit rekvizitu? */
   prop?: boolean;
-  /** Natrhlý okraj okna (vineta vpitá do papíru). */
-  deckle?: boolean;
 }
 
 /**
- * Okno s obrázkem: lavírované pozadí `bg` se vzorem, světlá silueta ikony s nádechem `fg` a obrysem tuší,
- * rekvizita v kroužku. Vrací [defs, body].
+ * Okno s obrázkem: plné pozadí `bg` s přetiskem vzoru, světlá silueta ikony v barvě `fg` s rastrovým stínem
+ * a obrysem, rekvizita v kroužku. Vrací [defs, body].
  */
 function artWindow(spec: ArtSpec, shape: Shape, opts: WindowOpts = {}): [string, string] {
   const p = palette(spec);
   const b = shapeBox(shape);
   const k = opts.k ?? 1;
-  const deckle = opts.deckle ?? true;
-  const defs = deckle
-    ? `<mask id="${ID}-win"><g fill="#fff" filter="url(#${ID}-mb)">${shapeMarkup(shape)}</g></mask>`
-    : `<clipPath id="${ID}-win">${shapeMarkup(shape)}</clipPath>`;
+  const defs = `<clipPath id="${ID}-win">${shapeMarkup(shape)}</clipPath>`;
   const size = opts.iconSize ?? Math.round(b.half * 1.15);
   const iy = b.cy - size / 2 + (opts.iconDy ?? 0);
   const ix = b.cx - size / 2;
   const scene = hasScene(spec.scene);
   const back =
-    wash(shapeMarkup(shape), p.bg, { op: scene ? 0.12 : 0.74, dx: 0, dy: 0 }) +
+    wash(shapeMarkup(shape), p.bg, { op: scene ? 0.2 : 1, dx: 0, dy: 0 }) +
     (scene ? '' : patternPaint(spec.pattern, p.accent, b, k)) +
     (opts.glow
       ? wash(rayShape(b.cx, b.cy + (opts.iconDy ?? 0), b.half * 1.6, 20), opts.glow, {
@@ -297,15 +286,16 @@ function artWindow(spec: ArtSpec, shape: Shape, opts: WindowOpts = {}): [string,
           dy: 0,
         })
       : '');
-  let body = `<g ${deckle ? 'mask' : 'clip-path'}="url(#${ID}-win)">${back}${scene ? sceneMarkup(spec.scene as string) : ''}</g>`;
+  let body = `<g clip-path="url(#${ID}-win)">${back}${scene ? sceneMarkup(spec.scene as string) : ''}</g>`;
   if (!scene) {
     const icon = iconRef(spec.icon, { x: ix, y: iy, size });
+    // Rastrový stín vedle siluety, papírový podklad, barva `fg` lehce vedle linky a silný obrys.
     body +=
       `<g class="art-icon"><defs>${icon.def}</defs>` +
-      wash(icon.use, '#000000', { op: 0.22, dx: size * 0.03, dy: size * 0.05 }) +
+      wash(icon.use, PR.ink, { op: 0.3, dx: size * 0.045, dy: size * 0.06 }) +
       knock(icon.use) +
-      wash(icon.use, p.fg, { op: 0.45, dx: 0.8 * k, dy: 0.6 * k }) +
-      ink(icon.use, Math.max(1, size / 70), { scale: icon.scale, op: 0.85 }) +
+      wash(icon.use, p.fg, { op: 1, dx: 1.8 * k, dy: 1.4 * k }) +
+      ink(icon.use, Math.max(1.4, size / 52), { scale: icon.scale }) +
       `</g>`;
   }
   if (spec.prop && opts.prop !== false && !scene) {
@@ -326,67 +316,64 @@ function artWindow(spec: ArtSpec, shape: Shape, opts: WindowOpts = {}): [string,
   return [defs, body];
 }
 
-/** Kosočtverečné drahokamy (počet = úroveň vzácnosti, čitelné i bez barev). */
-function gems(count: number, cy: number, color: string): string {
-  const gap = 26;
-  const start = 125 - ((count - 1) * gap) / 2;
+/** Kosočtverečné drahokamy na papírovém štítku vlevo nahoře (počet = úroveň vzácnosti, čitelné i bez barev). */
+function gems(count: number, color: string): string {
+  const gap = 18;
+  const x0 = 34;
+  const cy = 34;
   let d = '';
   for (let i = 0; i < count; i++) {
-    const x = start + i * gap;
-    d += `<path d="M${r1(x)} ${cy - 10}l9 10l-9 10l-9-10z"/>`;
+    const x = x0 + i * gap;
+    d += `<path d="M${r1(x)} ${cy - 8}l7 8l-7 8l-7-8z"/>`;
   }
-  return `<g class="art-gems" data-gems="${count}">${wash(d, color, { op: 0.85, dx: 0.6, dy: 0.5 })}${ink(d, 1.6, { op: 0.85 })}</g>`;
-}
-
-/** Lavírovaný okraj papíru v dané barvě. */
-function edgeBand(color: string, w = 9, op = 0.5, inset = 9, rx = 13): string {
-  return wash(
-    `<rect x="${inset}" y="${inset}" width="${250 - inset * 2}" height="${350 - inset * 2}" rx="${rx}" fill="none" stroke="currentColor" stroke-width="${w}"/>`,
-    color,
-    { op, dx: 0, dy: 0 },
+  const w = 22 + (count - 1) * gap + 14;
+  return (
+    `<g class="art-gems" data-gems="${count}">` +
+    `<rect x="22" y="22" width="${w}" height="24" rx="5" fill="${PR.paper}" stroke="${PR.ink}" stroke-width="3.5"/>` +
+    `<g fill="${inkOf(color)}" stroke="${PR.ink}" stroke-width="2.4" stroke-linejoin="round">${d}</g></g>`
   );
 }
 
-/** Papírový podklad karty. */
-function paperCard(rx = 18, edge: string = WC.paperEdge): string {
-  return `<rect x="2" y="2" width="246" height="346" rx="${rx}" fill="url(#${ID}-pp)" stroke="${edge}" stroke-width="3"/>`;
+/** Kartonový podklad karty se silnou linkou. */
+function paperCard(rx = 18, edge: string = PR.paperEdge, fill: string = PR.paper): string {
+  return `<rect x="4" y="4" width="242" height="342" rx="${rx}" fill="${inkOf(fill)}" stroke="${edge}" stroke-width="7"/>`;
+}
+
+/** Jméno na štítku karty: tučné zúžené verzálky; dlouhé jméno se stáhne, aby se vešlo. */
+function titleText(title: string, cx: number, y: number, maxW: number, color: string, size = 34): string {
+  // Nezlomitelné mezery (předložky) v SVG textu nic nedělají — a `&nbsp;` by po serializaci nebylo platné XML.
+  const text = title.replace(/\u00a0/g, ' ').toLocaleUpperCase('cs');
+  const chars = [...text].length;
+  const fs = chars > 15 ? size * 0.82 : size;
+  // Big Shoulders Display 800 v verzálkách ≈ 0,5 em na znak.
+  const fit = chars * fs * 0.5 > maxW ? ` textLength="${maxW}" lengthAdjust="spacingAndGlyphs"` : '';
+  return (
+    `<text class="art-title" x="${cx}" y="${y}" text-anchor="middle" font-family="'Big Shoulders Display', 'Barlow Condensed', 'Arial Narrow', sans-serif" ` +
+    `font-weight="800" font-size="${r1(fs)}" letter-spacing="0.5" fill="${color}"${fit}>${escapeXml(text)}</text>`
+  );
 }
 
 // ─────────────────────────── Druhy rámečků ───────────────────────────
 
-function jokerArt(spec: ArtSpec, rarity: JokerRarity): [string, string] {
+function jokerArt(spec: ArtSpec, rarity: JokerRarity, title?: string): [string, string] {
   const r = RARITY_COLORS[rarity] ?? RARITY_COLORS.common;
   const [defs, win] = artWindow(
     spec,
-    { kind: 'rect', x: 16, y: 16, w: 218, h: 262, rx: 22 },
+    { kind: 'rect', x: 18, y: 18, w: 214, h: 248, rx: 6 },
     {
       iconSize: 150,
       glow: rarity === 'legendary' ? r.frame : undefined,
     },
   );
-  const corners =
-    rarity === 'epic' || rarity === 'legendary'
-      ? [
-          [20, 20],
-          [230, 20],
-          [20, 330],
-          [230, 330],
-        ]
-          .map(([x, y]) => paint(shp.path(`M${x} ${(y ?? 0) - 8}l8 8l-8 8l-8-8z`), r.frame, 1.4))
-          .join('')
-      : '';
   const body =
-    paperCard(18, mixColor(r.frame, WC.paperEdge, 0.5)) +
-    edgeBand(r.frame, rarity === 'common' ? 7 : 10, rarity === 'common' ? 0.35 : 0.55) +
-    ink(shp.rect(14, 14, 222, 322, 12), 1.1, { color: r.dark, op: 0.55 }) +
+    paperCard(16) +
     win +
-    corners +
-    wash(shp.path('M40 300C90 290 160 290 210 300C214 314 160 322 125 320C90 320 36 314 40 300Z'), r.light, {
-      op: 0.6,
-      dx: 0,
-      dy: 0,
-    }) +
-    gems(r.gems, 309, r.frame);
+    `<rect x="18" y="18" width="214" height="248" rx="6" fill="none" stroke="${PR.ink}" stroke-width="5"/>` +
+    // Štítek se jménem v barvě vzácnosti (soutisk: barva lehce vedle linky).
+    `<rect x="16" y="278" width="218" height="54" rx="7" fill="${inkOf(r.frame)}" transform="translate(1.6 1.2)"/>` +
+    `<rect x="16" y="278" width="218" height="54" rx="7" fill="none" stroke="${PR.ink}" stroke-width="5"/>` +
+    (title ? titleText(title, 125, 317, 198, r.text) : '') +
+    gems(r.gems, r.frame);
   return [defs, body];
 }
 
@@ -402,7 +389,7 @@ function consumableArt(spec: ArtSpec, kind: ConsumableKind): [string, string] {
     let lines = '';
     for (let y = 30; y < 340; y += 16) lines += `M10 ${y}H240`;
     const body =
-      paperCard(10, '#c9b98d') +
+      paperCard(10) +
       ink(shp.path(lines), 0.9, { color: '#7f9fc4', op: 0.45 }) +
       ink(shp.path('M22 4V346'), 1.4, { color: '#c86060', op: 0.7 }) +
       win +
@@ -436,7 +423,7 @@ function consumableArt(spec: ArtSpec, kind: ConsumableKind): [string, string] {
       holes += `<circle cx="2" cy="${y}" r="7"/><circle cx="248" cy="${y}" r="7"/>`;
     const mask = `<mask id="${ID}-perf"><rect width="250" height="350" fill="#fff"/><g fill="#000">${holes}</g></mask>`;
     const body =
-      `<g mask="url(#${ID}-perf)"><rect x="0" y="0" width="250" height="350" fill="url(#${ID}-pp)"/>` +
+      `<g mask="url(#${ID}-perf)"><rect x="0" y="0" width="250" height="350" fill="${PR.paper}"/>` +
       wash(shp.rect(0, 0, 250, 350), '#f4e6c8', { op: 0.4, dx: 0, dy: 0 }) +
       `</g>` +
       wash(
@@ -463,13 +450,13 @@ function consumableArt(spec: ArtSpec, kind: ConsumableKind): [string, string] {
     { iconSize: 136 },
   );
   const body =
-    `<rect x="2" y="10" width="246" height="338" rx="14" fill="url(#${ID}-pp)" stroke="${c.dark}" stroke-opacity="0.5" stroke-width="2.5"/>` +
+    `<rect x="4" y="10" width="242" height="336" rx="14" fill="${PR.paper}" stroke="${PR.ink}" stroke-width="7"/>` +
     wash(shp.path('M4 24a12 12 0 0 1 12-12h218a12 12 0 0 1 12 12v34H4z'), c.frame, {
       op: 0.78,
       dx: 0,
       dy: 0,
     }) +
-    ink(shp.path('M16 46H234'), 1.2, { color: WC.paper, op: 0.6, extra: 'stroke-dasharray="6 6"' }) +
+    ink(shp.path('M16 46H234'), 1.2, { color: PR.paper, op: 0.6, extra: 'stroke-dasharray="6 6"' }) +
     [70, 180]
       .map(
         (x) =>
@@ -496,7 +483,7 @@ function voucherArt(spec: ArtSpec, tier: 1 | 2): [string, string] {
     `<circle cx="0" cy="282" r="16" fill="#000"/><circle cx="250" cy="282" r="16" fill="#000"/></mask>`;
   const body =
     `<g mask="url(#${ID}-tick)">` +
-    paperCard(16, mixColor(frame, WC.paperEdge, 0.5)) +
+    paperCard(16) +
     wash(shp.rect(4, 4, 242, 342, 14), light, { op: 0.45, dx: 0, dy: 0 }) +
     ink(shp.rect(10, 10, 230, 330, 10), 1.6, { color: frame, op: 0.75, extra: 'stroke-dasharray="8 5"' }) +
     `</g>` +
@@ -567,17 +554,16 @@ function chipArt(spec: ArtSpec, color: string): [string, string] {
   const [defs, win] = artWindow(
     spec,
     { kind: 'circle', cx: 60, cy: 60, r: 38 },
-    { iconSize: 50, k: 0.5, prop: false, deckle: false },
+    { iconSize: 50, k: 0.5, prop: false },
   );
   const body =
-    knock(shp.circle(60, 60, 56)) +
-    `<g filter="url(#${ID}-we)" style="mix-blend-mode:multiply"><circle cx="60" cy="60" r="56" fill="${c}" opacity="0.85"/></g>` +
+    `<circle cx="60" cy="60" r="56" fill="${inkOf(c)}"/>` +
     knock(notches) +
-    ink(shp.circle(60, 60, 56), 1.6, { op: 0.8 }) +
-    ink(shp.circle(60, 60, 44), 1.4, { color: WC.paper, op: 0.85, extra: 'stroke-dasharray="4 4"' }) +
+    `<circle cx="60" cy="60" r="56" fill="none" stroke="${PR.ink}" stroke-width="4"/>` +
+    ink(shp.circle(60, 60, 45), 1.6, { color: PR.paper, extra: 'stroke-dasharray="5 4"' }) +
     knock(shp.circle(60, 60, 38)) +
     win +
-    ink(shp.circle(60, 60, 38), 1.4, { op: 0.8 });
+    `<circle cx="60" cy="60" r="38" fill="none" stroke="${PR.ink}" stroke-width="3.2"/>`;
   return [defs, body];
 }
 
@@ -586,7 +572,7 @@ function tagArt(spec: ArtSpec): [string, string] {
   const [defs, win] = artWindow(
     spec,
     { kind: 'circle', cx: 60, cy: 64, r: 38 },
-    { iconSize: 48, k: 0.5, deckle: false },
+    { iconSize: 48, k: 0.5 },
   );
   const body =
     ink(shp.path('M60 14C52 6 44 2 36 2'), 1.8, { color: '#8a6a3a', op: 0.9 }) +
@@ -612,7 +598,7 @@ function stakeArt(spec: ArtSpec): [string, string] {
   const [defs, win] = artWindow(
     spec,
     { kind: 'circle', cx: 60, cy: 60, r: 40 },
-    { iconSize: 52, k: 0.5, deckle: false },
+    { iconSize: 52, k: 0.5 },
   );
   const body =
     paint(shp.path(`${d}z`), '#f4e6c8', 1.6, { op: 0.5 }) +
@@ -637,7 +623,7 @@ function challengeArt(spec: ArtSpec): [string, string] {
   for (let y = 2, j = 0; y < 348; y += 10, j++)
     for (let x = 2 + (j % 2) * 10; x < 248; x += 20) sq += shp.rect(x, y, 10, 10);
   const body =
-    paperCard(16, '#8a8478') +
+    paperCard(16) +
     `<g clip-path="url(#${ID}-chk)">${wash(sq, INK, { op: 0.7, dx: 0, dy: 0 })}</g>` +
     knock(shp.rect(22, 22, 206, 306, 14)) +
     win +
@@ -651,7 +637,7 @@ function tileArt(spec: ArtSpec, round: boolean): [string, string] {
   const shape: Shape = round
     ? { kind: 'circle', cx: 60, cy: 60, r: 52 }
     : { kind: 'rect', x: 8, y: 8, w: 104, h: 104, rx: 18 };
-  const [defs, win] = artWindow(spec, shape, { iconSize: 66, k: 0.5, prop: false, deckle: false });
+  const [defs, win] = artWindow(spec, shape, { iconSize: 66, k: 0.5, prop: false });
   return [defs, knock(shapeMarkup(shape)) + win + ink(shapeMarkup(shape), 2, { op: 0.85 })];
 }
 
@@ -659,7 +645,7 @@ function tileArt(spec: ArtSpec, round: boolean): [string, string] {
 
 /** SVG markup obrázku obsahu s placeholdery `%ID%` (klíč bitmapové keše). */
 export function artMarkupRaw(kind: ArtKind, spec: ArtSpec, opts: ArtOptions = {}): string {
-  beginArt();
+  beginArt(isRoundArt(kind) ? 0.5 : 1);
   if (kind === 'deck') {
     // Balíček = rub karty v barvách balíčku.
     return cardBackMarkupRaw(spec).replace('class="pc-svg pc-back"', 'class="art-svg art-deck"');
@@ -667,7 +653,7 @@ export function artMarkupRaw(kind: ArtKind, spec: ArtSpec, opts: ArtOptions = {}
   let parts: [string, string];
   switch (kind) {
     case 'joker':
-      parts = jokerArt(spec, opts.rarity ?? 'common');
+      parts = jokerArt(spec, opts.rarity ?? 'common', opts.title);
       break;
     case 'consumable':
       parts = consumableArt(spec, opts.consumableKind ?? 'pranostika');
@@ -714,9 +700,8 @@ export function artMarkupRaw(kind: ArtKind, spec: ArtSpec, opts: ArtOptions = {}
     .join(' ');
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX[kind]}" class="art-svg art-${kind}" ${data} focusable="false">` +
-    `<defs>${wcDefs({ width: w, height: h, scale: round ? 0.5 : 1 })}${defs}</defs>` +
+    `<defs>${printDefs({ width: w, height: h })}${defs}</defs>` +
     body +
-    (round ? '' : grainOver(w, h, 16)) +
     `</svg>`
   );
 }
@@ -728,7 +713,7 @@ export function artMarkup(kind: ArtKind, spec: ArtSpec, opts: ArtOptions = {}): 
 
 /** SVG element obrázku obsahu (s `label` přístupný jako `role="img"`). */
 export function artElement(kind: ArtKind, spec: ArtSpec, opts: ArtOptions = {}): SVGSVGElement {
-  return labelSvg(rasterSvg(artMarkupRaw(kind, spec, opts)), opts.label);
+  return labelSvg(svgElement(artMarkupRaw(kind, spec, opts)), opts.label);
 }
 
 /** Záložní obrázek pro neznámé id (obsah se mohl mezi verzemi změnit). */
@@ -753,6 +738,7 @@ export function contentArt(
       const def = reg.jokers[id];
       spec = def?.art;
       o.rarity = def?.rarity;
+      if (def && hasKey(`jokers.${id}.name`)) o.title = t(`jokers.${id}.name`);
       break;
     }
     case 'consumable': {

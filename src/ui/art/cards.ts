@@ -1,15 +1,15 @@
 /**
- * SVG hrací karty — líc a rub ve výtvarném stylu E1 „Pohádková knížka“ (tuš a akvarel, src/ui/art/watercolor.ts;
- * vlastní procedurální grafika, CLAUDE.md kap. 7).
+ * SVG hrací karty — líc a rub ve výtvarném stylu „Sirkárna“ (retro tisk, src/ui/art/print.ts; vlastní
+ * procedurální grafika, CLAUDE.md kap. 7).
  *
  *  - viewBox 250 × 350 (poměr 5 : 7), čitelné při šířce ~70–110 px,
  *  - rohové indexy 2–10, J, Q, K, A + symbol barvy **vždy** (kvůli barvoslepým),
- *  - pipy 2–10 v klasickém rozložení lavírované vodovkou s obrysem tuší, eso s velkým symbolem,
+ *  - pipy 2–10 v klasickém rozložení — plná tisková barva lehce vedle silné linky, eso s velkým symbolem,
  *  - figury stylizované česky: Kluk s čepicí a peřím, Dáma v šátku na puntíky s korálemi, Král s korunou,
  *    knírem a hermelínem — dvouhlavé (zrcadlené) jako skutečné karty,
- *  - barvy karet jsou v obrázku zapečené (bitmapová keš, raster.ts): klasické (♥♦ červená, ♠♣ tmavá), nebo
- *    čtyřbarevné pro barvoslepé (♦ modrá, ♣ zelená) — podle třídy `.colorblind` na <html>,
- *  - vylepšení mění papír/rámeček (kamenná nemá index ani barvu), pečeť je vosková pečeť vlevo dole,
+ *  - barvy karet jsou v obrázku zapečené: klasické (♥♦ rumělka, ♠♣ čerň), nebo čtyřbarevné pro barvoslepé
+ *    (♦ modrá, ♣ zelená) — podle třídy `.colorblind` na <html>,
+ *  - vylepšení mění rámeček a tón karty (kamenná nemá index ani barvu), pečeť je vosková pečeť vlevo dole,
  *    edice a stav „mimo provoz“ řeší CSS na obalu (components/card.ts).
  *
  * Markup se skládá jako řetězec (rychlé, kešovatelné); id ve `<defs>` jsou pro každou instanci unikátní.
@@ -19,10 +19,10 @@ import type { Card, Rank, Suit } from '../../engine/types';
 import { registry as defaultRegistry } from '../../content';
 import { t } from '../../i18n/cs';
 import { SUIT_PATH_D, escapeXml, iconsLoaded, safeColor } from './icons';
-import { prewarmRaster, rasterSvg } from './raster';
+import { svgElement, withUniqueIds } from './svg';
 import {
-  WC,
-  WC_PAL,
+  PR,
+  PR_PAL,
   beginArt,
   grainOver,
   iconShape,
@@ -34,8 +34,8 @@ import {
   paintIcon,
   shp,
   wash,
-  wcDefs,
-} from './watercolor';
+  printDefs,
+} from './print';
 
 export const CARD_WIDTH = 250;
 export const CARD_HEIGHT = 350;
@@ -66,18 +66,19 @@ interface SuitInk {
   cloth: string;
 }
 
+/** Tiskové barvy karet: ♠♣ čerň (oblečení figur námořnická), ♥♦ rumělka; pro barvoslepé ♦ modrá, ♣ zelená. */
 const SUIT_INKS: Readonly<Record<SuitScheme, Readonly<Record<Suit, SuitInk>>>> = {
   classic: {
-    S: { ink: '#262b38', wash: '#2f3542', cloth: '#3d4a66' },
-    H: { ink: '#b8392e', wash: '#c8463a', cloth: '#c8463a' },
-    D: { ink: '#b8392e', wash: '#c8463a', cloth: '#c8463a' },
-    C: { ink: '#262b38', wash: '#2f3542', cloth: '#3d4a66' },
+    S: { ink: '#1a1714', wash: '#1a1714', cloth: '#22365c' },
+    H: { ink: '#b8302a', wash: '#d7442c', cloth: '#d7442c' },
+    D: { ink: '#b8302a', wash: '#d7442c', cloth: '#d7442c' },
+    C: { ink: '#1a1714', wash: '#1a1714', cloth: '#22365c' },
   },
   four: {
-    S: { ink: '#262b38', wash: '#2f3542', cloth: '#3d4a66' },
-    H: { ink: '#b8392e', wash: '#c8463a', cloth: '#c8463a' },
-    D: { ink: '#1f55a8', wash: '#2f62b8', cloth: '#2f62b8' },
-    C: { ink: '#1d6e38', wash: '#2f8a4a', cloth: '#2f8a4a' },
+    S: { ink: '#1a1714', wash: '#1a1714', cloth: '#22365c' },
+    H: { ink: '#b8302a', wash: '#d7442c', cloth: '#d7442c' },
+    D: { ink: '#2f5fa8', wash: '#2f5fa8', cloth: '#2f5fa8' },
+    C: { ink: '#2f6b3a', wash: '#2f6b3a', cloth: '#2f6b3a' },
   },
 };
 
@@ -163,7 +164,7 @@ function rankGlyphs(label: string, color: string): string {
   const tx = 30 - (width * sx) / 2;
   return (
     `<g class="pc-rank" transform="translate(${r1(tx)} 18) scale(${r3(sx)} ${scale})" fill="none" stroke="${color}" ` +
-    `stroke-width="6" stroke-linecap="round" stroke-linejoin="round" filter="url(#${ID}-wi)">${d}</g>`
+    `stroke-width="6.6" stroke-linecap="round" stroke-linejoin="round">${d}</g>`
   );
 }
 
@@ -285,7 +286,7 @@ function ace(suit: Suit, si: SuitInk): string {
 
 // ─────────────────────────── Figury ───────────────────────────
 
-const P = WC_PAL;
+const P = PR_PAL;
 
 /** Obličej (společný pro všechny figury); `lips` = rtěnka (Dáma). */
 function face(lips: boolean): string {
@@ -481,7 +482,7 @@ function tint(color: string, op: number): string {
 function surface(enhancement: string | null, reg: ContentRegistry): Surface {
   switch (enhancement) {
     case null:
-      return { edge: WC.paperEdge };
+      return { edge: PR.paperEdge };
     case 'bonus':
       return { edge: '#9fb8dc', under: band('#3d6ab0') };
     case 'mult':
@@ -618,7 +619,7 @@ function iconKnockShape(name: string, x: number, y: number, size: number): strin
 function svgRoot(classes: string, style: string, data: string, body: string, defs = ''): string {
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${CARD_VIEWBOX}" class="${classes}"${style ? ` style="${style}"` : ''} ${data} focusable="false">` +
-    `<defs>${wcDefs({ width: CARD_WIDTH, height: CARD_HEIGHT })}${defs}</defs>` +
+    `<defs>${printDefs({ width: CARD_WIDTH, height: CARD_HEIGHT })}${defs}</defs>` +
     body +
     `</svg>`
   );
@@ -630,8 +631,9 @@ export function suitColorStyle(suit: Suit): string {
   return `color: var(${v.cssVar}, ${v.fallback})`;
 }
 
-function paperRect(sf: Surface): string {
-  return `<rect x="2" y="2" width="246" height="346" rx="${PAPER_RX}" fill="url(#${ID}-pp)" stroke="${sf.edge}" stroke-width="3"/>`;
+/** Karton karty se silnou linkou (vylepšení se pozná podle pruhu a tónu, okraj je vždy čerň). */
+function paperRect(_sf: Surface): string {
+  return `<rect x="3.5" y="3.5" width="243" height="343" rx="${PAPER_RX}" fill="${PR.paper}" stroke="${PR.ink}" stroke-width="6"/>`;
 }
 
 function buildFace(card: CardFace, reg: ContentRegistry, scheme: SuitScheme): string {
@@ -697,13 +699,7 @@ export function cardFaceMarkupRaw(
   return markup;
 }
 
-let uid = 0;
-/** Nahradí placeholder id unikátním prefixem (každá instance SVG má vlastní `<defs>`). */
-export function withUniqueIds(markup: string): string {
-  if (!markup.includes(ID)) return markup;
-  uid += 1;
-  return markup.split(ID).join(`ka${uid}`);
-}
+export { withUniqueIds };
 
 /** SVG markup líce karty připravený k vložení (unikátní id). */
 export function cardFaceMarkup(card: CardFace, reg?: ContentRegistry, scheme?: SuitScheme): string {
@@ -724,19 +720,19 @@ function tulip(cx: number, cy: number, s: number): string {
     `C${cx + 27 * s} ${cy + 40 * s} ${cx + 15 * s} ${cy + 44 * s} ${cx} ${cy + 44 * s}Z`;
   return (
     ink(shp.path(`M${cx} ${cy}V${cy + 52 * s}`), 2.2) +
-    paint(shp.path(leaves), WC_PAL.green, 1.6) +
-    paint(shp.path(head), WC_PAL.red, 1.8)
+    paint(shp.path(leaves), PR_PAL.green, 1.6) +
+    paint(shp.path(head), PR_PAL.red, 1.8)
   );
 }
 
 /**
- * Rub karty: indigová vodovka s rozpitými srdíčky a papírovým oválem s tulipánem; s `ArtSpec` balíčku v jeho
- * barvách a s jeho ikonou. Markup s placeholderem `%ID%` (jako `cardFaceMarkupRaw`).
+ * Rub karty: modrý tisk se srdíčky a kartonovým oválem s tulipánem; s `ArtSpec` balíčku v jeho barvách a s jeho
+ * ikonou. Markup s placeholderem `%ID%` (jako `cardFaceMarkupRaw`).
  */
 export function cardBackMarkupRaw(spec?: ArtSpec): string {
   beginArt();
   const bg = safeColor(spec?.bg, '#3d5a8c');
-  const fg = safeColor(spec?.fg, WC_PAL.gold);
+  const fg = safeColor(spec?.fg, PR_PAL.gold);
   const accent = safeColor(spec?.accent, spec ? fg : '#c8463a');
   let blots = '';
   for (let j = 0, y = 40; y < 330; y += 34, j++) {
@@ -748,11 +744,12 @@ export function cardBackMarkupRaw(spec?: ArtSpec): string {
     ? paintIcon(spec.icon, { x: 85, y: 135, size: 80 }, bg, { op: 0.75 })
     : tulip(125, 172, 1.05);
   const body =
-    `<rect x="2" y="2" width="246" height="346" rx="${PAPER_RX}" fill="url(#${ID}-pp)" stroke="${WC.paperEdge}" stroke-width="3"/>` +
-    `<g mask="url(#${ID}-bm)">` +
-    wash(shp.rect(14, 14, 222, 322, 10), bg, { op: 0.82, dx: 0, dy: 0 }) +
-    wash(blots, accent, { op: 0.5, dx: 0, dy: 0 }) +
+    `<rect x="3.5" y="3.5" width="243" height="343" rx="${PAPER_RX}" fill="${PR.paper}" stroke="${PR.ink}" stroke-width="6"/>` +
+    `<g clip-path="url(#${ID}-bm)">` +
+    wash(shp.rect(16, 16, 218, 318, 8), bg, { op: 1, dx: 0, dy: 0 }) +
+    wash(blots, accent, { op: 1, dx: 1.6, dy: 1.2 }) +
     `</g>` +
+    `<rect x="16" y="16" width="218" height="318" rx="8" fill="none" stroke="${PR.ink}" stroke-width="4"/>` +
     knock(shp.ellipse(125, 175, 60, 80)) +
     ink(shp.ellipse(125, 175, 60, 80), 2, { color: mixColor(bg, '#000000', 0.3), op: 0.8 }) +
     ink(shp.ellipse(125, 175, 52, 72), 1, {
@@ -762,7 +759,7 @@ export function cardBackMarkupRaw(spec?: ArtSpec): string {
     }) +
     emblem +
     grainOver(CARD_WIDTH, CARD_HEIGHT, PAPER_RX);
-  const defs = `<mask id="${ID}-bm"><rect x="14" y="14" width="222" height="322" rx="16" fill="#fff" filter="url(#${ID}-mb)"/></mask>`;
+  const defs = `<clipPath id="${ID}-bm"><rect x="16" y="16" width="218" height="318" rx="8"/></clipPath>`;
   return svgRoot('pc-svg pc-back', '', 'data-back="1"', body, defs);
 }
 
@@ -790,22 +787,12 @@ export function cardFaceElement(
   const markup = card.faceDown
     ? cardBackMarkupRaw(opts.back)
     : cardFaceMarkupRaw(card, opts.registry, opts.scheme);
-  return labelSvg(rasterSvg(markup), opts.label);
+  return labelSvg(svgElement(markup), opts.label);
 }
 
 /** SVG element rubu karty (balíček, karty lícem dolů). */
 export function cardBackElement(opts: { label?: string; spec?: ArtSpec } = {}): SVGSVGElement {
-  return labelSvg(rasterSvg(cardBackMarkupRaw(opts.spec)), opts.label);
-}
-
-/**
- * Předpřipraví bitmapy líců karet (např. celého balíčku na začátku runu) a rubu, aby se při rozdání nemusely
- * kreslit. Běží v době nečinnosti prohlížeče (raster.ts); bez canvasu nic nedělá.
- */
-export function prewarmCardArt(cards: readonly CardFace[], reg: ContentRegistry = defaultRegistry()): void {
-  const markups = new Set<string>([cardBackMarkupRaw()]);
-  for (const c of cards) markups.add(cardFaceMarkupRaw(c, reg));
-  prewarmRaster([...markups]);
+  return labelSvg(svgElement(cardBackMarkupRaw(opts.spec)), opts.label);
 }
 
 /** Vyprázdní keš líců (např. po načtení ikon, aby odznaky dostaly skutečné ikony). */

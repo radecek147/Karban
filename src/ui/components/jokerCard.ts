@@ -15,7 +15,7 @@ import '../styles/cards.css';
 import type { ContentRegistry } from '../../engine/content-types';
 import type { JokerInstance, Modifiers, RunState } from '../../engine/types';
 import { registry as defaultRegistry } from '../../content';
-import { t } from '../../i18n/cs';
+import { hasKey, t } from '../../i18n/cs';
 import { formatMoney, formatNumber } from '../../i18n/format';
 import { artElement, UNKNOWN_ART } from '../art/art';
 import { iconElement } from '../art/icons';
@@ -138,7 +138,9 @@ function render(el: JokerEl, joker: Readonly<JokerInstance>, opts: JokerCardOpti
   const reg = opts.registry ?? defaultRegistry();
   const def = reg.jokers[joker.defId];
   const rarity = def?.rarity ?? 'common';
-  const art = artElement('joker', def?.art ?? UNKNOWN_ART, { rarity });
+  // Jméno se tiskne na štítek karty — žolíci se poznají i bez najetí myší.
+  const title = def && hasKey(`jokers.${joker.defId}.name`) ? t(`jokers.${joker.defId}.name`) : undefined;
+  const art = artElement('joker', def?.art ?? UNKNOWN_ART, { rarity, title });
   // Spravuje jen vlastní třídy — cizí (např. stav tažení z obrazovky) nechává být.
   for (const cls of [...el.classList])
     if (cls.startsWith('rarity-') || cls.startsWith('ed-')) el.classList.remove(cls);

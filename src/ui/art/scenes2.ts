@@ -1,5 +1,5 @@
 /**
- * Další ručně kreslené scény (styl E1) — legendární a výrazné postavy. Formát tahů viz `scenes.ts`;
+ * Další ručně kreslené scény (tisk ve stylu Sirkárna) — legendární a výrazné postavy. Formát tahů viz `scenes.ts`;
  * navíc `['s', role, d, šířka]` = lavírovaná linka (prstenec, stuha) v barvě role.
  * Vlastní kresby (Karban, 2026) bez předloh — pověsti a reálie jsou volné dílo, podoba postav je naše.
  */

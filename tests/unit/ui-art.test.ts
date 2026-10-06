@@ -14,7 +14,7 @@ import { NBSP } from '../../src/i18n/format';
 import { artMarkup, blindArt, contentArt, RARITY_COLORS, type ArtKind } from '../../src/ui/art/art';
 import { cardBackMarkup, cardFaceElement, cardFaceMarkup, SUIT_VARS } from '../../src/ui/art/cards';
 import { hasIcon, iconMarkup, iconsLoaded, loadIcons, safeColor } from '../../src/ui/art/icons';
-import { vivid } from '../../src/ui/art/watercolor';
+import { inkOf } from '../../src/ui/art/print';
 import { createCardView, updateCardView } from '../../src/ui/components/card';
 import { createConsumableCard, createContentCard } from '../../src/ui/components/consumableCard';
 import { createJokerCard, previewJoker } from '../../src/ui/components/jokerCard';
@@ -227,7 +227,7 @@ describe('renderer ArtSpec', () => {
       const markup = artMarkup('joker', SPEC, { rarity: rarity as keyof typeof RARITY_COLORS });
       const doc = expectValidSvg(markup, rarity);
       expect(doc.documentElement.getAttribute('data-rarity')).toBe(rarity);
-      expect(markup).toContain(vivid(colors.frame));
+      expect(markup).toContain(inkOf(colors.frame));
       expect(doc.querySelector('.art-gems')?.getAttribute('data-gems'), rarity).toBe(String(colors.gems));
     }
   });
@@ -246,7 +246,7 @@ describe('renderer ArtSpec', () => {
   });
 
   it('šéf: žeton v barvě BossDef.color; nebezpečné barvy a názvy ikon se escapují', () => {
-    expect(artMarkup('boss', SPEC, { color: '#7a2e3a' })).toContain('fill="#7a2e3a"');
+    expect(artMarkup('boss', SPEC, { color: '#7a2e3a' })).toContain(`fill="${inkOf('#7a2e3a')}"`);
     const evil = artMarkup('joker', { icon: '"><script>x</script>', bg: 'red;"><b', fg: '#fff' });
     expectValidSvg(evil, 'evil');
     expect(evil).not.toContain('<script>');
@@ -279,7 +279,7 @@ describe('renderer ArtSpec', () => {
     for (const kind of ['small', 'big', 'boss'] as const) {
       expect(blindArt(kind, null).getAttribute('data-kind')).toBe('blind');
     }
-  }, 30_000); // ~300 akvarelových obrázků vč. scén se v happy-dom parsuje pomalu (zvlášť při souběhu testů)
+  }, 30_000); // ~300 obrázků vč. scén se v happy-dom parsuje pomalu (zvlášť při souběhu testů)
 });
 
 // ─────────────────────────── Popisy ───────────────────────────

@@ -1,5 +1,5 @@
 /**
- * Portréty postav pro žolíky-lidi (styl E1) skládané z ručně kreslených dílů: pozadí s motivem, oblečení s límcem,
+ * Portréty postav pro žolíky-lidi (tisk ve stylu Sirkárna) skládané z ručně kreslených dílů: pozadí s motivem, oblečení s límcem,
  * obličej (výraz, brýle, vousy), účes, pokrývka hlavy a rekvizita. Každý díl je kresba ve stejném rukopisu
  * jako ostatní scény (`scenes.ts`) — postavy se liší čepicí, účesem, barvami, pozadím a tím, co drží v ruce.
  * Výsledkem jsou tahy scény (`SceneOp`), takže se kreslí stejně jako ručně kreslené scény; klíč je `fig-<id>`.

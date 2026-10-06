@@ -15,7 +15,6 @@ import '../../styles/game.css';
 import type { BlindKind, HandType, RunPhase } from '../../../engine';
 import { t } from '../../../i18n/cs';
 import type { App, Screen, ScreenFactory } from '../../app';
-import { prewarmCardArt } from '../../art/cards';
 import { tableEmblem } from '../../art/table';
 import { backButton } from '../../components/button';
 import { closeAllModals, isModalOpen } from '../../components/modal';
@@ -177,8 +176,6 @@ class GameView implements PresentView {
     });
     this.unsubscribe = controller.subscribe(() => this.refresh());
     this.refresh();
-    // Akvarelové karty balíčku se předkreslí do bitmap v době nečinnosti (src/ui/art/raster.ts).
-    prewarmCardArt(controller.state.deck, controller.registry);
     // Výchozí focus po vložení do stránky (router fokusuje nadpis, který focus nebere).
     queueMicrotask(() => {
       // Oznámení z doby před vložením (odemčení při obnovení / založení runu) se přesunou z rohu nad stůl — jinak

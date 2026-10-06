@@ -1,41 +1,30 @@
 // @vitest-environment happy-dom
 /**
- * Styl „Pohádková knížka“ (barvy E1, linka E3): akvarelová sada, stabilní markup (klíč bitmapové keše), scény, barevná schémata karet
- * a bitmapová keš bez canvasu (happy-dom).
+ * Styl „Sirkárna“ (retro tisk, src/ui/art/print.ts): tisková sada bez filtrů, inkousty, stabilní markup, scény,
+ * barevná schémata karet a SVG vkládané přímo do stránky.
  */
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { registry } from '../../src/content';
 import type { Card } from '../../src/engine/types';
 import { artMarkupRaw, contentArt } from '../../src/ui/art/art';
-import {
-  cardBackMarkupRaw,
-  cardFaceElement,
-  cardFaceMarkupRaw,
-  prewarmCardArt,
-} from '../../src/ui/art/cards';
+import { cardBackMarkupRaw, cardFaceElement, cardFaceMarkupRaw } from '../../src/ui/art/cards';
 import { loadIcons } from '../../src/ui/art/icons';
 import {
-  forceRaster,
-  prewarmRaster,
-  rasterCacheSize,
-  rasterSupported,
-  rasterSvg,
-} from '../../src/ui/art/raster';
-import { hasScene, SCENES, sceneMarkup } from '../../src/ui/art/scenes';
-import { stamgastMarkup } from '../../src/ui/art/stamgast';
-import {
+  INKS,
+  INK_WEIGHT,
+  PR,
   beginArt,
   iconRef,
   ink,
-  INK_WEIGHT,
+  inkOf,
   mixColor,
   paint,
-  vivid,
+  printDefs,
   wash,
-  washOpacity,
-  WC,
-  wcDefs,
-} from '../../src/ui/art/watercolor';
+} from '../../src/ui/art/print';
+import { hasScene, SCENES, sceneMarkup } from '../../src/ui/art/scenes';
+import { stamgastMarkup } from '../../src/ui/art/stamgast';
+import { svgElement } from '../../src/ui/art/svg';
 import { createCardView, refreshCardColors } from '../../src/ui/components/card';
 
 const REG = registry();
@@ -58,46 +47,51 @@ function card(rank: Card['rank'], suit: Card['suit'], patch: Partial<Card> = {})
 beforeAll(() => loadIcons());
 
 afterEach(() => {
-  forceRaster(null);
   document.documentElement.classList.remove('colorblind');
 });
 
-describe('akvarelová sada', () => {
-  it('defs obsahují papír, lavírování, tuš, natrhlý okraj a zrno s placeholdery id', () => {
-    const defs = wcDefs({ width: 250, height: 350 });
-    for (const id of ['pe', 'pp', 'we', 'wi', 'mb', 'ge', 'gp']) expect(defs).toContain(`id="%ID%-${id}"`);
-    expect(defs).toContain('feDisplacementMap');
-    expect(defs).toContain('feDiffuseLighting');
+describe('tisková sada', () => {
+  it('defs mají papír s placeholderem id a žádné filtry', () => {
+    const defs = printDefs({ width: 250, height: 350 });
+    expect(defs).toContain('id="%ID%-pp"');
+    expect(defs).not.toContain('<filter');
   });
 
-  it('lavírování, tuš a malba mají filtr a barvu; po odstranění filtrů zůstane plochá kresba', () => {
-    const w = wash('<rect width="10" height="10"/>', '#c8463a', { op: 0.5 });
-    expect(w).toContain('filter="url(#%ID%-we)"');
-    // Sytější odstíny: barva odtažená od šedi, krytí zesílené křivkou (0,5 → 0,66).
-    expect(w).toContain(`fill="${vivid('#c8463a')}"`);
-    expect(w).toContain('opacity="0.66"');
-    // Linka E3: tuš je silnější (×1,1 / 0,72) a má druhý, slabší tah štětcem bez filtru.
+  it('barvy se přitáhnou k nejbližšímu inkoustu; jiné zápisy beze změny', () => {
+    for (const c of INKS) expect(inkOf(c)).toBe(c);
+    expect(INKS).toContain(inkOf('#c8463a'));
+    expect(inkOf('#c8463a')).toBe('#d7442c');
+    expect(inkOf('#f2b48e')).toBe('#f2b38c');
+    expect(inkOf('currentColor')).toBe('currentColor');
+  });
+
+  it('silná plocha = plný inkoust posunutý vedle linky, slabá = rastr; linka bez filtru', () => {
+    beginArt();
+    const solid = wash('<rect width="10" height="10"/>', '#c8463a', { op: 0.8 });
+    expect(solid).toContain('fill="#d7442c"');
+    expect(solid).toContain('transform="translate(2.2 1.6)"');
+    const tint = wash('<rect/>', '#c8463a', { op: 0.2, dx: 0, dy: 0 });
+    expect(tint).toContain('<pattern id="%ID%-htd7442c-');
+    expect(tint).toContain('fill="url(#%ID%-htd7442c-');
+    // Stejný rastr v jednom obrázku se definuje jen jednou.
+    expect(wash('<rect/>', '#c8463a', { op: 0.2 })).not.toContain('<pattern');
     const line = ink('<path d="M0 0L5 5"/>', 2);
     expect(line).toContain(`stroke-width="${Math.round(2 * INK_WEIGHT * 100) / 100}"`);
-    expect(line).toContain(`stroke="${WC.ink}"`);
-    expect(line.match(/<g /g)).toHaveLength(2);
-    expect(line).toContain('opacity="0.55"');
-    // Barevné ozdobné tahy, čárkované linky a přesná tloušťka (`weight: 1`) zůstávají bez váhy a bez druhého tahu.
+    expect(line).toContain(`stroke="${PR.ink}"`);
+    expect(line).not.toContain('filter');
+    // Barevné ozdobné tahy a přesná tloušťka (`weight: 1`) zůstávají bez váhy.
     expect(ink('<path/>', 2, { color: '#3d6ab0' })).toBe(
-      '<g fill="none" stroke="#3d6ab0" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" filter="url(#%ID%-wi)"><path/></g>',
+      '<g fill="none" stroke="#3d6ab0" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path/></g>',
     );
-    expect(ink('<path/>', 2, { extra: 'stroke-dasharray="3 7"' }).match(/<g /g)).toHaveLength(1);
     expect(ink('<path/>', 6.6, { weight: 1 })).toContain('stroke-width="6.6"');
-    // Tenká linka (pod 0,9) druhý tah nemá.
-    expect(ink('<path/>', 0.5).match(/<g /g)).toHaveLength(1);
     const p = paint('<circle r="4"/>', '#3d6ab0', 2);
-    expect(p).toContain('url(#%ID%-pp)');
-    expect(p).toContain(vivid('#3d6ab0'));
+    expect(p).toContain(`fill="${PR.paper}"`);
+    expect(p).toContain(inkOf('#3d6ab0'));
     // Nebezpečná barva z dat se nepropustí.
     expect(wash('<rect/>', 'red;"><script>')).not.toContain('<script>');
   });
 
-  it('sdílené ikony se číslují od začátku každého obrázku (stejný vstup = stejný markup)', () => {
+  it('sdílené ikony a rastry se číslují od začátku každého obrázku (stejný vstup = stejný markup)', () => {
     beginArt();
     const a = iconRef('beer-stein', { x: 0, y: 0, size: 50 });
     beginArt();
@@ -111,23 +105,35 @@ describe('akvarelová sada', () => {
     expect(mixColor('#c8463a', '#c8463a', 0.3)).toBe('#c8463a');
   });
 
-  it('sytější odstíny: šedá a jiné zápisy beze změny, barva se odtáhne od šedi, krytí roste a drží pořadí', () => {
-    expect(vivid('#808080')).toBe('#808080');
-    expect(vivid('currentColor')).toBe('currentColor');
-    expect(vivid('#5f9a46', 1)).toBe('#5f9a46');
-    // Zelená: zelený kanál nahoru, červený a modrý dolů.
-    const g = vivid('#5f9a46');
-    expect(parseInt(g.slice(3, 5), 16)).toBeGreaterThan(0x9a);
-    expect(parseInt(g.slice(1, 3), 16)).toBeLessThan(0x5f);
-    expect(vivid('#ffffff')).toBe('#ffffff');
-    expect(washOpacity(0)).toBe(0);
-    expect(washOpacity(1)).toBe(1);
-    expect(washOpacity(0.62)).toBeGreaterThan(0.62);
-    expect(washOpacity(0.4)).toBeLessThan(washOpacity(0.62));
+  it('žádný obrázek nemá filtry ani prolínání (vkládá se přímo jako SVG)', () => {
+    const all = [
+      ...Object.values(REG.jokers).map((d) => artMarkupRaw('joker', d.art, { rarity: d.rarity, title: 'X' })),
+      ...Object.values(REG.consumables).map((d) =>
+        artMarkupRaw('consumable', d.art, { consumableKind: d.kind }),
+      ),
+      ...Object.values(REG.bosses).map((d) => artMarkupRaw('boss', d.art, { color: d.color })),
+      cardBackMarkupRaw(),
+      cardFaceMarkupRaw(card(13, 'H'), REG, 'classic'),
+      stamgastMarkup(),
+    ];
+    for (const m of all) {
+      expect(m).not.toContain('filter=');
+      expect(m).not.toContain('mix-blend-mode');
+    }
+  });
+
+  it('žolík má jméno na štítku (verzálky, dlouhé se stáhne)', () => {
+    const def = REG.jokers.gardener!;
+    const m = artMarkupRaw('joker', def.art, { rarity: def.rarity, title: 'Zahrádkář Venca' });
+    expect(m).toContain('class="art-title"');
+    expect(m).toContain('ZAHRÁDKÁŘ VENCA');
+    expect(m).toContain('textLength=');
+    const el = contentArt('joker', 'gardener');
+    expect(el.querySelector('.art-title')?.textContent).toBe('ZAHRÁDKÁŘ VENCA');
   });
 });
 
-describe('stabilní markup (klíč bitmapové keše)', () => {
+describe('stabilní markup', () => {
   it('obrázky obsahu i karty dávají při opakování stejný markup', () => {
     for (const [id, def] of Object.entries(REG.jokers).slice(0, 20)) {
       expect(artMarkupRaw('joker', def.art, { rarity: def.rarity }), id).toBe(
@@ -144,8 +150,8 @@ describe('stabilní markup (klíč bitmapové keše)', () => {
     const classic = cardFaceMarkupRaw(card(7, 'D'), REG, 'classic');
     const four = cardFaceMarkupRaw(card(7, 'D'), REG, 'four');
     expect(classic).not.toBe(four);
-    expect(classic).toContain(vivid('#c8463a'));
-    expect(four).toContain(vivid('#2f62b8'));
+    expect(classic).toContain('#d7442c');
+    expect(four).toContain('#2f5fa8');
     // Srdce jsou v obou schématech stejná.
     expect(cardFaceMarkupRaw(card(7, 'H'), REG, 'classic')).toBe(
       cardFaceMarkupRaw(card(7, 'H'), REG, 'four'),
@@ -179,32 +185,22 @@ describe('ručně kreslené scény', () => {
   });
 });
 
-describe('bitmapová keš', () => {
-  it('bez canvasu (happy-dom) vrací plný markup s filtry a unikátními id', () => {
-    expect(rasterSupported()).toBe(false);
+describe('SVG ve stránce', () => {
+  it('každá instance dostane vlastní prefix id', () => {
     const markup = cardBackMarkupRaw();
-    const a = rasterSvg(markup);
-    const b = rasterSvg(markup);
+    const a = svgElement(markup);
+    const b = svgElement(markup);
     expect(a.tagName.toLowerCase()).toBe('svg');
-    expect(a.querySelector('[filter]')).not.toBeNull();
-    expect(a.getAttribute('data-raster')).toBeNull();
     const idA = a.querySelector('[id]')?.getAttribute('id');
     expect(idA).toBeTruthy();
     expect(b.querySelector(`[id="${idA}"]`)).toBeNull();
     expect(a.outerHTML).not.toContain('%ID%');
   });
 
-  it('předkreslení bez canvasu nic nedělá', () => {
-    const before = rasterCacheSize();
-    prewarmRaster([cardBackMarkupRaw()]);
-    prewarmCardArt([card(2, 'S'), card(3, 'S')]);
-    expect(rasterCacheSize()).toBe(before);
-  });
-
   it('cardFaceElement respektuje schéma a popisek', () => {
     const el = cardFaceElement(card(9, 'C'), { scheme: 'four', label: 'Křížová devítka' });
     expect(el.getAttribute('aria-label')).toBe('Křížová devítka');
-    expect(el.outerHTML).toContain(vivid('#2f8a4a'));
+    expect(el.outerHTML).toContain('#2f6b3a');
   });
 });
 
@@ -218,7 +214,7 @@ describe('komponenta karty a barvoslepý režim', () => {
     await new Promise((r) => setTimeout(r, 0)); // MutationObserver
     expect(el.dataset.visual).toContain('|four|');
     expect(el.querySelector('svg')).not.toBe(before);
-    expect(el.querySelector('svg')?.outerHTML).toContain(vivid('#2f62b8'));
+    expect(el.querySelector('svg')?.outerHTML).toContain('#2f5fa8');
     // Ruční obnovení je bezpečné i bez změny.
     refreshCardColors();
     expect(el.dataset.visual).toContain('|four|');
@@ -228,6 +224,6 @@ describe('komponenta karty a barvoslepý režim', () => {
   it('galerie může schéma vynutit', () => {
     const el = createCardView(card(5, 'D'), { scheme: 'four' });
     expect(el.dataset.visual).toContain('|four|');
-    expect(el.querySelector('svg')?.outerHTML).toContain(vivid('#2f62b8'));
+    expect(el.querySelector('svg')?.outerHTML).toContain('#2f5fa8');
   });
 });

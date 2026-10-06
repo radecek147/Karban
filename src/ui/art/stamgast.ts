@@ -1,9 +1,9 @@
 /**
- * Postavička Štamgasta pro tutoriál (DESIGN 13.5) ve stylu E1 (tuš a akvarel, src/ui/art/watercolor.ts):
+ * Postavička Štamgasta pro tutoriál (DESIGN 13.5) ve stylu Sirkárna (tisk, src/ui/art/print.ts):
  * pivní tácek, hlava s bekovkou, knír a červený nos, v ruce půllitr. Vlastní kresba, dekorativní.
  */
-import { withUniqueIds } from './cards';
-import { WC, WC_PAL, beginArt, ink, inkFill, knock, paint, shp, wash, wcDefs } from './watercolor';
+import { withUniqueIds } from './svg';
+import { PR, PR_PAL, beginArt, ink, inkFill, knock, paint, shp, wash, printDefs } from './print';
 
 const ID = '%ID%';
 
@@ -14,7 +14,7 @@ function stamgastRaw(): string {
     knock(shp.circle(32, 32, 31)) +
     wash(
       `<circle cx="32" cy="32" r="27.5" fill="none" stroke="currentColor" stroke-width="3"/>`,
-      WC_PAL.red,
+      PR_PAL.red,
       {
         op: 0.7,
         dx: 0,
@@ -24,12 +24,12 @@ function stamgastRaw(): string {
     `<g clip-path="url(#${ID}-cl)">` +
     paint(shp.path('M12 62c2-12 10-17 20-17s18 5 20 17z'), '#3d6ab0', 1.2, { dx: 0.4, dy: 0.3 }) +
     paint(shp.path('M27 45l5 7 5-7z'), null, 0.9) +
-    paint(shp.ellipse(20, 30, 2.5, 3.5) + shp.ellipse(44, 30, 2.5, 3.5), WC_PAL.skin, 0.9, {
+    paint(shp.ellipse(20, 30, 2.5, 3.5) + shp.ellipse(44, 30, 2.5, 3.5), PR_PAL.skin, 0.9, {
       dx: 0.3,
       dy: 0.2,
     }) +
-    paint(shp.ellipse(32, 29, 12, 13), WC_PAL.skin, 1.2, { dx: 0.4, dy: 0.3 }) +
-    wash(shp.circle(25.5, 33, 2.6) + shp.circle(38.5, 33, 2.6), WC_PAL.cheek, { op: 0.4, dx: 0, dy: 0 }) +
+    paint(shp.ellipse(32, 29, 12, 13), PR_PAL.skin, 1.2, { dx: 0.4, dy: 0.3 }) +
+    wash(shp.circle(25.5, 33, 2.6) + shp.circle(38.5, 33, 2.6), PR_PAL.cheek, { op: 0.4, dx: 0, dy: 0 }) +
     paint(shp.path('M18 23c0-8 7-12 14-12s15 4 15 11c-3-1-8-2-15-2s-11 1-14 3z'), '#6d8f5a', 1.1, {
       dx: 0.4,
       dy: 0.3,
@@ -47,11 +47,11 @@ function stamgastRaw(): string {
       shp.path(
         'M23.5 38c3-3.5 6.5-3.5 8.5-1.2c2-2.3 5.5-2.3 8.5 1.2c-2.5 1.6-5.5 1.6-8.5-.2c-3 1.8-6 1.8-8.5.2z',
       ),
-      WC_PAL.hairDark,
+      PR_PAL.hairDark,
       0.9,
       { dx: 0.2, dy: 0.2 },
     ) +
-    paint(shp.path('M41 44h12l-1 15c-.2 1.5-1.4 2-3 2h-4c-1.6 0-2.8-.5-3-2z'), WC_PAL.gold, 1.1, {
+    paint(shp.path('M41 44h12l-1 15c-.2 1.5-1.4 2-3 2h-4c-1.6 0-2.8-.5-3-2z'), PR_PAL.gold, 1.1, {
       dx: 0.3,
       dy: 0.2,
     }) +
@@ -62,10 +62,10 @@ function stamgastRaw(): string {
       1,
     ) +
     `</g>` +
-    ink(shp.circle(32, 32, 31), 1.3, { color: WC.ink, op: 0.75 });
+    ink(shp.circle(32, 32, 31), 1.3, { color: PR.ink, op: 0.75 });
   return (
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="stamgast" aria-hidden="true" focusable="false">' +
-    `<defs>${wcDefs({ width: 64, height: 64, scale: 0.3 })}<clipPath id="${ID}-cl"><circle cx="32" cy="32" r="30"/></clipPath></defs>` +
+    `<defs>${printDefs({ width: 64, height: 64, scale: 0.3 })}<clipPath id="${ID}-cl"><circle cx="32" cy="32" r="30"/></clipPath></defs>` +
     body +
     '</svg>'
   );
