@@ -1,89 +1,94 @@
 /*
- * Základní styly Karbanu ve stylu „Pohádková knížka“: barvy z varianty E1 a výrazná tuš z E3, vodovky,
- * krémový papír se zrnem a zelené hospodské sukno namalované vodovkou. CSS proměnné (barvoslepý režim je přepíše), reset, přístupnost
- * (focus, prefers-reduced-motion), tlačítka (akvarelové skvrny a papírové s rámečkem tuší).
+ * Základní styly Karbanu ve stylu „Sirkárna“ (retro tisk jako zápalkové nálepky a plakáty z 60. let;
+ * docs/DECISIONS.md 2026-10-06): kartonové panely se silnou černou linkou a tvrdým stínem, plné tiskové barvy,
+ * zúžené plakátové písmo na nadpisy a čísla. CSS proměnné (barvoslepý režim přepíše barvy karet), reset,
+ * přístupnost (focus, prefers-reduced-motion), tlačítka (plná barva, linka, tvrdý stín).
  *
- * Textury jsou statické bitmapy (src/assets/textures, `npm run gen-textures`) — žádné živé SVG filtry v CSS.
- * Akvarelová skvrna = tón (`--tex-wash-tone`) přes barvu `--wash`, oříznutý maskou tvaru (`--tex-wash-shape`);
- * kreslí ji pseudo-element, aby maska neořízla text ani rámeček focusu. Animuj jen transform/opacity.
+ * Žádné textury ani filtry — všechno jsou plné plochy, linky a tvrdé stíny (rychlé, ostré v každé velikosti).
+ * Animuj jen transform/opacity.
  */
 
 :root {
-  /* Textury (vlastní procedurální, ASSETS.md) */
-  --tex-paper: url('../../assets/textures/paper.webp');
-  --tex-felt: url('../../assets/textures/felt.webp');
-  --tex-wash-shape: url('../../assets/textures/wash-shape.webp');
-  --tex-wash-tone: url('../../assets/textures/wash-tone.webp');
-  --tex-wash-long-shape: url('../../assets/textures/wash-long-shape.webp');
-  --tex-wash-long-tone: url('../../assets/textures/wash-long-tone.webp');
-  --tex-ink-frame: url('../../assets/textures/ink-frame.webp');
-  --tex-ink-line: url('../../assets/textures/ink-line.webp');
-  --tex-edge-top: url('../../assets/textures/edge-top.webp');
-  --tex-edge-bottom: url('../../assets/textures/edge-bottom.webp');
-  --tex-edge-left: url('../../assets/textures/edge-left.webp');
-  --tex-edge-right: url('../../assets/textures/edge-right.webp');
-  --tex-splash: url('../../assets/textures/splash.webp');
-  --paper-tile: 384px;
+  /* Stůl — tmavě modrý karton s jemným tiskovým rastrem (dřív zelené sukno; názvy proměnných zůstávají). */
+  --felt: #1f2e4a;
+  --felt-light: #2b4168;
+  --felt-dark: #141e33;
+  --felt-shadow: rgb(0 0 0 / 40%);
+  /* Panel na stole (řada žolíků, kapsa, police Večerky) a jeho obrys. */
+  --felt-panel: rgb(8 14 28 / 32%);
+  --felt-line: rgb(243 232 207 / 22%);
+  /* Tmavé nadpisy na kartonu. */
+  --wood: #1a1714;
+  --wood-dark: #1a1714;
 
-  /* Stůl — zelené sukno namalované vodovkou na papíře */
-  --felt: #276647;
-  --felt-light: #3b8560;
-  --felt-dark: #164430;
-  --felt-shadow: rgb(0 0 0 / 35%);
-  /* Tmavší lazura a krémový čárkovaný obrys panelů na suknu (řada žolíků, kapsa, police Večerky). */
-  --felt-panel: rgb(6 30 19 / 24%);
-  --felt-line: rgb(246 239 224 / 34%);
-  /* Sépiová tuš nadpisů na papíře (dřív „dřevo“ — proměnné zůstávají kvůli kompatibilitě). */
-  --wood: #6a3f22;
-  --wood-dark: #3f2614;
+  /* Karton a čerň */
+  --paper: #f3e8cf;
+  --paper-shade: #e8dbbd;
+  --paper-deep: #d9c9a4;
+  --paper-edge: #1a1714;
+  --ink: #1a1714;
+  --ink-soft: #4a4238;
+  --on-felt: #f3e8cf;
+  --on-felt-muted: #c9d3e2;
 
-  /* Papír a tuš — karty, listy, cedulky */
-  --paper: #fbf8f1;
-  --paper-shade: #ece3cf;
-  --paper-deep: #ddd0b3;
-  --paper-edge: #cfc2a6;
-  --ink: #1f1a17;
-  --ink-soft: #5c4f42;
-  --on-felt: #f6efe0;
-  --on-felt-muted: #d9e7db;
-
-  /* Vodovky (akvarelové skvrny tlačítek a políček) — sytější odstíny, kontrast textu ≥ 4,5 : 1 zůstává */
-  --wash-green: #559f36;
-  --wash-red: #c9301f;
-  --wash-blue: #336bc3;
-  --wash-gold: #efaa23;
-  --wash-paper: #d9cfb9;
+  /* Tiskové barvy (tlačítka, políčka, cedulky) — stejné inkousty jako kresby (src/ui/art/print.ts). */
+  --wash-green: #5d9a3e;
+  --wash-red: #d7442c;
+  --wash-blue: #6fa0c8;
+  --wash-gold: #e9b030;
+  --wash-paper: #f3e8cf;
+  --ink-red: #d7442c;
+  --ink-mustard: #e9b030;
+  --ink-teal: #2f8077;
+  --ink-sky: #6fa0c8;
+  --ink-navy: #22365c;
+  --ink-green: #5d9a3e;
+  --ink-purple: #6b4a9e;
 
   /* Akcenty */
-  --accent: #e2ab3f; /* pivní zlatá */
-  --accent-dark: #9a6d0e;
-  --danger: #c9301f;
-  --chips: #3d6ab0; /* čipy = modrá */
-  --mult: #c9301f; /* mult = červená */
-  --money: #f0c94a;
-  --money-light: #f8dc8a; /* zlaté písmo na suknu (kontrast ≥ 4,5 : 1) */
-  --money-ink: #8a6408; /* peníze tuší na papíře (kontrast ≥ 4,5 : 1) */
+  --accent: #e9b030; /* hořčicová */
+  --accent-dark: #8a5a10;
+  --danger: #c23a24;
+  --chips: #2f5fa8; /* čipy = modrá (text na kartonu) */
+  --mult: #c23a24; /* mult = rumělka (text na kartonu, kontrast ≥ 4,5 : 1) */
+  --chips-fill: #6fa0c8; /* políčko čipů (černý text) */
+  --mult-fill: #d7442c; /* políčko multu (krémový text) */
+  --money: #e9b030;
+  --money-light: #f2cf4a; /* peníze na stole */
+  --money-ink: #7a5208; /* peníze na kartonu (kontrast ≥ 4,5 : 1) */
 
   /* Barvy karet (barvoslepý režim přepíše na 4 barvy) */
-  --suit-spades: #2f3542;
-  --suit-hearts: #c43d32;
-  --suit-diamonds: #c43d32;
-  --suit-clubs: #2f3542;
+  --suit-spades: #1a1714;
+  --suit-hearts: #c23a24;
+  --suit-diamonds: #c23a24;
+  --suit-clubs: #1a1714;
 
-  /* Typografie: Fraunces (OFL, src/assets/fonts) — patkové písmo jako z pohádkové knížky, kurzíva na hlášky. */
-  --font-game: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+  /* Typografie: Barlow Semi Condensed na text, Big Shoulders Display na nadpisy, čísla a tlačítka (OFL). */
+  --font-game: 'Barlow Semi Condensed', 'Arial Narrow', 'Roboto Condensed', system-ui, sans-serif;
+  --font-display: 'Big Shoulders Display', 'Barlow Semi Condensed', 'Arial Narrow', sans-serif;
   --font-size-base: 18px;
   --ui-scale: 1;
 
-  /* Rozměry a efekty */
-  --radius: 6px;
-  --radius-small: 4px;
-  --shadow-card: 0 3px 6px rgb(0 0 0 / 22%), 0 10px 22px rgb(0 0 0 / 26%);
-  --shadow-sheet: 0 4px 10px rgb(10 30 20 / 35%), 0 14px 30px rgb(10 30 20 / 28%);
+  /* Linky a stíny tisku */
+  --line: 3px;
+  --line-bold: 4px;
+  --radius: 8px;
+  --radius-small: 5px;
+  --hard-shadow: 4px 4px 0 var(--ink);
+  --hard-shadow-felt: 5px 5px 0 rgb(5 9 18 / 55%);
+  --shadow-card: 3px 4px 0 rgb(5 9 18 / 45%);
+  --shadow-sheet: 6px 6px 0 rgb(5 9 18 / 55%);
   --focus-ring: 0 0 0 3px var(--felt-dark), 0 0 0 6px var(--accent);
   --speed: 1; /* rychlost hry 1×–4× (nastavení) */
   --t-fast: calc(120ms / var(--speed));
   --t-med: calc(240ms / var(--speed));
+
+  /* Dřívější textury akvarelu — prázdné (odkazy ve starších pravidlech nic nevykreslí). */
+  --tex-paper: none;
+  --tex-felt: none;
+  --tex-ink-frame: none;
+  --tex-ink-line: none;
+  --tex-splash: none;
 
   color-scheme: dark;
 }
@@ -138,11 +143,11 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   font-family: var(--font-game);
-  /* Bez ligatur „fi“ / „fl“: podmnožiny písma (unicode-range) je nemusí mít v obou souborech a čeština je stejně
-     skoro nepotřebuje — píše se po písmenech, spolehlivě. */
+  font-weight: 500;
+  /* Bez ligatur: podmnožiny písma (unicode-range) je nemusí mít v obou souborech. */
   font-variant-ligatures: none;
   font-variant-numeric: lining-nums;
-  line-height: 1.4;
+  line-height: 1.35;
   color: var(--on-felt);
   background-color: var(--felt);
   -webkit-font-smoothing: antialiased;
@@ -151,10 +156,8 @@ body {
 }
 
 /*
- * Sukno: zelená vodovka na papíře (textura felt.webp), světlejší „zvednutí“ uprostřed stolu a tmavší okraj, jako
- * pevná vrstva za obsahem — při posouvání dlouhých obrazovek (nová hra, nastavení, telefon) se nehýbe. Vlastní
- * vrstva (`will-change`) se vykreslí jednou. Pseudo-element místo `background-attachment: fixed`, které mobilní
- * Safari ignoruje.
+ * Stůl: tmavě modrý karton, uprostřed o kousek světlejší, s jemným tiskovým rastrem. Pevná vrstva za obsahem —
+ * při posouvání dlouhých obrazovek se nehýbe (pseudo-element místo `background-attachment: fixed`).
  */
 body::before {
   content: '';
@@ -163,11 +166,9 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 72% 62% at 54% 44%, rgb(255 248 222 / 7%), transparent 72%),
-    radial-gradient(ellipse at 50% 46%, transparent 50%, rgb(6 26 16 / 40%) 100%),
-    var(--tex-felt) 0 0 / 960px 960px repeat,
+    radial-gradient(rgb(243 232 207 / 5%) 1.1px, transparent 1.5px) 0 0 / 9px 9px,
+    radial-gradient(ellipse 75% 65% at 50% 42%, var(--felt-light), transparent 75%),
     var(--felt);
-  will-change: transform;
 }
 
 img,
@@ -210,7 +211,10 @@ h1,
 h2,
 h3,
 h4 {
-  line-height: 1.1;
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
   text-wrap: balance;
 }
 
@@ -266,33 +270,31 @@ ol[role='list'] {
   min-height: 100vh;
   min-height: 100dvh;
   isolation: isolate;
-  /* Šířka pro kontejnerové dotazy (prahy v px; velké UI z nastavení řeší třída `html.ui-large` — jednotky
-     rem/em v podmínce dotazu velikost UI spolehlivě nezohlední). */
+  /* Šířka pro kontejnerové dotazy (prahy v px; velké UI z nastavení řeší třída `html.ui-large`). */
   container: app / inline-size;
 }
 
+/* Částice pod dialogy a oznámeními (modální vrstva 900, toasty 890/910) — konfety nepadají přes text. */
 #fx {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 1000;
+  z-index: 880;
 }
 
 /* ─────────────────────────── Tlačítka ─────────────────────────── */
 
 /*
- * Hlavní akce = akvarelová skvrna (barva `--wash`, tón a tvar z textur), vedlejší = papír s rámečkem tuší
- * (`.btn--paper`, screens.css). Skvrnu kreslí `::after` pod textem (`::before` patří pásu proti třesení při najetí,
- * fx.css), takže maska neořízne ani text, ani rámeček focusu. Rámeček 2 px drží stejnou velikost všech variant.
+ * Tlačítko = tiskový blok: plná barva `--wash`, černá linka a tvrdý stín, verzálky plakátového písma. Najetí ho
+ * zvedne (stín se prodlouží), stisk zamáčkne (stín zmizí). `::before` patří pásu proti třesení při najetí
+ * (fx.css), `::after` se nepoužívá. Varianty (papír, duch, nebezpečí) v screens.css.
  */
 .btn {
   --wash: var(--wash-gold);
-  /* Skutečná výplň skvrny; neaktivní stav ji rozředí papírem (výchozí = `--wash`). */
   --wash-fill: initial;
-  --wash-shape: var(--tex-wash-shape);
-  --wash-tone: var(--tex-wash-tone);
+  --btn-shadow: var(--hard-shadow);
 
   position: relative;
   isolation: isolate;
@@ -302,72 +304,58 @@ ol[role='list'] {
   gap: 0.5em;
   min-width: 12rem;
   min-height: 2.75rem;
-  padding: 0.55em 1.4em;
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: 0.01em;
+  padding: 0.45em 1.3em 0.5em;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--ink);
-  background: none;
-  border: 2px solid transparent;
+  background: var(--wash-fill, var(--wash));
+  border: var(--line) solid var(--ink);
   border-radius: var(--radius-small);
+  box-shadow: var(--btn-shadow);
   transition:
     transform var(--t-fast) ease-out,
-    opacity var(--t-fast) ease-out;
-}
-
-.btn::after {
-  content: '';
-  position: absolute;
-  inset: -3px -5px;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    var(--wash-tone) 0 0 / 100% 100% no-repeat,
-    var(--wash-fill, var(--wash));
-  -webkit-mask: var(--wash-shape) 0 0 / 100% 100% no-repeat;
-  mask: var(--wash-shape) 0 0 / 100% 100% no-repeat;
-}
-
-/* Dlouhá tlačítka (položky menu, široké akce): protáhlejší skvrna, ať okraje nejsou rozmazané natažením. */
-.btn--large,
-.btn--long {
-  --wash-shape: var(--tex-wash-long-shape);
-  --wash-tone: var(--tex-wash-long-tone);
+    box-shadow var(--t-fast) ease-out;
 }
 
 .btn:hover:not(:disabled) {
-  transform: translateY(-2px);
+  transform: translate(-1px, -2px);
+  --btn-shadow: 5px 6px 0 var(--ink);
 }
 
 .btn:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translate(3px, 3px);
+  --btn-shadow: 1px 1px 0 var(--ink);
 }
 
-/* Focus: zlatý kroužek s tmavým lemem tuší — dobře vidět na suknu i na papíře. */
+/* Focus: hořčicový kroužek s tmavým lemem — dobře vidět na stole i na kartonu. */
 .btn:focus-visible {
   outline: 3px solid var(--accent);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 7.5px rgb(31 26 23 / 72%);
+  outline-offset: 4px;
+  box-shadow:
+    var(--btn-shadow),
+    0 0 0 8px rgb(26 23 20 / 70%);
 }
 
-/* Drobné ovládací prvky na papíře (křížek dialogu, další rada): tmavší zlatá. */
+/* Drobné ovládací prvky na kartonu (křížek dialogu, další rada): tmavší okr. */
 .modal__close:focus-visible,
 .menu__tip-next:focus-visible,
 .toast__close:focus-visible {
   outline-color: var(--accent-dark);
 }
 
-/*
- * Neaktivní tlačítko: „vymytá“ skvrna (vlastní barva rozředěná papírem — Zahrát zůstane nazelenalé, Zahodit
- * načervenalé), tlumený text, zamáčknuté. Neprůhledné, sukno neprosvítá.
- */
+/* Neaktivní tlačítko: barva vybledlá do kartonu, bez stínu, zamáčknuté, tlumený text. */
 .btn:disabled,
 .btn.btn--inert {
-  --wash-fill: color-mix(in srgb, var(--wash) 30%, #e2d8c2);
+  --wash-fill: color-mix(in srgb, var(--wash) 32%, var(--paper-shade));
+  --btn-shadow: none;
 
-  color: rgb(31 26 23 / 66%);
-  transform: translateY(1px);
+  color: rgb(26 23 20 / 62%);
+  border-color: rgb(26 23 20 / 55%);
+  transform: translate(2px, 2px);
 }
 
 /* Neaktivní, ale fokusovatelné tlačítko (aria-disabled): klik jen vysvětlí, proč to nejde. */
@@ -375,131 +363,41 @@ ol[role='list'] {
 .btn.btn--inert:hover,
 .btn.btn--inert:active {
   cursor: help;
-  transform: translateY(1px);
+  transform: translate(2px, 2px);
 }
 
-/* ─────────────────────────── Papír, tuš, sukno (sdílené plochy) ─────────────────────────── */
+/* ─────────────────────────── Karton (sdílené plochy) ─────────────────────────── */
 
-/*
- * List papíru s natrhlým okrajem: papír i maska okraje jsou na `::before` (vlastní vrstva, vykreslí se jednou),
- * obsah nad ním se může překreslovat bez přepočtu masky. Stín je `::after` o kousek menší než list (měkký stín
- * pod nepravidelným okrajem). Okraj = čtyři pásy textury natažené podél hran + zaoblené rohy.
- */
+/* List kartonu: krémová plocha, silná černá linka, tvrdý stín do stolu. */
 .sheet,
 .menu__board,
 .menu__tip,
 .modal,
 .game-sidebar,
 .game-panel.paper {
-  --edge: 11px;
   --sheet-color: var(--paper);
 
   position: relative;
   isolation: isolate;
   color: var(--ink);
-  background: none;
-  box-shadow: none;
-}
-
-.sheet::before,
-.sheet::after,
-.menu__board::before,
-.menu__board::after,
-.menu__tip::before,
-.menu__tip::after,
-.modal::before,
-.modal::after,
-.game-sidebar::before,
-.game-sidebar::after,
-.game-panel.paper::before,
-.game-panel.paper::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.sheet::before,
-.menu__board::before,
-.menu__tip::before,
-.modal::before,
-.game-sidebar::before,
-.game-panel.paper::before {
-  z-index: -1;
-  background:
-    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
-    var(--sheet-color);
-  -webkit-mask:
-    var(--tex-edge-top) var(--edge) 0 / calc(100% - 2 * var(--edge)) var(--edge) no-repeat,
-    var(--tex-edge-bottom) var(--edge) 100% / calc(100% - 2 * var(--edge)) var(--edge) no-repeat,
-    var(--tex-edge-left) 0 var(--edge) / var(--edge) calc(100% - 2 * var(--edge)) no-repeat,
-    var(--tex-edge-right) 100% var(--edge) / var(--edge) calc(100% - 2 * var(--edge)) no-repeat,
-    radial-gradient(
-        circle at 100% 100%,
-        #000 calc(var(--edge) * 0.55),
-        transparent calc(var(--edge) * 0.55 + 1px)
-      )
-      0 0 / var(--edge) var(--edge) no-repeat,
-    radial-gradient(
-        circle at 0 100%,
-        #000 calc(var(--edge) * 0.55),
-        transparent calc(var(--edge) * 0.55 + 1px)
-      )
-      100% 0 / var(--edge) var(--edge) no-repeat,
-    radial-gradient(
-        circle at 100% 0,
-        #000 calc(var(--edge) * 0.55),
-        transparent calc(var(--edge) * 0.55 + 1px)
-      )
-      0 100% / var(--edge) var(--edge) no-repeat,
-    radial-gradient(circle at 0 0, #000 calc(var(--edge) * 0.55), transparent calc(var(--edge) * 0.55 + 1px))
-      100% 100% / var(--edge) var(--edge) no-repeat,
-    linear-gradient(#000 0 0) center / calc(100% - 2 * var(--edge) + 2px) calc(100% - 2 * var(--edge) + 2px)
-      no-repeat;
-  mask:
-    var(--tex-edge-top) var(--edge) 0 / calc(100% - 2 * var(--edge)) var(--edge) no-repeat,
-    var(--tex-edge-bottom) var(--edge) 100% / calc(100% - 2 * var(--edge)) var(--edge) no-repeat,
-    var(--tex-edge-left) 0 var(--edge) / var(--edge) calc(100% - 2 * var(--edge)) no-repeat,
-    var(--tex-edge-right) 100% var(--edge) / var(--edge) calc(100% - 2 * var(--edge)) no-repeat,
-    radial-gradient(
-        circle at 100% 100%,
-        #000 calc(var(--edge) * 0.55),
-        transparent calc(var(--edge) * 0.55 + 1px)
-      )
-      0 0 / var(--edge) var(--edge) no-repeat,
-    radial-gradient(
-        circle at 0 100%,
-        #000 calc(var(--edge) * 0.55),
-        transparent calc(var(--edge) * 0.55 + 1px)
-      )
-      100% 0 / var(--edge) var(--edge) no-repeat,
-    radial-gradient(
-        circle at 100% 0,
-        #000 calc(var(--edge) * 0.55),
-        transparent calc(var(--edge) * 0.55 + 1px)
-      )
-      0 100% / var(--edge) var(--edge) no-repeat,
-    radial-gradient(circle at 0 0, #000 calc(var(--edge) * 0.55), transparent calc(var(--edge) * 0.55 + 1px))
-      100% 100% / var(--edge) var(--edge) no-repeat,
-    linear-gradient(#000 0 0) center / calc(100% - 2 * var(--edge) + 2px) calc(100% - 2 * var(--edge) + 2px)
-      no-repeat;
-  will-change: transform;
-}
-
-.sheet::after,
-.menu__board::after,
-.menu__tip::after,
-.modal::after,
-.game-sidebar::after,
-.game-panel.paper::after {
-  inset: 6px 5px 3px;
-  z-index: -2;
-  border-radius: 6px;
+  background: var(--sheet-color);
+  border: var(--line-bold) solid var(--ink);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-sheet);
 }
 
-/* Rámeček tuší (ručně tažený obdélník, 9 dílů textury): papírová tlačítka, políčka, cedulky. */
+/* Rámeček linkou: papírová tlačítka, políčka, cedulky. */
 .ink-frame {
-  border: 2px solid transparent;
-  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
+  border: var(--line) solid var(--ink);
+}
+
+/* Hlášky (flavor) a citáty: kurzíva textového písma — jediná kurzíva v rozhraní. */
+.ktip__flavor,
+.detail__flavor,
+.codex-detail__flavor,
+.challenge-detail__flavor,
+.deck-option__flavor,
+.stake-detail__flavor,
+.game-over__quote {
+  font-style: italic;
 }

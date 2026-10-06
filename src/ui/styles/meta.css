@@ -58,7 +58,6 @@
   padding: 0.05em 0.45em;
   font-size: 0.78rem;
   font-weight: 700;
-  font-style: italic;
   text-align: center;
   color: var(--paper);
   background: var(--wash-red);
@@ -85,7 +84,6 @@
 .codex-count {
   font-size: 1.35rem;
   font-weight: 700;
-  font-style: italic;
   color: var(--money-light);
 }
 
@@ -103,7 +101,6 @@
 
 .codex-select__label {
   font-size: 0.88rem;
-  font-style: italic;
   color: var(--on-felt-muted);
 }
 
@@ -113,11 +110,8 @@
   font: inherit;
   font-size: 0.95rem;
   color: var(--ink);
-  background:
-    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
-    var(--paper);
-  border: 2px solid transparent;
-  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
+  background: var(--paper);
+  border: var(--line) solid var(--ink);
   border-radius: var(--radius-small);
 }
 
@@ -136,7 +130,6 @@
   margin-bottom: 0.6rem;
   font-size: 1.2rem;
   font-weight: 600;
-  font-style: italic;
   color: var(--on-felt);
 }
 
@@ -206,7 +199,6 @@
   padding: 0.08em 0.5em 0.12em;
   font-size: 0.75rem;
   font-weight: 700;
-  font-style: italic;
   color: var(--paper);
   background: var(--wash-red);
   border-radius: 40% 55% 45% 60% / 60% 45% 55% 40%;
@@ -237,9 +229,7 @@
   color: var(--wood);
   background:
     radial-gradient(circle, transparent 0 60%, rgb(31 26 23 / 55%) 61% 62.5%, transparent 63.5%),
-    radial-gradient(circle at 40% 36%, rgb(226 171 63 / 28%), transparent 70%),
-    var(--tex-paper) 0 0 / 192px 192px,
-    var(--paper);
+    radial-gradient(circle at 40% 36%, rgb(226 171 63 / 28%), transparent 70%), var(--paper);
   border-radius: 50%;
   box-shadow:
     inset 0 0 0 2px rgb(31 26 23 / 75%),
@@ -300,7 +290,6 @@
 .codex-detail__kind {
   font-size: 0.95rem;
   font-weight: 600;
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -318,12 +307,10 @@
 }
 
 .codex-detail__note {
-  font-style: italic;
   color: var(--ink-soft);
 }
 
 .codex-detail__flavor {
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -346,15 +333,13 @@
   margin-bottom: 0.25rem;
   font-size: 1.02rem;
   font-weight: 700;
-  font-style: italic;
   color: var(--wood);
 }
 
 .codex-detail__condition,
 .codex-detail__stats {
   padding: 0.6rem 0.8rem;
-  border: 2px solid transparent;
-  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
+  border: var(--line) solid var(--ink);
 }
 
 .codex-detail__stats ul {
@@ -385,10 +370,7 @@
 
 .deck-option.is-locked {
   cursor: not-allowed;
-  background:
-    linear-gradient(rgb(120 96 60 / 14%), rgb(120 96 60 / 14%)),
-    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
-    var(--paper-shade);
+  background: linear-gradient(rgb(120 96 60 / 14%), rgb(120 96 60 / 14%)), var(--paper-shade);
 }
 
 .deck-option.is-locked:hover {
@@ -429,7 +411,6 @@
   height: 2.4rem;
   font-size: 0.95rem;
   font-weight: 700;
-  font-style: italic;
   color: var(--ink);
   background:
     radial-gradient(circle, transparent 0 58%, rgb(31 26 23 / 55%) 59% 61%, transparent 62%), var(--paper);
@@ -450,7 +431,6 @@
   padding: 0.05em 0.5em 0.08em;
   font-size: 0.8rem;
   font-weight: 600;
-  font-style: italic;
   color: var(--paper);
   background: var(--ink-soft);
   border-radius: 3px 7px 4px 6px / 6px 4px 7px 3px;
@@ -488,11 +468,8 @@
 }
 
 .seed-field__status.is-note {
-  font-style: italic;
   color: var(--ink);
-  background:
-    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
-    var(--paper);
+  background: var(--paper);
 }
 
 .seed-field__status.is-error {
@@ -534,13 +511,12 @@
   margin-bottom: 0.6rem;
   font-size: 1.3rem;
   font-weight: 700;
-  font-style: italic;
   color: var(--wood);
 }
 
 .stats-section__title {
   padding-bottom: 0.3rem;
-  background: var(--tex-ink-line) 0 100% / 100% 4px no-repeat;
+  background: linear-gradient(var(--ink), var(--ink)) 0 100% / 100% 3px no-repeat;
 }
 
 .stats-heading {
@@ -635,7 +611,6 @@
 .stats-table thead th {
   font-size: 0.9rem;
   font-weight: 600;
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -703,7 +678,6 @@
   padding: 0.05em 0.5em 0.08em;
   font-size: 0.8rem;
   font-weight: 400;
-  font-style: italic;
   color: var(--paper);
   background: var(--ink-soft);
   border-radius: 3px 7px 4px 6px / 6px 4px 7px 3px;
@@ -839,7 +813,6 @@
   margin-bottom: 0.35rem;
   font-size: 1.05rem;
   font-weight: 700;
-  font-style: italic;
   color: var(--wood);
 }
 
@@ -959,7 +932,6 @@
   margin-bottom: 0.4rem;
   font-size: 1.1rem;
   font-weight: 600;
-  font-style: italic;
   /* Světlejší pivní zlatá: drobný nadpis na suknu má v `--accent` kontrast jen 3,8 : 1. */
   color: var(--money-light);
 }
@@ -994,9 +966,7 @@
 
 .challenge-item.is-selected {
   color: var(--ink);
-  background:
-    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
-    var(--paper);
+  background: var(--paper);
   border: 2px solid rgb(31 26 23 / 70%);
   box-shadow:
     inset 4px 0 0 var(--accent),
@@ -1033,7 +1003,6 @@
 .challenge-item__new {
   padding: 0.05em 0.5em 0.08em;
   font-size: 0.78rem;
-  font-style: italic;
   color: var(--paper);
   background: var(--wash-red);
   border-radius: 40% 55% 45% 60% / 60% 45% 55% 40%;
@@ -1089,7 +1058,6 @@
 .challenge-detail__name {
   font-size: 1.65rem;
   font-weight: 700;
-  font-style: italic;
   color: var(--wood);
 }
 
@@ -1100,7 +1068,6 @@
   margin-top: 0.25rem;
   padding: 0.1em 0.65em 0.14em;
   font-weight: 700;
-  font-style: italic;
   color: var(--ink);
   background: radial-gradient(ellipse at 40% 45%, #efc874, var(--accent) 62%, #cf9530);
   border-radius: 3px 8px 4px 7px / 7px 4px 8px 3px;
@@ -1118,7 +1085,6 @@
 
 .challenge-detail__flavor {
   margin-top: 0.3rem;
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -1126,7 +1092,6 @@
   margin-top: 0.4rem;
   font-size: 1.1rem;
   font-weight: 700;
-  font-style: italic;
   color: var(--wood);
 }
 

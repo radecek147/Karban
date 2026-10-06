@@ -25,10 +25,7 @@
   color: var(--ink);
   pointer-events: auto;
   /* Bublina z pohádkové knížky: papír obtažený tuší, se zlatým lemem vodovky uvnitř. */
-  background:
-    linear-gradient(90deg, rgb(226 171 63 / 30%), rgb(226 171 63 / 0%) 0.5rem),
-    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
-    var(--paper);
+  background: linear-gradient(90deg, rgb(226 171 63 / 30%), rgb(226 171 63 / 0%) 0.5rem), var(--paper);
   border: 2px solid rgb(31 26 23 / 85%);
   border-radius: 7px 10px 8px 9px / 9px 8px 10px 7px;
   box-shadow: 0 12px 28px rgb(6 26 16 / 45%);
@@ -69,7 +66,6 @@
 
 .tutorial__meta {
   font-size: 0.82rem;
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -77,7 +73,6 @@
   margin-top: 0.1rem;
   font-size: 1.15rem;
   font-weight: 700;
-  font-style: italic;
   color: var(--wood);
 }
 

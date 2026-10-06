@@ -2,8 +2,9 @@
  * npm run fetch-assets — připraví volně licencované assety do src/assets a přegeneruje ASSETS.md.
  *
  * Kroky:
- *  1. Písmo Fraunces (OFL 1.1) z npm balíčku @fontsource/fraunces → src/assets/fonts (woff2, řezy 400,
- *     400 kurzíva, 600, 600 kurzíva a 700, subsety latin + latin-ext = české znaky) + fonts.css + OFL.txt.
+ *  1. Písma (OFL 1.1) z npm balíčků @fontsource/big-shoulders-display (nadpisy, čísla, tlačítka; řezy 700
+ *     a 800) a @fontsource/barlow-semi-condensed (text; 500, 500 kurzíva, 600, 700) → src/assets/fonts (woff2,
+ *     subsety latin + latin-ext = české znaky) + fonts.css + licence OFL každé rodiny.
  *  2. Kurátorovaný výběr ikon (pole ICONS) z npm balíčku @iconify-json/game-icons (CC BY 3.0)
  *     → src/assets/icons/<name>.svg + src/assets/icons/index.ts (path data jako řetězce, bez sítě).
  *  3. Best effort: dohledá autora každé ikony v repozitáři game-icons na GitHubu
@@ -25,8 +26,6 @@ import { fileURLToPath } from 'node:url';
 // ─────────────────────────── Cesty a konstanty ───────────────────────────
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const FONT_PKG = '@fontsource/fraunces';
-const FONT_PKG_DIR = path.join(ROOT, 'node_modules', FONT_PKG);
 const ICON_PKG_DIR = path.join(ROOT, 'node_modules/@iconify-json/game-icons');
 const FONTS_OUT = path.join(ROOT, 'src/assets/fonts');
 const ICONS_OUT = path.join(ROOT, 'src/assets/icons');
@@ -39,24 +38,62 @@ const PRETTIER_BIN = path.join(ROOT, 'node_modules/prettier/bin/prettier.cjs');
 const NET_TIMEOUT_MS = 8000;
 const NET_CONCURRENCY = 12;
 
-const FONT_FAMILY = 'Fraunces';
-const FONT_ID = 'fraunces';
-const FONT_DESIGNER = 'Undercase Type (Phaedra Charles, Flavia Zimbardi)';
-const FONT_REPO = 'https://github.com/undercasetype/Fraunces';
-const FONT_SPECIMEN = 'https://fonts.google.com/specimen/Fraunces';
-/** Řezy: text 400, zvýraznění 600, nadpisy a čísla 700; kurzíva na hlášky a popisky (styl E1). */
-const FONT_FACES = [
-  { weight: 400, style: 'normal' },
-  { weight: 400, style: 'italic' },
-  { weight: 600, style: 'normal' },
-  { weight: 600, style: 'italic' },
-  { weight: 700, style: 'normal' },
-] as const;
+/** Písma stylu „Sirkárna“ (retro tisk): zúžený plakátový grotesk na nadpisy a čísla, poloúzký grotesk na text. */
+interface FontSpec {
+  family: string;
+  id: string;
+  pkg: string;
+  designer: string;
+  /** Copyright (metadata balíčků ho uvádějí nepřesně — „Google Inc.“ — proto ručně). */
+  attribution: string;
+  repo: string;
+  specimen: string;
+  /** Soubor s textem licence v src/assets/fonts. */
+  license: string;
+  /** K čemu písmo slouží (hlavička fonts.css, ASSETS.md). */
+  use: string;
+  faces: readonly { weight: number; style: 'normal' | 'italic' }[];
+}
+
+const FONTS: readonly FontSpec[] = [
+  {
+    family: 'Big Shoulders Display',
+    id: 'big-shoulders-display',
+    pkg: '@fontsource/big-shoulders-display',
+    designer: 'Patric King (XO Type Co.)',
+    attribution:
+      'Copyright 2019 The Big Shoulders Project Authors (https://github.com/xotypeco/big_shoulders)',
+    repo: 'https://github.com/xotypeco/big_shoulders',
+    specimen: 'https://fonts.google.com/specimen/Big+Shoulders+Display',
+    license: 'OFL-big-shoulders-display.txt',
+    use: 'nadpisy, čísla, tlačítka, jména na kartách',
+    faces: [
+      { weight: 700, style: 'normal' },
+      { weight: 800, style: 'normal' },
+    ],
+  },
+  {
+    family: 'Barlow Semi Condensed',
+    id: 'barlow-semi-condensed',
+    pkg: '@fontsource/barlow-semi-condensed',
+    designer: 'Jeremy Tribby',
+    attribution: 'Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)',
+    repo: 'https://github.com/jpt/barlow',
+    specimen: 'https://fonts.google.com/specimen/Barlow+Semi+Condensed',
+    license: 'OFL-barlow-semi-condensed.txt',
+    use: 'text, popisky, hlášky (kurzíva)',
+    faces: [
+      { weight: 500, style: 'normal' },
+      { weight: 500, style: 'italic' },
+      { weight: 600, style: 'normal' },
+      { weight: 700, style: 'normal' },
+    ],
+  },
+];
 const FONT_SUBSETS = ['latin-ext', 'latin'] as const;
 /** Výčet řezů do hlavičky fonts.css a ASSETS.md. */
-const FONT_FACES_TEXT = FONT_FACES.map((f) => `${f.weight}${f.style === 'italic' ? ' kurzíva' : ''}`).join(
-  ', ',
-);
+const facesText = (f: FontSpec): string =>
+  f.faces.map((x) => `${x.weight}${x.style === 'italic' ? ' kurzíva' : ''}`).join(', ');
 
 /** Textury rozhraní (vlastní procedurální, scripts/gen-textures.ts). */
 const TEXTURES_DIR = path.join(ROOT, 'src/assets/textures');
@@ -262,9 +299,8 @@ function ensurePackage(dir: string, pkg: string): void {
 // ─────────────────────────── 1. Fonty ───────────────────────────
 
 interface FontReport {
+  spec: FontSpec;
   version: string;
-  attribution: string;
-  repoUrl: string;
   licenseType: string;
   files: string[];
   licenseFrom: 'package' | 'embedded';
@@ -279,37 +315,23 @@ function extractUnicodeRange(css: string, faceId: string): string | null {
   return match?.[1]?.trim() ?? null;
 }
 
-async function prepareFonts(): Promise<FontReport> {
-  ensurePackage(FONT_PKG_DIR, FONT_PKG);
-  const pkg = await readJson<{ version: string; license?: string }>(path.join(FONT_PKG_DIR, 'package.json'));
-  const meta = await readJsonOptional<{ license?: { type?: string; attribution?: string } }>(
-    path.join(FONT_PKG_DIR, 'metadata.json'),
-  );
-  const unicode =
-    (await readJsonOptional<Record<string, string>>(path.join(FONT_PKG_DIR, 'unicode.json'))) ?? {};
-  // Metadata opakují copyright pro každý zdrojový soubor (rovný řez i kurzíva) — stačí první věta.
-  const rawAttribution =
-    meta?.license?.attribution ?? `Copyright 2020 The ${FONT_FAMILY} Project Authors (${FONT_REPO})`;
-  const attribution = /^Copyright[^()]*\([^)]*\)/.exec(rawAttribution)?.[0] ?? rawAttribution;
-  const repoUrl = FONT_REPO;
+async function prepareFont(spec: FontSpec, faces: string[]): Promise<FontReport> {
+  const dir = path.join(ROOT, 'node_modules', spec.pkg);
+  ensurePackage(dir, spec.pkg);
+  const pkg = await readJson<{ version: string; license?: string }>(path.join(dir, 'package.json'));
+  const meta = await readJsonOptional<{ license?: { type?: string } }>(path.join(dir, 'metadata.json'));
+  const unicode = (await readJsonOptional<Record<string, string>>(path.join(dir, 'unicode.json'))) ?? {};
   const licenseType = meta?.license?.type ?? pkg.license ?? 'OFL-1.1';
 
-  await mkdir(FONTS_OUT, { recursive: true });
-  for (const old of await readdir(FONTS_OUT)) {
-    // I soubory dřívějšího písma (Pixelify Sans) — v assetech nemá zůstat nic nepoužitého.
-    if (/^(pixelify-sans|fraunces)-.*\.woff2?$/.test(old)) await rm(path.join(FONTS_OUT, old));
-  }
-
-  const faces: string[] = [];
   const files: string[] = [];
-  for (const face of FONT_FACES) {
+  for (const face of spec.faces) {
     const suffix = face.style === 'italic' ? '-italic' : '';
-    const faceCssFile = path.join(FONT_PKG_DIR, `${face.weight}${suffix}.css`);
+    const faceCssFile = path.join(dir, `${face.weight}${suffix}.css`);
     const faceCss = existsSync(faceCssFile) ? await readFile(faceCssFile, 'utf8') : '';
     for (const subset of FONT_SUBSETS) {
-      const faceId = `${FONT_ID}-${subset}-${face.weight}-${face.style}`;
+      const faceId = `${spec.id}-${subset}-${face.weight}-${face.style}`;
       const file = `${faceId}.woff2`;
-      await copyFile(path.join(FONT_PKG_DIR, 'files', file), path.join(FONTS_OUT, file));
+      await copyFile(path.join(dir, 'files', file), path.join(FONTS_OUT, file));
       files.push(file);
       const range = extractUnicodeRange(faceCss, faceId) ?? unicode[subset];
       if (!range) warn(`Font ${file}: nenalezen unicode-range, @font-face bude bez něj.`);
@@ -317,7 +339,7 @@ async function prepareFonts(): Promise<FontReport> {
         [
           `/* ${faceId} */`,
           '@font-face {',
-          `  font-family: '${FONT_FAMILY}';`,
+          `  font-family: '${spec.family}';`,
           `  font-style: ${face.style};`,
           '  font-display: swap;',
           `  font-weight: ${face.weight};`,
@@ -329,28 +351,42 @@ async function prepareFonts(): Promise<FontReport> {
     }
   }
 
+  const licenseSrc = path.join(dir, 'LICENSE');
+  let licenseFrom: FontReport['licenseFrom'] = 'package';
+  if (existsSync(licenseSrc)) {
+    await copyFile(licenseSrc, path.join(FONTS_OUT, spec.license));
+  } else {
+    licenseFrom = 'embedded';
+    warn(`Balíček ${spec.pkg} neobsahuje LICENSE — zapisuji vestavěný text OFL 1.1.`);
+    await writeFile(path.join(FONTS_OUT, spec.license), oflText(spec.attribution));
+  }
+  return { spec, version: pkg.version, licenseType, files, licenseFrom };
+}
+
+async function prepareFonts(): Promise<FontReport[]> {
+  await mkdir(FONTS_OUT, { recursive: true });
+  for (const old of await readdir(FONTS_OUT)) {
+    // I soubory dřívějších písem (Pixelify Sans, Fraunces) — v assetech nemá zůstat nic nepoužitého.
+    if (/^(pixelify-sans|fraunces)-.*\.woff2?$/.test(old) || old === 'OFL.txt')
+      await rm(path.join(FONTS_OUT, old));
+  }
+  const faces: string[] = [];
+  const reports: FontReport[] = [];
+  for (const spec of FONTS) reports.push(await prepareFont(spec, faces));
   const header = [
     '/*',
     ' * Vygenerováno skriptem scripts/fetch-assets.ts (npm run fetch-assets) — NEUPRAVUJ RUČNĚ.',
-    ` * ${FONT_FAMILY} — ${FONT_DESIGNER}; ${attribution}.`,
-    ` * Licence: SIL Open Font License 1.1 (viz OFL.txt). Zdroj: npm ${FONT_PKG}@${pkg.version}.`,
-    ` * Subsety ${FONT_SUBSETS.join(' + ')} (české znaky), řezy ${FONT_FACES_TEXT}.`,
+    ...reports.flatMap((r) => [
+      ` * ${r.spec.family} (${r.spec.use}) — ${r.spec.designer}; ${r.spec.attribution}.`,
+      `   Licence: SIL Open Font License 1.1 (viz ${r.spec.license}). Zdroj: npm ${r.spec.pkg}@${r.version}, řezy ${facesText(r.spec)}.`,
+    ]),
+    ` * Subsety ${FONT_SUBSETS.join(' + ')} (české znaky).`,
     ' */',
   ].join('\n');
   await writeFile(path.join(FONTS_OUT, 'fonts.css'), `${header}\n\n${faces.join('\n\n')}\n`);
-
-  const licenseSrc = path.join(FONT_PKG_DIR, 'LICENSE');
-  let licenseFrom: FontReport['licenseFrom'] = 'package';
-  if (existsSync(licenseSrc)) {
-    await copyFile(licenseSrc, path.join(FONTS_OUT, 'OFL.txt'));
-  } else {
-    licenseFrom = 'embedded';
-    warn('Balíček fontu neobsahuje LICENSE — zapisuji vestavěný text OFL 1.1.');
-    await writeFile(path.join(FONTS_OUT, 'OFL.txt'), oflText(attribution));
-  }
-
-  console.log(`Fonty: woff2 × ${files.length} → ${rel(FONTS_OUT)} (+ fonts.css, OFL.txt)`);
-  return { version: pkg.version, attribution, repoUrl, licenseType, files, licenseFrom };
+  const count = reports.reduce((n, r) => n + r.files.length, 0);
+  console.log(`Fonty: woff2 × ${count} → ${rel(FONTS_OUT)} (+ fonts.css, licence OFL)`);
+  return reports;
 }
 
 // ─────────────────────────── 2. Ikony ───────────────────────────
@@ -683,7 +719,7 @@ async function tryOptionalSources(): Promise<OptionalResult[]> {
 // ─────────────────────────── 5. ASSETS.md ───────────────────────────
 
 function renderAssetsMd(
-  font: FontReport,
+  fonts: readonly FontReport[],
   icons: IconReport,
   authors: Record<string, string>,
   optional: OptionalResult[],
@@ -692,7 +728,13 @@ function renderAssetsMd(
   const credits = creditList(authors);
   const namedAuthors = credits.filter((c) => c.author !== UNKNOWN_AUTHOR).map((c) => c.author);
   const row = (cells: string[]): string => `| ${cells.map(mdEscape).join(' | ')} |`;
-  const fontFiles = `\`src/assets/fonts/${FONT_ID}-{${FONT_SUBSETS.join(',')}}-{${[...new Set(FONT_FACES.map((f) => f.weight))].join(',')}}-{normal,italic}.woff2\` (${font.files.length} souborů), \`fonts.css\`, \`OFL.txt\``;
+  const fontRow = (f: FontReport): string[] => [
+    `Písmo ${f.spec.family} (${f.spec.use}): \`src/assets/fonts/${f.spec.id}-{${FONT_SUBSETS.join(',')}}-…woff2\` (${f.files.length} souborů), \`fonts.css\`, \`${f.spec.license}\``,
+    `${f.spec.specimen} přes npm \`${f.spec.pkg}@${f.version}\` (${f.spec.repo})`,
+    `${f.spec.designer} — ${f.spec.attribution}`,
+    `SIL Open Font License 1.1 (\`${f.licenseType}\`), text v \`src/assets/fonts/${f.spec.license}\`${f.licenseFrom === 'embedded' ? ' (vestavěný text, balíček neobsahoval LICENSE)' : ''}`,
+    `beze změny glyfů; vybrány subsety ${FONT_SUBSETS.join(' + ')} a řezy ${facesText(f.spec)}, vlastní \`fonts.css\``,
+  ];
 
   const out: string[] = [
     '# Assety a licence — Karban',
@@ -705,13 +747,7 @@ function renderAssetsMd(
     '',
     row(['Soubor / skupina', 'Zdroj', 'Autor', 'Licence', 'Úprava']),
     row(['---', '---', '---', '---', '---']),
-    row([
-      `Písmo ${FONT_FAMILY}: ${fontFiles}`,
-      `${FONT_SPECIMEN} přes npm \`${FONT_PKG}@${font.version}\` (${font.repoUrl})`,
-      `${FONT_DESIGNER} — ${font.attribution}`,
-      `SIL Open Font License 1.1 (\`${font.licenseType}\`), text v \`src/assets/fonts/OFL.txt\`${font.licenseFrom === 'embedded' ? ' (vestavěný text, balíček neobsahoval LICENSE)' : ''}`,
-      `beze změny glyfů; vybrány subsety ${FONT_SUBSETS.join(' + ')} a řezy ${FONT_FACES_TEXT}, vlastní \`fonts.css\``,
-    ]),
+    ...fonts.map((f) => row(fontRow(f))),
     row([
       `Textury rozhraní (${textures.length}): ${textures.map((f) => `\`${f}\``).join(', ')} v \`${rel(TEXTURES_DIR)}\``,
       'vlastní procedurální bitmapy (styl E1 „Pohádková knížka“): SVG šum `feTurbulence` a nasvícení `feDiffuseLighting` vykreslené Chromiem z Playwrightu, příkaz `npm run gen-textures` (`scripts/gen-textures.ts`)',
@@ -774,7 +810,10 @@ function renderAssetsMd(
     '',
     '## Povinné atribuce pro Titulky',
     '',
-    `- **Písmo „${FONT_FAMILY}“** — ${FONT_DESIGNER}, ${font.attribution}. Licence SIL Open Font License 1.1 (https://openfontlicense.org).`,
+    ...fonts.map(
+      (f) =>
+        `- **Písmo „${f.spec.family}“** — ${f.spec.designer}, ${f.spec.attribution}. Licence SIL Open Font License 1.1 (https://openfontlicense.org).`,
+    ),
     `- **Ikony** — Icons made by ${namedAuthors.length > 0 ? namedAuthors.join(', ') : 'Lorc, Delapouite and others'} from ${ICON_SOURCE_URL}. Licence CC BY 3.0 (${ICON_LICENSE_URL}). Upraveno: přebarveno a zkombinováno do obrázků karet.`,
     '',
     'V kódu jsou tyto údaje dostupné jako `ICON_ATTRIBUTION` a `ICON_CREDITS` v `src/assets/icons/index.ts`.',
@@ -818,7 +857,7 @@ function formatWithPrettier(files: string[]): void {
 
 async function main(): Promise<void> {
   console.log('Karban — příprava assetů\n');
-  const font = await prepareFonts();
+  const fonts = await prepareFonts();
   const icons = await extractIcons();
   const authors = await resolveIconAuthors(icons.icons);
   await writeIcons(icons, authors);
@@ -828,7 +867,7 @@ async function main(): Promise<void> {
     ? (await readdir(TEXTURES_DIR)).filter((f) => /\.(webp|png)$/.test(f)).sort()
     : [];
   if (textures.length === 0) warn(`V ${rel(TEXTURES_DIR)} nejsou textury — spusť „npm run gen-textures“.`);
-  await writeFile(ASSETS_MD, renderAssetsMd(font, icons, authors, optional, textures));
+  await writeFile(ASSETS_MD, renderAssetsMd(fonts, icons, authors, optional, textures));
 
   formatWithPrettier([
     rel(path.join(FONTS_OUT, 'fonts.css')),
@@ -837,7 +876,9 @@ async function main(): Promise<void> {
     rel(ASSETS_MD),
   ]);
 
-  console.log(`\nHotovo: fonty ${font.files.length}, ikony ${icons.icons.length}, ASSETS.md.`);
+  console.log(
+    `\nHotovo: fonty ${fonts.reduce((n, f) => n + f.files.length, 0)}, ikony ${icons.icons.length}, ASSETS.md.`,
+  );
   if (icons.missing.length > 0) console.log(`Nenalezené ikony: ${icons.missing.join(', ')}`);
   if (warnings.length > 0) console.log(`Varování: ${warnings.length} (viz výše).`);
 }

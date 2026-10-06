@@ -78,7 +78,6 @@
 
 .gs-label {
   font-size: 0.88rem;
-  font-style: italic;
   line-height: 1.25;
   color: var(--ink-soft);
 }
@@ -91,13 +90,13 @@
   align-items: center;
   padding: 0.15rem 0.15rem 0.6rem;
   color: var(--ink);
-  background: var(--tex-ink-line) 0 100% / 100% 4px no-repeat;
+  background: linear-gradient(var(--ink), var(--ink)) 0 100% / 100% 3px no-repeat;
 }
 
 /* Šéf: hlavička s nádechem červené vodovky, název červenou tuší. */
 .gs-blind[data-blind='boss']:not(.is-beaten) {
   background:
-    var(--tex-ink-line) 0 100% / 100% 4px no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0 100% / 100% 3px no-repeat,
     radial-gradient(ellipse 80% 70% at 30% 45%, rgb(196 61 50 / 16%), transparent 75%);
 }
 
@@ -109,7 +108,7 @@
 .gs-blind.is-beaten,
 .gs-blind[data-blind='victory'] {
   background:
-    var(--tex-ink-line) 0 100% / 100% 4px no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0 100% / 100% 3px no-repeat,
     radial-gradient(ellipse 80% 70% at 30% 45%, rgb(226 171 63 / 26%), transparent 75%);
 }
 
@@ -143,7 +142,6 @@
 .gs-blind__rule {
   margin-top: 0.15rem;
   font-size: 0.85rem;
-  font-style: italic;
   line-height: 1.25;
   color: var(--ink-soft);
 }
@@ -179,7 +177,7 @@
 /* Oddíl listu (cíl, skóre, kombinace): bez rámečku, oddělený linkou tuší. */
 .gs-box {
   padding: 0.3rem 0.2rem 0.55rem;
-  background: var(--tex-ink-line) 0 100% / 100% 4px no-repeat;
+  background: linear-gradient(var(--ink), var(--ink)) 0 100% / 100% 3px no-repeat;
 }
 
 /*
@@ -210,7 +208,6 @@
 
 .gs-target__reward {
   font-size: 0.85rem;
-  font-style: italic;
   color: var(--money-ink);
 }
 
@@ -239,7 +236,6 @@
 
 .gs-hand__level {
   font-size: 0.85rem;
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -321,7 +317,6 @@
   margin-top: 0.3rem;
   padding: 0.2rem 0.45rem;
   font-size: 0.8rem;
-  font-style: italic;
   line-height: 1.25;
   color: var(--paper);
   background: var(--danger);
@@ -350,8 +345,7 @@
   padding: 0.25rem 0.45rem 0.3rem;
   color: var(--ink);
   text-align: center;
-  border: 2px solid transparent;
-  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
+  border: var(--line) solid var(--ink);
 }
 
 .gs-stat--wide {
@@ -364,7 +358,6 @@
   gap: 0.25rem;
   justify-content: center;
   font-size: 0.82rem;
-  font-style: italic;
   line-height: 1.2;
   color: var(--ink-soft);
 }
@@ -419,8 +412,7 @@
 .game-sidebar .btn--ghost {
   color: var(--ink);
   background: transparent;
-  border: 2px solid transparent;
-  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
+  border: var(--line) solid var(--ink);
 }
 
 .game-sidebar .btn--ghost:hover:not(:disabled),
@@ -519,7 +511,6 @@
   display: grid;
   place-items: center start;
   font-size: 0.95rem;
-  font-style: italic;
   color: var(--on-felt-muted);
   pointer-events: none;
 }
@@ -633,13 +624,10 @@
   max-width: min(30rem, 90%);
   padding: 0.4rem 1.1rem 0.45rem;
   font-size: 0.98rem;
-  font-style: italic;
   color: var(--ink);
   text-align: center;
   pointer-events: none;
-  background:
-    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
-    var(--paper);
+  background: var(--paper);
   border-radius: 3px 5px 4px 6px;
   box-shadow: 0 4px 10px rgb(6 26 16 / 35%);
 }
@@ -660,9 +648,7 @@
   padding: 0.85rem 1.1rem 0.9rem 0.9rem;
   color: var(--ink);
   pointer-events: none;
-  background:
-    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
-    var(--paper);
+  background: var(--paper);
   border-radius: 4px 7px 5px 6px;
   box-shadow:
     inset 0 0 0 2px var(--boss-color),
@@ -698,7 +684,6 @@
 .boss-banner__label {
   font-size: 0.85rem;
   font-weight: 600;
-  font-style: italic;
   color: var(--danger-dark);
 }
 
@@ -718,7 +703,6 @@
 .boss-banner__intro {
   margin-top: 0.35rem;
   font-size: 0.92rem;
-  font-style: italic;
   line-height: 1.3;
   color: var(--wood);
 }
@@ -749,7 +733,6 @@
 .game-panel__title {
   font-size: 1.9rem;
   font-weight: 700;
-  font-style: italic;
   letter-spacing: -0.01em;
   color: var(--on-felt);
   text-shadow: 0 2px 10px rgb(6 26 16 / 45%);
@@ -762,7 +745,6 @@
 
 .game-panel__subtitle {
   margin-top: 0.2rem;
-  font-style: italic;
   color: var(--on-felt-muted);
 }
 
@@ -796,9 +778,7 @@
   padding: 0.8rem 0.8rem 0.9rem;
   color: var(--ink);
   text-align: center;
-  background:
-    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
-    var(--paper);
+  background: var(--paper);
   border-radius: 4px 6px 5px 4px;
   box-shadow: var(--shadow-card);
   transition:
@@ -836,7 +816,6 @@
   padding: 0.12rem 0.5rem 0.16rem;
   font-size: 0.85rem;
   font-weight: 600;
-  font-style: italic;
   color: var(--paper);
   background: var(--ink-soft);
   border-radius: 3px 8px 4px 7px / 7px 4px 8px 3px;
@@ -870,7 +849,6 @@
 
 .blind-card__rule {
   font-size: 0.88rem;
-  font-style: italic;
   line-height: 1.3;
   color: var(--danger-dark);
 }
@@ -878,7 +856,6 @@
 .blind-card__note {
   margin-top: 0.35rem;
   font-size: 0.85rem;
-  font-style: italic;
   color: #2c6a45;
   text-align: center;
 }
@@ -893,13 +870,11 @@
 /* Cíl a odměna: políčka orámovaná tuší (jako v levém panelu). */
 .blind-card__fact {
   padding: 0.25rem 0.3rem 0.3rem;
-  border: 2px solid transparent;
-  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
+  border: var(--line) solid var(--ink);
 }
 
 .blind-card__fact dt {
   font-size: 0.82rem;
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -1031,7 +1006,7 @@
   margin-top: 0.2rem;
   font-size: 1.3rem;
   font-weight: 600;
-  background: var(--tex-ink-line) 0 0 / 100% 4px no-repeat;
+  background: linear-gradient(var(--ink), var(--ink)) 0 0 / 100% 3px no-repeat;
 }
 
 .round-end .game-panel__actions {
@@ -1074,11 +1049,8 @@
   min-width: 0;
   padding: 0.3rem 1.2rem 0.45rem;
   color: var(--ink);
-  background:
-    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
-    var(--paper);
-  border: 2px solid transparent;
-  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
+  background: var(--paper);
+  border: var(--line) solid var(--ink);
   box-shadow: 0 6px 14px rgb(6 26 16 / 35%);
   transform: rotate(-0.6deg);
 }
@@ -1104,7 +1076,6 @@
 .shop__title {
   font-size: 1.7rem;
   font-weight: 700;
-  font-style: italic;
   letter-spacing: -0.01em;
   color: #9e2b22;
 }
@@ -1112,7 +1083,6 @@
 .shop__sign .game-panel__subtitle {
   margin-top: 0.05rem;
   font-size: 0.88rem;
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -1225,7 +1195,6 @@
   overflow: hidden;
   font-size: 0.75rem;
   font-weight: 700;
-  font-style: italic;
   color: var(--ink);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1321,13 +1290,11 @@
 .shop-empty__title {
   font-size: 1.45rem;
   font-weight: 700;
-  font-style: italic;
   color: #a8302a;
 }
 
 .shop-empty__hint {
   margin-top: 0.3rem;
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -1390,7 +1357,6 @@
 
 .booster__picks {
   font-size: 1.2rem;
-  font-style: italic;
   color: var(--money-light);
 }
 
@@ -1462,9 +1428,7 @@
   z-index: 1;
   padding: 0.6rem 0.7rem 0.75rem;
   margin: 0.4rem -0.7rem 0;
-  background:
-    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
-    var(--paper);
+  background: var(--paper);
 }
 
 /* Přechod nad pruhem: stejný papír, který se nahoru ztrácí (maska), ať pruh nepůsobí jako nalepený. */
@@ -1507,7 +1471,6 @@
 .game-over__quote {
   margin: 0.25rem 0 0.75rem;
   font-size: 1.4rem;
-  font-style: italic;
   line-height: 1.3;
   color: var(--wood);
   text-align: center;
@@ -1556,9 +1519,8 @@
   padding-bottom: 0.3rem;
   font-size: 1.1rem;
   font-weight: 600;
-  font-style: italic;
   color: var(--wood);
-  background: var(--tex-ink-line) 0 100% / 100% 4px no-repeat;
+  background: linear-gradient(var(--ink), var(--ink)) 0 100% / 100% 3px no-repeat;
 }
 
 .game-stats {
@@ -1599,13 +1561,11 @@
   justify-content: center;
   padding: 0.5rem;
   margin-top: 0.75rem;
-  border: 2px solid transparent;
-  border-image: var(--tex-ink-frame) 16 / 8px / 0 stretch;
+  border: var(--line) solid var(--ink);
 }
 
 .game-seed__label {
   font-size: 0.9rem;
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -1651,7 +1611,6 @@
 .victory__hint {
   margin-top: 0.5rem;
   font-size: 0.9rem;
-  font-style: italic;
   text-align: center;
   color: var(--ink-soft);
 }
@@ -1777,7 +1736,6 @@
 .gb-hint {
   margin-bottom: 0.4rem;
   font-size: 0.95rem;
-  font-style: italic;
   color: var(--on-felt-muted);
   text-align: center;
 }
@@ -1819,7 +1777,6 @@
 
 .gb-sort__label {
   font-size: 0.9rem;
-  font-style: italic;
   color: var(--on-felt-muted);
 }
 
@@ -1837,7 +1794,6 @@
 
 .gb-selected {
   font-size: 0.85rem;
-  font-style: italic;
   color: var(--on-felt-muted);
 }
 
@@ -1866,7 +1822,6 @@
   translate: -50% 0;
   font-size: 0.85rem;
   font-weight: 700;
-  font-style: italic;
   color: var(--paper);
   background: var(--danger);
   border-radius: 6px 10px 7px 9px / 9px 7px 10px 6px;
@@ -1887,7 +1842,6 @@
 /* Velikost ruky; zmenšená (Velká voda, Garsonka) červeně, zvětšená zeleně. */
 .gb-handsize {
   font-size: 0.85rem;
-  font-style: italic;
   color: var(--on-felt-muted);
   white-space: nowrap;
 }
@@ -1938,7 +1892,6 @@
   padding: 0 0.5rem;
   font-size: 0.92rem;
   font-weight: 600;
-  font-style: italic;
   color: var(--on-felt);
   font-variant-numeric: lining-nums tabular-nums;
 }
@@ -2007,11 +1960,8 @@
 }
 
 .game-bubble--message .game-bubble__text {
-  font-style: italic;
   color: var(--ink);
-  background:
-    var(--tex-paper) 0 0 / var(--paper-tile) var(--paper-tile),
-    var(--paper);
+  background: var(--paper);
 }
 
 .game-bubble--bad .game-bubble__text {
@@ -2140,9 +2090,8 @@
   padding-bottom: 0.25rem;
   font-size: 1.15rem;
   font-weight: 700;
-  font-style: italic;
   color: var(--wood);
-  background: var(--tex-ink-line) 0 100% / 100% 4px no-repeat;
+  background: linear-gradient(var(--ink), var(--ink)) 0 100% / 100% 3px no-repeat;
 }
 
 .run-info__hands {
@@ -2161,7 +2110,6 @@
 .run-info__hands thead th {
   font-size: 0.88rem;
   font-weight: 600;
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -2278,7 +2226,6 @@
   margin-top: 0.25rem;
   font-size: 0.9rem;
   font-weight: 600;
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -2314,7 +2261,6 @@
 .detail__kind {
   font-size: 0.92rem;
   font-weight: 600;
-  font-style: italic;
   color: var(--ink-soft);
 }
 
@@ -2342,7 +2288,6 @@
 }
 
 .detail__flavor {
-  font-style: italic;
   color: var(--wood);
 }
 
