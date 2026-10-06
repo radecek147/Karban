@@ -2021,7 +2021,6 @@ html.modal-open {
    */
   .deck-picker {
     flex-direction: row;
-    align-items: flex-start;
     gap: 0.6rem;
     margin-inline: -1rem;
     padding: 0.35rem 1rem 0.9rem;
@@ -2042,8 +2041,13 @@ html.modal-open {
   }
 
   .deck-option {
-    flex: 0 0 min(80%, 18rem);
+    flex: 0 0 min(86%, 20rem);
+    grid-template-columns: 3.6rem minmax(0, 1fr);
     scroll-snap-align: start;
+  }
+
+  .deck-option__art .art-svg {
+    width: 78%;
   }
 
   .stake-option__name {
