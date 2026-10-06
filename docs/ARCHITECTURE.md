@@ -366,7 +366,7 @@ flavor a že texty dodržují typografii.
 - Herní obrazovka (Sirkárna): nahoře kartonová lišta (`sidebar.ts`: útrata, skóre s ukazatelem, cíl, žetony, tlačítka),
   pod ní řada žolíků se jménem a obrysy volných slotů, spotřebky a balíček (`topRow.ts`, balíček přesune `index.ts`),
   uprostřed stůl se zahranými kartami a pod nimi velký náhled čipy × mult (`sidebar.handInfoEl` v `.game-scoreboard`),
-  dole ruka a po stranách velká Zahrát / Zahodit ve sloupcích stálé šířky (`handArea.ts`). Velikost karet
+  dole ruka, vpravo od ní velká Zahrát a Zahodit nad sebou, vlevo počty a třídění (`handArea.ts`). Velikost karet
   `--card-w` plyne z šířky i výšky okna (game.css).
 - Šéfové a štítky v UI (fáze 6): texty přes `describe.ts` (`bossTexts` dosazuje `BossDef.params`, `bossReasonText`
   = „Šéf X: pravidlo“ jen když pravidlo v kole platí). Příchod šéfa = plakát nad stolem (`screens/game/bossBanner.ts`,

@@ -1906,10 +1906,10 @@
 /* ─────────────────────────── Dole: ruka a ovládání ─────────────────────────── */
 
 /*
- * Ruka uprostřed, vlevo Zahrát a pod ním třídění, vpravo Zahodit a pod ním počty (vybráno, velikost ruky).
- * Boční sloupce mají stálou šířku — tlačítka se při zahrání neposouvají za zmenšenou rukou. Obaly ruky
- * a ovládání (`.gb-hand-wrap`, `.gb-controls`, `.gb-mid`) jsou `display: contents`, ať jejich prvky sedí
- * v jedné mřížce. Balíček stojí v horní řadě (index.ts).
+ * Ruka uprostřed, Zahrát a Zahodit u sebe vpravo od ruky (Zahrát nad Zahodit — myš je má na jednom místě),
+ * vlevo počty (vybráno, velikost ruky) a pod nimi třídění. Boční sloupce mají stálou šířku — tlačítka se při
+ * zahrání neposouvají za zmenšenou rukou. Obaly ruky a ovládání (`.gb-hand-wrap`, `.gb-controls`, `.gb-mid`)
+ * jsou `display: contents`, ať jejich prvky sedí v jedné mřížce. Balíček stojí v horní řadě (index.ts).
  */
 .game-bottom {
   position: relative;
@@ -1917,9 +1917,9 @@
   grid-template-columns: minmax(9rem, 13rem) minmax(0, 1fr) minmax(9rem, 13rem);
   grid-template-rows: minmax(0, 1fr) auto;
   grid-template-areas:
-    'play hand discard'
-    'sort hand counts';
-  gap: 0.55rem 1rem;
+    'counts hand play'
+    'sort hand discard';
+  gap: 0.5rem 1rem;
 }
 
 .game-main.is-handless .game-bottom {
@@ -2026,29 +2026,31 @@
   display: none;
 }
 
-/* Zahrát = zelený blok, Zahodit = rumělkový blok s krémovým písmem; velké, po stranách ruky. */
+/* Zahrát = zelený blok, Zahodit = rumělkový blok s krémovým písmem; velké, nad sebou vpravo od ruky. */
 .gb-play,
 .gb-discard {
-  align-self: end;
   justify-self: stretch;
   min-width: 0;
-  min-height: 4.2rem;
-  font-size: 1.9rem;
-  --btn-shadow: 6px 6px 0 var(--ink);
+  min-height: 4rem;
+  font-size: 1.85rem;
+  --btn-shadow: 5px 5px 0 var(--ink);
 }
 
 .gb-play {
   --wash: var(--wash-green);
 
   grid-area: play;
+  align-self: end;
 }
 
 .gb-discard {
   grid-area: discard;
+  align-self: start;
 }
 
 .gb-sort {
   grid-area: sort;
+  align-self: start;
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
@@ -2085,7 +2087,7 @@
   flex-wrap: wrap;
   gap: 0.15rem 0.6rem;
   align-items: baseline;
-  align-self: center;
+  align-self: end;
   justify-content: center;
 }
 
@@ -2221,15 +2223,15 @@
   }
 }
 
-/* Tablet na výšku (≤ 900 px): Zahrát a Zahodit pod rukou vedle sebe, třídění a počty mezi nimi. */
+/* Tablet na výšku (≤ 900 px): pod rukou vlevo třídění a počty, vpravo Zahrát a Zahodit vedle sebe. */
 @media (max-width: 900px) {
   .game-bottom {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 13rem) minmax(0, 13rem);
     grid-template-rows: auto auto;
     grid-template-areas:
       'hand hand hand'
-      'play mid discard';
-    gap: 0.3rem 0.75rem;
+      'mid play discard';
+    gap: 0.3rem 0.6rem;
   }
 
   .gb-mid {
@@ -2237,7 +2239,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
   }
 
@@ -2249,14 +2251,9 @@
     --btn-shadow: 4px 4px 0 var(--ink);
   }
 
-  .gb-play {
-    justify-self: end;
-    width: min(100%, 15rem);
-  }
-
+  .gb-play,
   .gb-discard {
-    justify-self: start;
-    width: min(100%, 15rem);
+    justify-self: stretch;
   }
 }
 
@@ -2787,10 +2784,14 @@
     column-gap: 0.75rem;
   }
 
+  .ui-large .game-bottom {
+    row-gap: 0.4rem;
+  }
+
   .ui-large .gb-play,
   .ui-large .gb-discard {
-    min-height: 3.2rem;
-    font-size: 1.45rem;
+    min-height: 2.8rem;
+    font-size: 1.4rem;
   }
 
   /* Lišta o kus nižší (žetony a čísla), ať karty a panely fází dostanou víc výšky. */

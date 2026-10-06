@@ -137,17 +137,18 @@ export function createHandArea(ctx: GameCtx, actions: HandAreaActions): HandArea
     sortRank,
     sortSuit,
   );
+  // Pořadí v DOM = pořadí na obrazovce (Tab): vlevo počty a třídění, vpravo Zahrát a pod ním Zahodit.
   const controls = h(
     'div',
     { class: 'gb-controls' },
-    playBtn,
     h(
       'div',
       { class: 'gb-mid' },
-      sortGroup,
       h('div', { class: 'gb-counts' }, selectedEl, handSizeEl),
+      sortGroup,
       alertEl,
     ),
+    playBtn,
     discardBtn,
   );
 

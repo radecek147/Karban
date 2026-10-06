@@ -3824,8 +3824,10 @@ ze 60. let. K tomu nové rozvržení.
   - Balíček je v horní řadě vedle spotřebek.
   - Náhled čipy × mult je velký uprostřed stolu pod zahranými kartami. Stůl už není prázdný a hlavní okamžik hry
     je uprostřed.
-  - Ruka je větší (karta se počítá ze šířky i výšky okna). Zahrát a Zahodit jsou velké bloky po stranách
-    ve sloupcích stálé šířky, takže při zahrání neuhýbají. Třídění je pod Zahrát, počty pod Zahodit.
+  - Ruka je větší (karta se počítá ze šířky i výšky okna). Zahrát a Zahodit jsou velké bloky u sebe vpravo
+    od ruky (Zahrát nad Zahodit) ve sloupci stálé šířky, takže při zahrání neuhýbají. Vlevo jsou počty a třídění.
+    Hráč chtěl obě tlačítka blízko sebe — původně byla každé na jedné straně ruky a myš musela přejíždět přes
+    celou obrazovku. Na tabletu a telefonu jsou vedle sebe pod rukou.
   - Bubliny skórování jsou tištěné nálepky (plná barva, linka, tvrdý stín). Velké skóre dává hořčicový rastr
     místo zlaté záře.
   - Hlášky jdou do volného místa v horní řadě mezi žolíky a spotřebkami. Když tam místo není, jdou do pravého
