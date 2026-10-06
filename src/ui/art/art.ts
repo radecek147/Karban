@@ -569,11 +569,7 @@ function chipArt(spec: ArtSpec, color: string): [string, string] {
 
 /** Štítek: kulatý odznak na provázku. */
 function tagArt(spec: ArtSpec): [string, string] {
-  const [defs, win] = artWindow(
-    spec,
-    { kind: 'circle', cx: 60, cy: 64, r: 38 },
-    { iconSize: 48, k: 0.5 },
-  );
+  const [defs, win] = artWindow(spec, { kind: 'circle', cx: 60, cy: 64, r: 38 }, { iconSize: 48, k: 0.5 });
   const body =
     ink(shp.path('M60 14C52 6 44 2 36 2'), 1.8, { color: '#8a6a3a', op: 0.9 }) +
     paint(shp.circle(60, 64, 52), '#e3c76a', 1.8, { op: 0.8 }) +
@@ -595,11 +591,7 @@ function stakeArt(spec: ArtSpec): [string, string] {
     const rr = i % 2 === 0 ? 57 : 53;
     d += `${i === 0 ? 'M' : 'L'}${r1(60 + Math.cos(a) * rr)} ${r1(60 + Math.sin(a) * rr)}`;
   }
-  const [defs, win] = artWindow(
-    spec,
-    { kind: 'circle', cx: 60, cy: 60, r: 40 },
-    { iconSize: 52, k: 0.5 },
-  );
+  const [defs, win] = artWindow(spec, { kind: 'circle', cx: 60, cy: 60, r: 40 }, { iconSize: 52, k: 0.5 });
   const body =
     paint(shp.path(`${d}z`), '#f4e6c8', 1.6, { op: 0.5 }) +
     wash(`<circle cx="60" cy="60" r="47" fill="none" stroke="currentColor" stroke-width="4"/>`, p.bg, {
