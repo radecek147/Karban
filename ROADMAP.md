@@ -504,13 +504,31 @@ Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba h
 - [x] Test ve 3 oblastech (hratelnost+balanc, meta+ukládání, rozlišení+výkon+přístupnost), zpráva o slabinách
 - [x] Opravy jednoznačných chyb (focus po dialozích, varování denního runu, Sbírka, titulky, tutoriál, texty)
 - [x] Návrhy designu 1–4 (náhledy celé obrazovky); doporučení Sirkárna + nové rozvržení
-- [ ] Volba designu hráčem → přestavba rozvržení (horní lišta, velcí žolíci se jménem, skóre uprostřed stolu)
-- [ ] Výkon obrázků (podle volby: plochý renderer bez filtrů, nebo kódování ve Workeru + prioritní fronta),
-      Sbírka se sdílenou siluetou neobjevených a rastrováním jen viditelných
-- [ ] Nízká okna a velikost UI 120–140 %, toasty mimo ovládání, bublina tutoriálu mimo zboží
+- [x] Volba designu (hráč nechal na mně: Sirkárna) → přestavba rozvržení (horní lišta, velcí žolíci se jménem,
+      skóre uprostřed stolu) — sekce „Výtvarný styl Sirkárna“ níž
+- [x] Výkon obrázků: plochý tiskový renderer bez filtrů a bez rastrování; Sbírka se sdílenou siluetou neobjevených
+- [x] Nízká okna a velikost UI 120–140 %, toasty mimo ovládání, bublina tutoriálu mimo zboží
 - [ ] Tempo: výchozí rychlost 2×, nápověda „mezerník přeskočí“, pauza zastaví skórování
 - [ ] Balanc: Pan farář a spol. dolů, Kolotoč na pouti, Virální video a spol. nahoru, šetření na úrok
 - [ ] Přístupnost: shoda viditelného textu a `aria-label`, pořadí Tab ve Večerce a obálce
+
+---
+
+## Výtvarný styl „Sirkárna“ (retro sítotisk) + nové rozvržení (2026-10-06) — DECISIONS 2026-10-06
+
+- [x] S1: tisková kreslicí sada `src/ui/art/print.ts` (32 tiskových barev, plné plochy s nesoutiskem, rastr
+      z teček, plná linka) místo akvarelu; `svg.ts`; bez SVG filtrů a bitmapové keše; štítek se jménem na žolíkovi
+- [x] S2: tokeny Sirkárny (`base.css`), písma Big Shoulders Display + Barlow Semi Condensed (OFL, fetch-assets),
+      tlačítka, karton, dialogy, hlášky, tooltip
+- [x] S3: herní obrazovka — horní lišta, velcí žolíci se jménem a obrysy slotů, balíček v horní řadě, náhled
+      čipy × mult uprostřed stolu, větší ruka, Zahrát / Zahodit po stranách ve sloupcích stálé šířky; panely fází,
+      bubliny, karty, tutoriál a efekty v tiskovém stylu; ověřeno na 1024×768, 1280×720, 1366×768, 1920×1080,
+      tabletu 820×1180, telefonu 390×844 a při velikosti UI 130 %
+- [x] Doladění podle playtestu: pečetě a edice čitelné na první pohled, kontrast skóre mimo kolo, křížek hlášky
+      44 px na dotyku, bublina tutoriálu ve Večerce mimo zboží, ikona aplikace a favicon
+- [ ] S4: ostatní obrazovky (menu, nová hra, nastavení, titulky, sbírka, statistiky, výzvy, denní run) — agent
+      ve worktree, sloučit
+- [ ] S5: celé ověření (unit, e2e), snímky do README, artefakt s hrou, desktopový workflow
 
 ---
 
