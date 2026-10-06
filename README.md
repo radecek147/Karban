@@ -11,8 +11,8 @@ Grafika je jako retro sítotisk ze zápalkových nálepek a plakátů 60. let: p
 barva lehce vedle linky a rastr z teček místo stínů. Karty, Krakonoš, Vodník, Orloj, Revizor i Pivní tácek jsou
 kreslené přímo v kódu, žádné obrázky z generátoru ani z cizích her.
 
-**Hraj v prohlížeči:** [radecek147.github.io/FM](https://radecek147.github.io/FM/) — odkaz začne fungovat,
-jakmile se v repozitáři zapnou GitHub Pages (viz [Nasazení](#nasazení)). Po prvním načtení jde hra i offline.
+**Hraj v prohlížeči:** [radecek147.github.io/Karban](https://radecek147.github.io/Karban/). Po prvním načtení
+jde hra i offline.
 
 <p align="center">
   <img src="docs/media/karban.gif" alt="Výběr pěti karet, živý přepočet čipů × mult a animace skórování Full housu se žolíky" width="900">
@@ -255,16 +255,25 @@ a test. Podrobnosti v CONTENT-GUIDE.
 
 ## Nasazení
 
-Hra se nasazuje na **GitHub Pages** přes GitHub Actions
-([.github/workflows/deploy.yml](.github/workflows/deploy.yml)): po každém pushi do `main`, po tagu `v*`
-(třeba `v1.0.0`) nebo ručně v záložce Actions. Workflow spustí testy, sestaví hru s `BASE_PATH=/<repozitář>/`
-a nahraje `dist/`.
+Hra běží na **GitHub Pages**: <https://radecek147.github.io/Karban/>.
 
-Jednorázově je potřeba v repozitáři zapnout Pages: **Settings → Pages → Source = GitHub Actions**. Aby šly
-nasazovat i tagy, povol je v **Settings → Environments → github-pages → Deployment branches and tags**
-(pravidlo `v*`). Hra pak poběží na <https://radecek147.github.io/FM/>.
+**Jak je to teď nastavené:** Pages servírují větev **`gh-pages`** (Settings → Pages → Source = _Deploy from
+a branch_, `gh-pages` / root). Na ní je jen hotový build. Novou verzi nasadíš takhle: sestav hru s cestou
+repozitáře a obsah `dist/` (bez `.map`, se souborem `.nojekyll`) nahraj na `gh-pages`. GitHub pak web sám
+přenasadí („pages build and deployment“, asi minuta).
 
-Lokální náhled se stejnou cestou jako na Pages: `BASE_PATH=/FM/ npm run build && npm run preview`.
+```bash
+BASE_PATH=/Karban/ npm run build
+# obsah dist/ zkopíruj do pracovní kopie větve gh-pages, commitni a pushni
+```
+
+**Alternativa přes GitHub Actions** ([.github/workflows/deploy.yml](.github/workflows/deploy.yml)): workflow
+spustí testy, sestaví hru s `BASE_PATH=/<repozitář>/` a nasadí `dist/` (ručně v záložce Actions, po pushi do
+`main` nebo po tagu `v*`). Potřebuje **Settings → Pages → Source = GitHub Actions** a ve **Settings →
+Environments → github-pages → Deployment branches and tags** povolenou větev, ze které se nasazuje
+(pravidlo typu _Branch_, ne _Tag_).
+
+Lokální náhled se stejnou cestou jako na Pages: `BASE_PATH=/Karban/ npm run build && npm run preview`.
 
 ### Desktopová aplikace
 

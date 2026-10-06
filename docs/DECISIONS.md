@@ -3855,3 +3855,15 @@ ze 60. let. K tomu nové rozvržení.
 - Tisk je levný (žádné filtry, žádné rastrování v `toBlob`), čitelný v každé velikosti a česky retro, aniž by
   kopíroval cizí hru.
 - Rozvržení s lištou nahoře uvolní šířku pro velké žolíky a dá skórování doprostřed obrazovky.
+
+## 2026-10-06 — Web na GitHub Pages z větve gh-pages (/Karban/)
+
+**Co:** Hra je nasazená na <https://radecek147.github.io/Karban/>. Pages v repozitáři servírují větev `gh-pages`
+(zdroj „Deploy from a branch“), proto jsem na ni nahrál čerstvý build s `BASE_PATH=/Karban/` a GitHub ho sám
+přenasadil. Na `gh-pages` dřív ležel build ze 4. 10., který pořád odkazoval na `/FM/assets/…`. Po přejmenování
+repozitáře na Karban proto web nenačetl skripty.
+
+**Proč:** Workflow `deploy.yml` (zdroj GitHub Actions) sestavil hru správně, ale nasazení odmítla ochrana
+prostředí `github-pages`. Ta povoluje jen větev `gh-pages`, pravidlo pro vývojovou větev bylo omylem typu Tag.
+Tohle nastavení odsud změnit nejde. Nahrání buildu na povolenou větev `gh-pages` funguje hned a bez dalšího
+nastavování. README v části Nasazení popisuje oba způsoby.
