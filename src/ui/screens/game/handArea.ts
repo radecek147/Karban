@@ -160,12 +160,13 @@ export function createHandArea(ctx: GameCtx, actions: HandAreaActions): HandArea
       'data-testid': 'deck',
       onClick: () => actions.openDeck(),
     },
+    h('span', { class: 'gb-deck__head', 'aria-hidden': 'true' }, t('game.deck.title'), ' ', deckCount),
     createCardBack({ className: 'gb-deck__card' }),
-    deckCount,
   );
 
+  // Balíček stojí v horní řadě vedle spotřebek (umístí ho index.ts) — dole jen ruka a ovládání.
   const handWrap = h('div', { class: 'gb-hand-wrap' }, handRow, hint, controls, reorderHint, live);
-  const el = h('section', { class: 'game-bottom' }, handWrap, deckEl);
+  const el = h('section', { class: 'game-bottom' }, handWrap);
 
   const cards = new Map<number, HTMLElement>();
   let lastOrder = '';

@@ -1,6 +1,7 @@
 /**
- * Herní obrazovka (CLAUDE.md kap. 4, DESIGN 13.2–13.3): levý panel, nahoře žolíci a spotřebky, uprostřed stůl
- * nebo panel fáze (výběr útraty, konec kola, Večerka, obálka, pitva, výhra), dole ruka s Zahrát / Zahodit
+ * Herní obrazovka (CLAUDE.md kap. 4, DESIGN 13.2–13.3): nahoře lišta (útrata, skóre a cíl, ruce, zahození,
+ * peníze, patro), pod ní žolíci a spotřebky, uprostřed stůl se zahranými kartami a náhledem čipy × mult nebo
+ * panel fáze (výběr útraty, konec kola, Večerka, obálka, pitva, výhra), dole ruka se Zahrát / Zahodit po stranách
  * a vpravo dole balíček.
  *
  * Stav čte jen přes `controller.state` / `controller.engine` (dotazy), mění ho jen akcemi controlleru.
@@ -15,7 +16,6 @@ import '../../styles/game.css';
 import type { BlindKind, HandType, RunPhase } from '../../../engine';
 import { t } from '../../../i18n/cs';
 import type { App, Screen, ScreenFactory } from '../../app';
-import { tableEmblem } from '../../art/table';
 import { backButton } from '../../components/button';
 import { closeAllModals, isModalOpen } from '../../components/modal';
 import {
@@ -89,6 +89,7 @@ class GameView implements PresentView {
   private readonly table: HTMLElement;
   private readonly tableHint: HTMLElement;
   private readonly panelHost: HTMLElement;
+  private readonly stage: HTMLElement;
   private readonly fx: HTMLElement;
   private readonly live: HTMLElement;
   private readonly bossBanner: BossBanner;
@@ -123,18 +124,18 @@ class GameView implements PresentView {
       inert: true,
     });
     this.panelHost = h('div', { class: 'game-panel-host' });
-    // Potisk na suknu (prošívaný ovál + znak) — jen ozdoba, pod vším ostatním na jevišti.
-    const decor = h('div', { class: 'game-stage__decor', 'aria-hidden': 'true' }, tableEmblem());
     this.bossBanner = createBossBanner(controller.registry);
-    const stage = h(
+    // Uprostřed stolu: zahrané karty a pod nimi náhled kombinace (čipy × mult) — nejdůležitější okamžik hry.
+    const scoreboard = h('div', { class: 'game-scoreboard' }, this.sidebar.handInfoEl);
+    const stage = (this.stage = h(
       'section',
       { class: 'game-stage' },
-      decor,
-      this.tableHint,
-      this.table,
+      h('div', { class: 'game-play' }, this.tableHint, this.table, scoreboard),
       this.panelHost,
       this.bossBanner.el,
-    );
+    ));
+    // Balíček vpravo v horní řadě (za spotřebkami): dole zůstane celá šířka ruce a velkým tlačítkům.
+    this.topRow.el.append(this.handArea.deckEl);
     this.main = h('div', { class: 'game-main' }, this.topRow.el, stage, this.handArea.el);
     // Hlášky v rohu mimo hrací plochu (toast.ts): vpravo nahoře nad kapsou spotřebek — ne přes stůl, skórování,
     // zboží, obálku, ruku ani tlačítka.
@@ -200,7 +201,7 @@ class GameView implements PresentView {
     this.sidebar.update();
     this.topRow.update();
     this.handArea.update();
-    // Bez ruky dole jen balíček — jeviště dostane celou výšku (styles/game.css, `.is-handless`).
+    // Bez ruky se dolní řada schová — jeviště dostane celou výšku (styles/game.css, `.is-handless`).
     this.main.classList.toggle('is-handless', this.handArea.el.classList.contains('is-empty'));
 
     const inRound = s.phase === 'round';
@@ -239,9 +240,9 @@ class GameView implements PresentView {
   }
 
   /**
-   * Místo pro sloupec hlášek: v rohu mimo hrací plochu. Na širokém rozvržení vpravo nahoře uvnitř řady žolíků
-   * a spotřebek (pravý kraj řady je kapsa spotřebek, žolíci začínají vlevo); na úzkém (tablet na výšku, telefon)
-   * nahoře vpravo v okně. Null = řada není vidět (výchozí roh).
+   * Místo pro sloupec hlášek: mimo hrací plochu. Na širokém rozvržení ve volném místě horní řady mezi sloty žolíků
+   * a kapsou spotřebek (ne přes balíček, stůl ani ruku); když je mezera úzká (hodně slotů), v pravém horním rohu
+   * jeviště. Na úzkém (tablet na výšku, telefon) nahoře vpravo v okně. Null = výchozí roh.
    */
   private toastSpot(): ToastSpot | null {
     const top = this.topRow.el;
@@ -252,19 +253,31 @@ class GameView implements PresentView {
     if (narrow) return { right: TOAST_ANCHOR_GAP, top: TOAST_ANCHOR_GAP, width: Math.min(360, vw - 16) };
     const r = top.getBoundingClientRect();
     if (r.width <= 0 || r.height <= 0) {
-      // Pitva a výhra (řada žolíků schovaná, panel přes celou plochu): dole v levém panelu, mimo panel.
-      const side = this.sidebar.el.getBoundingClientRect();
-      if (side.width <= 0) return null;
-      return {
-        left: side.left + 4,
-        bottom: Math.max(TOAST_ANCHOR_GAP, vh - side.bottom + 4),
-        width: Math.max(160, side.width - 8),
-      };
+      // Pitva a výhra (řada žolíků schovaná, panel přes celou plochu): vlevo dole v okně, mimo panel.
+      const panel = this.panelHost.getBoundingClientRect();
+      const free = panel.width > 0 ? panel.left - 16 : 0;
+      if (free < 200) return null;
+      return { left: TOAST_ANCHOR_GAP, bottom: TOAST_ANCHOR_GAP, width: Math.min(340, free) };
     }
+    // Pravý okraj slotů žolíků (obrysy i karty) a levý okraj kapsy spotřebek.
+    let jokersRight = r.left;
+    for (const el of Array.from(
+      top.querySelectorAll<HTMLElement>('.gt-group--jokers .gt-slot, .gt-group--jokers .gt-item'),
+    ))
+      jokersRight = Math.max(jokersRight, el.getBoundingClientRect().right);
+    const cons = top.querySelector<HTMLElement>('.gt-group--consumables')?.getBoundingClientRect();
+    const gap = cons ? cons.left - jokersRight : 0;
+    if (gap >= 260)
+      return {
+        left: jokersRight + 14,
+        top: Math.max(TOAST_ANCHOR_GAP, r.top + 4),
+        width: Math.min(360, gap - 28),
+      };
+    const st = this.stage.getBoundingClientRect();
     return {
-      right: Math.max(TOAST_ANCHOR_GAP, vw - r.right + 4),
-      top: Math.max(TOAST_ANCHOR_GAP, r.top + 4),
-      width: Math.min(360, Math.max(240, r.width * 0.42)),
+      right: Math.max(TOAST_ANCHOR_GAP, vw - st.right + 8),
+      top: Math.max(TOAST_ANCHOR_GAP, Math.min(st.top + 8, vh - 160)),
+      width: Math.min(340, Math.max(240, st.width * 0.3)),
     };
   }
 

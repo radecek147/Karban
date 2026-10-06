@@ -313,12 +313,17 @@ test('hlášky: v rohu mimo hrací plochu nejvýš 2 (další čekají), mimo st
   expect(await toasts.count()).toBeLessThanOrEqual(2);
   await page.screenshot({ path: 'test-results/hand-toasts.png', animations: 'disabled' });
 
-  // Sloupec je vpravo nahoře v řadě žolíků a spotřebek — nepřekrývá stůl, ruku, Zahrát / Zahodit ani balíček.
+  // Sloupec je v horní řadě mezi sloty žolíků a kapsou spotřebek — nepřekrývá žolíky, spotřebky, balíček, stůl,
+  // ruku ani Zahrát / Zahodit.
   const top = await page.locator('.game-top').boundingBox();
+  const cons = await page.locator('.gt-group--consumables').boundingBox();
   const region = await page.getByTestId('toasts').boundingBox();
-  if (!top || !region) throw new Error('Řada žolíků nebo hlášky nejsou vidět.');
-  expect(region.x + region.width).toBeLessThanOrEqual(top.x + top.width + 1);
-  expect(region.x).toBeGreaterThan(top.x + top.width / 2);
+  if (!top || !cons || !region) throw new Error('Řada žolíků nebo hlášky nejsou vidět.');
+  const jokersRight = await page
+    .locator('.gt-group--jokers .gt-slot, .gt-group--jokers .gt-item')
+    .evaluateAll((els) => Math.max(...els.map((el) => el.getBoundingClientRect().right)));
+  expect(region.x).toBeGreaterThanOrEqual(jokersRight);
+  expect(region.x + region.width).toBeLessThanOrEqual(cons.x + 1);
   expect(region.y).toBeLessThan(top.y + top.height);
   const blockers = [
     await page.getByTestId('table').boundingBox(),
@@ -326,6 +331,7 @@ test('hlášky: v rohu mimo hrací plochu nejvýš 2 (další čekají), mimo st
     await page.getByTestId('play').boundingBox(),
     await page.getByTestId('discard').boundingBox(),
     await page.getByTestId('deck').boundingBox(),
+    await page.getByTestId('consumable-row').boundingBox(),
   ];
   for (const box of await toasts.evaluateAll((els) =>
     els.map((el) => {

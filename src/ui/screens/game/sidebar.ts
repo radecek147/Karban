@@ -1,7 +1,7 @@
 /**
- * Levý panel herní obrazovky (DESIGN 13.2): útrata / šéf a jeho pravidlo, „Dosáhni aspoň“, skóre kola,
- * kombinace s úrovní a živým náhledem čipy × mult, Ruce, Zahození, peníze, Patro, Kolo a tlačítka
- * Info o runu / Nastavení / Menu.
+ * Horní lišta herní obrazovky (DESIGN 13.2; dřív levý panel — třídy `gs-*` zůstaly): útrata / šéf a jeho
+ * pravidlo, skóre kola a „Dosáhni aspoň“ s ukazatelem postupu, Ruce, Zahození, peníze, Patro, Kolo a tlačítka
+ * Info o runu / Nastavení / Menu. Náhled kombinace s živým čipy × mult je uprostřed stolu (index.ts).
  *
  * Kostra se postaví jednou, `update()` jen přepisuje texty (levné — volá se po každé změně výběru).
  * Presenter si během skórování převezme kombinaci a počítadla (`showScoring`, `setChipsMult`…).
@@ -173,17 +173,30 @@ export function createSidebar(ctx: GameCtx, actions: SidebarActions): Sidebar {
     }),
   );
 
+  // Ukazatel postupu ke cíli (skóre kola / cíl) — dekorativní, čísla nad ním jsou čitelná i bez něj.
+  const progressFill = h('i', { class: 'gs-progress__fill' });
+  const progress = h('div', { class: 'gs-progress', 'aria-hidden': 'true' }, progressFill);
+  const goalBox = h('div', { class: 'gs-goal' }, scoreBox, targetBox, progress);
+  // Náhled kombinace (`handInfoEl`) si herní obrazovka přesune doprostřed stolu (index.ts) — tady je jen kvůli
+  // pořadí v DOM do té doby.
   const el = h(
     'aside',
     { class: 'game-sidebar', 'aria-label': t('game.sidebar.label') },
     blindBox,
     tagsBox,
-    targetBox,
-    scoreBox,
+    goalBox,
     handInfoEl,
     stats,
     buttons,
   );
+
+  let progressTarget: number | null = null;
+  const setProgress = (score: number): void => {
+    const ratio = progressTarget && progressTarget > 0 ? Math.min(1, Math.max(0, score / progressTarget)) : 0;
+    // Přes proměnnou (ne `style.transform`): inline transformace patří jen screen shaku (juice.spec).
+    progressFill.style.setProperty('--progress', String(Math.round(ratio * 1000) / 1000));
+    progress.classList.toggle('is-full', ratio >= 1);
+  };
 
   let scoring: { hand: HandType; level: number; chips: number; mult: number } | null = null;
   let tokenKey = '';
@@ -323,7 +336,8 @@ export function createSidebar(ctx: GameCtx, actions: SidebarActions): Sidebar {
       if (boss?.bossId && ctx.registry.bosses[boss.bossId] && !victory)
         rule = t('game.sidebar.nextBoss', { name: blindName('boss', boss.bossId) });
     }
-    setText(blindNameEl, name);
+    // Dlouhý název šéfa („Kontrola z finančáku“) se zmenší, ať se do lišty vejde celý (game.css, `--chars`).
+    setNumberText(blindNameEl, name);
     setText(blindRule, rule);
     blindRule.hidden = rule === '';
     blindBox.dataset.blind = victory ? 'victory' : kind;
@@ -379,7 +393,11 @@ export function createSidebar(ctx: GameCtx, actions: SidebarActions): Sidebar {
           ? t('game.sidebar.reward', { n: reward })
           : t('game.sidebar.noReward'),
     );
-    if (!scoring) setNumberText(roundScoreEl, formatNumber(round?.score ?? 0));
+    progressTarget = round ? target : null;
+    if (!scoring) {
+      setNumberText(roundScoreEl, formatNumber(round?.score ?? 0));
+      setProgress(round?.score ?? 0);
+    }
     updateHand();
 
     setText(handsEl, formatNumber(round ? round.handsLeft : m.hands));
@@ -417,6 +435,7 @@ export function createSidebar(ctx: GameCtx, actions: SidebarActions): Sidebar {
     },
     setRoundScore(n) {
       setNumberText(roundScoreEl, formatNumber(n));
+      setProgress(n);
     },
     setMoney(n) {
       setNumberText(moneyEl, formatMoney(n));

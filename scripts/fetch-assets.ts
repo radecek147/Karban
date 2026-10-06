@@ -11,8 +11,7 @@
  *     (cache src/assets/icons/authors.json — znovu se ptá jen na chybějící).
  *  4. Best effort: zkusí volitelné CC0 zdroje (Kenney). Když nejsou dostupné (v sandboxu proxy 403),
  *     jen to poznamená — hra je stejně kreslí procedurálně (src/ui/art).
- *  5. Vygeneruje ASSETS.md (včetně přehledu textur ze `src/assets/textures`, které vyrábí `npm run gen-textures`)
- *     a výstupy zformátuje Prettierem (pokud je nainstalovaný).
+ *  5. Vygeneruje ASSETS.md a výstupy zformátuje Prettierem (pokud je nainstalovaný).
  *
  * Build nikdy nezávisí na síti: vše potřebné se commituje do src/assets. Síťové kroky nikdy neshodí
  * běh (jen varování). Výstup je deterministický (žádná časová razítka), takže opakovaný běh nedělá diff.
@@ -94,9 +93,6 @@ const FONT_SUBSETS = ['latin-ext', 'latin'] as const;
 /** Výčet řezů do hlavičky fonts.css a ASSETS.md. */
 const facesText = (f: FontSpec): string =>
   f.faces.map((x) => `${x.weight}${x.style === 'italic' ? ' kurzíva' : ''}`).join(', ');
-
-/** Textury rozhraní (vlastní procedurální, scripts/gen-textures.ts). */
-const TEXTURES_DIR = path.join(ROOT, 'src/assets/textures');
 
 const ICON_SOURCE_URL = 'https://game-icons.net';
 const ICON_LICENSE_URL = 'https://creativecommons.org/licenses/by/3.0/';
@@ -723,7 +719,6 @@ function renderAssetsMd(
   icons: IconReport,
   authors: Record<string, string>,
   optional: OptionalResult[],
-  textures: readonly string[],
 ): string {
   const credits = creditList(authors);
   const namedAuthors = credits.filter((c) => c.author !== UNKNOWN_AUTHOR).map((c) => c.author);
@@ -748,13 +743,6 @@ function renderAssetsMd(
     row(['Soubor / skupina', 'Zdroj', 'Autor', 'Licence', 'Úprava']),
     row(['---', '---', '---', '---', '---']),
     ...fonts.map((f) => row(fontRow(f))),
-    row([
-      `Textury rozhraní (${textures.length}): ${textures.map((f) => `\`${f}\``).join(', ')} v \`${rel(TEXTURES_DIR)}\``,
-      'vlastní procedurální bitmapy (styl E1 „Pohádková knížka“): SVG šum `feTurbulence` a nasvícení `feDiffuseLighting` vykreslené Chromiem z Playwrightu, příkaz `npm run gen-textures` (`scripts/gen-textures.ts`)',
-      'autoři projektu Karban',
-      'licence projektu',
-      '— papír, malované sukno, akvarelové skvrny (maska + tón, barvu dodá CSS), natrhlý okraj papíru, tuš, skvrna za nápisem v menu; nic staženého',
-    ]),
     row([
       `Ikony (${icons.icons.length}): \`src/assets/icons/*.svg\`, \`src/assets/icons/index.ts\``,
       `${ICON_SOURCE_URL} přes npm \`@iconify-json/game-icons@${icons.version}\` (${icons.setAuthorUrl})`,
@@ -862,12 +850,7 @@ async function main(): Promise<void> {
   const authors = await resolveIconAuthors(icons.icons);
   await writeIcons(icons, authors);
   const optional = await tryOptionalSources();
-  // Textury generuje `npm run gen-textures` (bez sítě) — sem jen do přehledu v ASSETS.md.
-  const textures = existsSync(TEXTURES_DIR)
-    ? (await readdir(TEXTURES_DIR)).filter((f) => /\.(webp|png)$/.test(f)).sort()
-    : [];
-  if (textures.length === 0) warn(`V ${rel(TEXTURES_DIR)} nejsou textury — spusť „npm run gen-textures“.`);
-  await writeFile(ASSETS_MD, renderAssetsMd(fonts, icons, authors, optional, textures));
+  await writeFile(ASSETS_MD, renderAssetsMd(fonts, icons, authors, optional));
 
   formatWithPrettier([
     rel(path.join(FONTS_OUT, 'fonts.css')),

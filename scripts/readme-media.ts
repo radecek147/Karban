@@ -1,7 +1,7 @@
 /**
  * Snímky obrazovek a animovaný GIF do README (`docs/media/`).
  *
- *   npx tsx scripts/readme-media.ts [--no-build] [--only menu,shop,…] [--no-gif] [--port 4180]
+ *   npx tsx scripts/readme-media.ts [--no-build] [--only menu,shop,…] [--no-gif] [--port 4180] [--out dir] [--size 1366x768]
  *
  * Skript sestaví hru (`npm run build`, s `--no-build` použije existující `dist/`), spustí `vite preview`,
  * stavy připraví enginem v Node (uložený run a profil vloží do localStorage stejně jako e2e testy) a projde
@@ -40,16 +40,19 @@ import {
 } from '../src/engine/types';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = path.join(ROOT, 'docs/media');
 const REG = registry();
 const NOW = '2026-10-02T18:00:00.000Z';
 const SEED = 'KARBANKA';
-const VIEWPORT = { width: 1366, height: 768 };
 
 function arg(name: string): string | null {
   const i = process.argv.indexOf(`--${name}`);
   return i >= 0 ? (process.argv[i + 1] ?? '') : null;
 }
+/** Výstup (výchozí docs/media; `--out <adresář>` pro zkušební snímky při ladění vzhledu). */
+const OUT = path.resolve(arg('out') ?? path.join(ROOT, 'docs/media'));
+/** Okno (`--size 1024x768` pro kontrolu menších obrazovek). */
+const [VW, VH] = (arg('size') ?? '1366x768').split('x').map(Number);
+const VIEWPORT = { width: VW || 1366, height: VH || 768 };
 const PORT = Number(arg('port') ?? 4180);
 const BASE = `http://localhost:${PORT}/`;
 const ONLY = arg('only')?.split(',').filter(Boolean) ?? null;

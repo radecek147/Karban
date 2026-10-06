@@ -20,8 +20,8 @@
   content: '';
   background: radial-gradient(
     circle at center,
-    rgb(255 255 255 / 42%) 0%,
-    rgb(255 255 255 / 16%) 16%,
+    rgb(255 255 255 / 26%) 0%,
+    rgb(255 255 255 / 9%) 16%,
     transparent 36%
   );
   opacity: 0;
@@ -126,13 +126,9 @@
   inset: -3px;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse at 32% 55%,
-    rgb(255 220 110 / 80%) 0%,
-    rgb(232 169 42 / 40%) 42%,
-    transparent 74%
-  );
-  border-radius: inherit;
+  /* Hořčicový podtisk pod číslem (plná barva, žádná záře). */
+  background: var(--accent);
+  border-radius: var(--radius-small);
   opacity: 0;
   animation: score-glow calc(1500ms / var(--speed)) ease-out forwards;
 }
@@ -153,18 +149,12 @@
 
 /* ─────────────────────────── Velké skóre ─────────────────────────── */
 
-/* Zlatý záblesk přes obrazovku (vrstva bublin, jen opacity; síla v --flash). */
+/* Hořčicový rastr přes obrazovku (tiskový „záblesk“; vrstva bublin, jen opacity; síla v --flash). */
 .game-flash {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse at 58% 46%,
-    rgb(255 244 200 / 95%) 0%,
-    rgb(255 210 95 / 60%) 34%,
-    rgb(255 190 60 / 18%) 60%,
-    transparent 80%
-  );
+  background: radial-gradient(circle, rgb(233 176 48 / 90%) 0 2.6px, transparent 3px) 0 0 / 10px 10px;
   opacity: 0;
   animation: game-flash calc(950ms / var(--speed)) ease-out forwards;
 }
@@ -194,15 +184,15 @@
 }
 
 .game-bubble--huge .game-bubble__text {
-  padding: 0.12em 0.6em 0.18em;
-  font-size: 2.9rem;
+  padding: 0.08em 0.5em 0.14em;
+  font-size: 3rem;
   color: var(--ink);
-  letter-spacing: 0.02em;
-  background: linear-gradient(180deg, #ffe58a 0%, var(--accent) 55%, #c98a12 100%);
+  letter-spacing: 0.03em;
+  background: var(--accent);
+  border: var(--line-bold) solid var(--ink);
   box-shadow:
-    0 0 0 3px #fff3c4,
-    0 6px 0 rgb(0 0 0 / 35%),
-    0 0 34px rgb(255 215 94 / 70%);
+    0 0 0 4px var(--paper),
+    9px 9px 0 4px var(--ink);
   animation-name: bubble-huge;
   animation-duration: calc(1700ms / var(--speed));
 }
@@ -327,8 +317,8 @@
  */
 .game-bubble--fx {
   --bx: -50%;
-  --fx-fill: #fff;
-  --fx-stroke: #1e1b16;
+  --fx-fill: var(--paper);
+  --fx-text: var(--ink);
 
   z-index: 2;
   animation-duration: calc(1150ms / var(--speed));
@@ -338,28 +328,23 @@
   --bx: 0%;
 }
 
+/* Tištěná nálepka: plná barva, linka a tvrdý stín (jako „+2 mult“ v návrhu Sirkárny). */
 .game-bubble--fx .game-bubble__text {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0;
-  font-size: 2rem;
+  padding: 0.06em 0.38em 0.1em;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 800;
   line-height: 1;
-  color: var(--fx-fill);
+  color: var(--fx-text);
   letter-spacing: 0.03em;
-  text-shadow:
-    -3px -3px 0 var(--fx-stroke),
-    3px -3px 0 var(--fx-stroke),
-    -3px 3px 0 var(--fx-stroke),
-    3px 3px 0 var(--fx-stroke),
-    0 -3.5px 0 var(--fx-stroke),
-    0 3.5px 0 var(--fx-stroke),
-    -3.5px 0 0 var(--fx-stroke),
-    3.5px 0 0 var(--fx-stroke),
-    0 7px 0 rgb(0 0 0 / 35%);
-  background: none;
-  border-radius: 0;
-  box-shadow: none;
+  text-shadow: none;
+  background: var(--fx-fill);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius-small);
+  box-shadow: 4px 4px 0 var(--ink);
   transform: translate(var(--bx), 0);
   animation-name: bubble-fx;
   animation-duration: calc(1150ms / var(--speed));
@@ -377,82 +362,84 @@
 }
 
 .game-bubble--quick .game-bubble__text {
-  font-size: 1.45rem;
+  font-size: 1.35rem;
 }
 
 .game-bubble--fx.game-bubble--chips {
-  --fx-fill: #8ecbff;
-  --fx-stroke: #0d2a52;
+  --fx-fill: var(--ink-sky);
 }
 
 .game-bubble--fx.game-bubble--mult {
-  --fx-fill: #ff8a73;
-  --fx-stroke: #4a0f08;
+  --fx-fill: var(--ink-red);
+  --fx-text: var(--paper);
 }
 
 .game-bubble--fx.game-bubble--xmult {
-  --fx-fill: #fff3c4;
-  --fx-stroke: #8f1d14;
+  --fx-fill: var(--ink-red);
+  --fx-text: var(--paper);
 }
 
+/* ×mult: větší, s hořčicovým lemem kolem linky. */
 .game-bubble--fx.game-bubble--xmult .game-bubble__text {
-  font-size: 2.55rem;
+  font-size: 2.35rem;
+  box-shadow:
+    0 0 0 3px var(--ink-mustard),
+    6px 6px 0 3px var(--ink);
   animation-name: bubble-fx-strong;
 }
 
 .game-bubble--fx.game-bubble--money {
-  --fx-fill: #ffd75e;
-  --fx-stroke: #4d3200;
+  --fx-fill: var(--ink-mustard);
 }
 
 .game-bubble--fx.game-bubble--bad {
-  --fx-fill: #ffb3a8;
-  --fx-stroke: #5a0d06;
+  --fx-fill: #9b2a1b;
+  --fx-text: var(--paper);
 }
 
 .game-bubble--fx.game-bubble--again {
-  --fx-fill: #ffe08a;
-  --fx-stroke: #5b2a00;
+  --fx-fill: var(--ink-mustard);
 }
 
 .game-bubble--fx.game-bubble--again .game-bubble__text {
-  font-size: 2.2rem;
+  font-size: 2.05rem;
   animation-name: bubble-fx-strong;
 }
 
 .game-bubble--fx.game-bubble--change {
-  --fx-fill: #fffaf0;
-  --fx-stroke: #3a2412;
+  --fx-fill: var(--paper);
 }
 
 .game-bubble--fx.game-bubble--change .game-bubble__text {
-  font-size: 1.6rem;
-}
-
-.game-bubble--fx.game-bubble--level {
-  --fx-fill: #ffe58a;
-  --fx-stroke: #5b3a00;
-}
-
-.game-bubble--fx.game-bubble--level .game-bubble__text {
-  font-size: 1.55rem;
-}
-
-.game-bubble--fx.game-bubble--quick .game-bubble__text {
   font-size: 1.45rem;
 }
 
-/* Popisek zdroje pod nápisem („Zlatá pečeť“). */
+.game-bubble--fx.game-bubble--level {
+  --fx-fill: var(--ink-teal);
+  --fx-text: var(--paper);
+}
+
+.game-bubble--fx.game-bubble--level .game-bubble__text {
+  font-size: 1.45rem;
+}
+
+.game-bubble--fx.game-bubble--quick .game-bubble__text {
+  font-size: 1.35rem;
+}
+
+/* Popisek zdroje pod nápisem („Zlatá pečeť“) — uvnitř nálepky pod čarou. */
 .game-bubble__caption {
-  padding: 0.12em 0.55em;
-  margin-top: 0.3rem;
+  align-self: stretch;
+  padding: 0.12em 0.45em 0.1em;
+  margin: 0.2rem -0.38em -0.1em;
+  font-family: var(--font-game);
   font-size: 0.72rem;
+  font-weight: 700;
   color: var(--paper);
   letter-spacing: 0.02em;
-  text-shadow: none;
+  text-align: center;
   white-space: nowrap;
-  background: rgb(30 27 22 / 88%);
-  border-radius: 999px;
+  background: var(--ink);
 }
 
 /* Starší nápis u stejného zdroje rychle odpluje (nový název animace = nový běh od začátku). */
@@ -581,13 +568,8 @@
 .fx-flash--enhancement {
   width: 84%;
   aspect-ratio: 1;
-  background: radial-gradient(
-    circle,
-    rgb(255 255 255 / 95%) 0%,
-    var(--flash-color, #ffd75e) 24%,
-    color-mix(in srgb, var(--flash-color, #ffd75e) 45%, transparent) 44%,
-    transparent 68%
-  );
+  /* Plný kruh barvy zdroje s linkou (tiskový „flek“). */
+  background: radial-gradient(circle, var(--flash-color, #e9b030) 0 44%, var(--ink) 44% 50%, transparent 50%);
   border-radius: 50%;
   opacity: 0;
   transform: translate(-50%, -50%) scale(0.2);
@@ -704,11 +686,10 @@
   width: 18px;
   height: 18px;
   pointer-events: none;
-  background: radial-gradient(circle at 35% 30%, #fff3c4 0 16%, #f0c94a 30%, #c99a1f 72%);
+  background: var(--ink-mustard);
+  border: 2px solid var(--ink);
   border-radius: 50%;
-  box-shadow:
-    inset 0 0 0 2px #a8780f,
-    0 2px 0 rgb(0 0 0 / 35%);
+  box-shadow: 2px 2px 0 var(--ink);
   opacity: 0;
 }
 

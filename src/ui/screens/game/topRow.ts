@@ -62,21 +62,30 @@ export function createTopRow(ctx: GameCtx, actions: TopRowActions): TopRow {
   });
   const consEmpty = h('p', { class: 'gt-empty' }, t('game.rows.consumablesEmpty'));
 
+  // Volná místa (sloty) jako čárkované obrysy pod kartami — hráč vidí, kolik se jich ještě vejde.
+  const jokerSlotsEl = h('div', { class: 'gt-slots', 'aria-hidden': 'true' });
+  const consSlotsEl = h('div', { class: 'gt-slots', 'aria-hidden': 'true' });
   const jokerGroup = h(
     'section',
     { class: 'gt-group gt-group--jokers', 'aria-labelledby': 'gt-jokers-title' },
     h('h2', { class: 'gt-title', id: 'gt-jokers-title' }, t('game.rows.jokers'), ' ', jokerCount),
-    jokerList,
-    jokerEmpty,
+    h('div', { class: 'gt-stack' }, jokerSlotsEl, jokerList, jokerEmpty),
     h('p', { class: 'visually-hidden', id: 'gt-drag-hint' }, t('game.rows.dragHint')),
   );
   const consGroup = h(
     'section',
     { class: 'gt-group gt-group--consumables', 'aria-labelledby': 'gt-cons-title' },
     h('h2', { class: 'gt-title', id: 'gt-cons-title' }, t('game.rows.consumables'), ' ', consCount),
-    consList,
-    consEmpty,
+    h('div', { class: 'gt-stack' }, consSlotsEl, consList, consEmpty),
   );
+
+  /** Počet obrysů slotů (nejméně tolik, kolik je karet — negativní edice přidává místa). */
+  const syncSlots = (host: HTMLElement, slots: number, items: number): void => {
+    const n = Math.max(slots, items, 0);
+    host.parentElement?.style.setProperty('--slots', String(Math.max(1, n)));
+    while (host.childElementCount < n) host.append(h('span', { class: 'gt-slot' }));
+    while (host.childElementCount > n) host.lastElementChild?.remove();
+  };
   const el = h('section', { class: 'game-top' }, jokerGroup, consGroup);
 
   const jokers = new Map<number, Item>();
@@ -165,6 +174,7 @@ export function createTopRow(ctx: GameCtx, actions: TopRowActions): TopRow {
     }
     syncOrder(jokerList, order);
     jokerCount.textContent = t('game.rows.count', { n: s.jokers.length, max: jokerSlots(ctx) });
+    syncSlots(jokerSlotsEl, jokerSlots(ctx), s.jokers.length);
     jokerList.setAttribute(
       'aria-label',
       t('game.rows.jokersLabel', { n: s.jokers.length, max: jokerSlots(ctx) }),
@@ -213,6 +223,7 @@ export function createTopRow(ctx: GameCtx, actions: TopRowActions): TopRow {
     }
     syncOrder(consList, order);
     consCount.textContent = t('game.rows.count', { n: s.consumables.length, max: consumableSlots(ctx) });
+    syncSlots(consSlotsEl, consumableSlots(ctx), s.consumables.length);
     consList.setAttribute(
       'aria-label',
       t('game.rows.consumablesLabel', { n: s.consumables.length, max: consumableSlots(ctx) }),

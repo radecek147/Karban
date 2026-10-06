@@ -18,7 +18,6 @@
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "fetch-assets": "tsx scripts/fetch-assets.ts",
-    "gen-textures": "tsx scripts/gen-textures.ts",
     "simulate": "tsx scripts/simulate.ts",
     "deploy": "npm run build && tsx scripts/deploy.ts",
     "desktop:dev": "tauri dev",
