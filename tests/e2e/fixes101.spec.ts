@@ -45,28 +45,37 @@ async function box(
   return b;
 }
 
-test('písmo: Fraunces kreslí číslice, C a písmena s háčkem; pangram v pořádku', async ({ page }) => {
+test('písma: Barlow a Big Shoulders kreslí číslice, C a písmena s háčkem; pangram v pořádku', async ({
+  page,
+}) => {
   const log = watchConsole(page);
   await page.goto('/?tutorial=off');
   const fonts = await page.evaluate(async () => {
     await document.fonts.ready;
     const sample = 'Kč 3/8 RUCE Příliš žluťoučký kůň ĎŤŇĚŘŠŽ';
-    await document.fonts.load('700 16px "Fraunces"', sample);
-    const faces = [...document.fonts].filter((f) => f.family.replace(/"/g, '') === 'Fraunces');
+    await document.fonts.load('700 16px "Barlow Semi Condensed"', sample);
+    await document.fonts.load('800 16px "Big Shoulders Display"', sample);
+    const family = (name: string) => [...document.fonts].filter((f) => f.family.replace(/"/g, '') === name);
+    const text = family('Barlow Semi Condensed');
+    const display = family('Big Shoulders Display');
     return {
-      faces: faces.length,
-      ranges: faces.map((f) => f.unicodeRange).join(','),
-      // Dřívější pixelové „Karban Digits“ (odstraněné se stylem E1) se nenačítá — ani omylem.
-      digits: [...document.fonts].filter((f) => f.family.replace(/"/g, '') === 'Karban Digits').length,
-      check: document.fonts.check('700 16px "Fraunces"', sample),
+      textFaces: text.length,
+      displayFaces: display.length,
+      ranges: [...text, ...display].map((f) => f.unicodeRange).join(','),
+      // Dřívější písma (pixelové „Karban Digits“ a Fraunces) se nenačítají — ani omylem.
+      old: family('Karban Digits').length + family('Fraunces').length,
+      check:
+        document.fonts.check('700 16px "Barlow Semi Condensed"', sample) &&
+        document.fonts.check('800 16px "Big Shoulders Display"', sample),
       ui: getComputedStyle(document.body).fontFamily,
     };
   });
-  // Řezy 400, 400 kurzíva, 600, 600 kurzíva, 700 × podsoubory latin a latin-ext.
-  expect(fonts.faces).toBe(10);
-  expect(fonts.digits).toBe(0);
+  // Barlow 500, 500 kurzíva, 600, 700 a Big Shoulders 700, 800 × podsoubory latin a latin-ext.
+  expect(fonts.textFaces).toBe(8);
+  expect(fonts.displayFaces).toBe(4);
+  expect(fonts.old).toBe(0);
   expect(fonts.check).toBe(true);
-  expect(fonts.ui).toMatch(/^"?Fraunces"?,/);
+  expect(fonts.ui).toMatch(/^"?Barlow Semi Condensed"?,/);
   // Prohlížeč rozsah normalizuje bez úvodních nul (U+0030 → U+30): číslice v latin, háčky v latin-ext.
   for (const code of ['U+0-FF', 'U+100-2BA']) expect(fonts.ranges).toContain(code);
   expectCleanConsole(log);
