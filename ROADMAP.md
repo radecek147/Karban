@@ -521,7 +521,7 @@ Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba h
 - [x] S2: tokeny Sirkárny (`base.css`), písma Big Shoulders Display + Barlow Semi Condensed (OFL, fetch-assets),
       tlačítka, karton, dialogy, hlášky, tooltip
 - [x] S3: herní obrazovka — horní lišta, velcí žolíci se jménem a obrysy slotů, balíček v horní řadě, náhled
-      čipy × mult uprostřed stolu, větší ruka, Zahrát a Zahodit u sebe vpravo od ruky; panely fází,
+      čipy × mult uprostřed stolu, větší ruka, pod ní řada Zahrát | Seřadit | Zahodit; panely fází,
       bubliny, karty, tutoriál a efekty v tiskovém stylu; ověřeno na 1024×768, 1280×720, 1366×768, 1920×1080,
       tabletu 820×1180, telefonu 390×844 a při velikosti UI 130 %
 - [x] Doladění podle playtestu: pečetě a edice čitelné na první pohled, kontrast skóre mimo kolo, křížek hlášky

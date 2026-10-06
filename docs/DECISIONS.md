@@ -3822,12 +3822,14 @@ ze 60. let. K tomu nové rozvržení.
   - Žolíci jsou asi o 30 % větší (`--joker-w` = 1,04 × karta) a mají jméno na kartě. Volné sloty mají čárkované
     obrysy, takže je vidět, kolik místa zbývá.
   - Balíček je v horní řadě vedle spotřebek.
-  - Náhled čipy × mult je velký uprostřed stolu pod zahranými kartami. Stůl už není prázdný a hlavní okamžik hry
-    je uprostřed.
-  - Ruka je větší (karta se počítá ze šířky i výšky okna). Zahrát a Zahodit jsou velké bloky u sebe vpravo
-    od ruky (Zahrát nad Zahodit) ve sloupci stálé šířky, takže při zahrání neuhýbají. Vlevo jsou počty a třídění.
-    Hráč chtěl obě tlačítka blízko sebe — původně byla každé na jedné straně ruky a myš musela přejíždět přes
-    celou obrazovku. Na tabletu a telefonu jsou vedle sebe pod rukou.
+  - Náhled čipy × mult je velký nahoře uprostřed stolu, zahrané karty jsou pod ním. Stůl už není prázdný
+    a hlavní okamžik hry je uprostřed.
+  - Ruka je přes celou šířku (karta se počítá ze šířky i výšky okna). Pod ní je uprostřed jedna řada ovládání
+    jako u klasiky žánru: Zahrát | Seřadit | Zahodit, vlevo od ní počty. Tlačítka mají stálou šířku, takže při
+    zahrání neuhýbají. Hráč chtěl tlačítka pod rukou: dřív byla na stranách ruky a myš musela přes celou
+    obrazovku. Řada stojí asi 3,5 rem výšky, proto je náhled kombinace nahoře na stole a zahrané karty pod ním
+    u ruky (vybrané karty se zvedají do prázdného stolu, ne přes čísla). Karty jsou na 1366 × 768 asi o 6 %
+    menší. Na telefonu jsou Zahrát a Zahodit vedle sebe a třídění pod nimi.
   - Bubliny skórování jsou tištěné nálepky (plná barva, linka, tvrdý stín). Velké skóre dává hořčicový rastr
     místo zlaté záře.
   - Hlášky jdou do volného místa v horní řadě mezi žolíky a spotřebkami. Když tam místo není, jdou do pravého

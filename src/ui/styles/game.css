@@ -17,7 +17,7 @@
    */
   --card-w: clamp(
     52px,
-    min(calc((100vw - 30rem) / 7.2), calc((100dvh - 15rem) / 4.5)),
+    min(calc((100vw - 4rem) / 7.4), calc((100dvh - 16.5rem) / 4.5)),
     calc(200px * var(--vp-scale, 1))
   );
   --game-card-w: var(--card-w);
@@ -42,7 +42,7 @@
   .game {
     --card-w: clamp(
       52px,
-      min(calc((100vw - 20rem) / 6.8), calc((100dvh - 19.5rem) / 4.4)),
+      min(calc((100vw - 3rem) / 7.4), calc((100dvh - 22rem) / 4.4)),
       calc(200px * var(--vp-scale, 1))
     );
   }
@@ -710,10 +710,10 @@
   grid-area: 1 / 1;
 }
 
-/* Kolo: zahrané karty nahoře uprostřed, pod nimi náhled kombinace. */
+/* Kolo: nahoře náhled kombinace, pod ním zahrané karty (u ruky). */
 .game-play {
   display: grid;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: auto 1fr;
   align-items: center;
   justify-items: center;
   min-height: 0;
@@ -726,13 +726,17 @@
 
 .game-play > .game-table,
 .game-play > .game-table__hint {
-  grid-row: 1;
+  grid-row: 2;
   grid-column: 1;
 }
 
+/*
+ * Náhled kombinace nahoře na stole (pod žolíky), zahrané karty pod ním u ruky — vybrané karty se zvedají do
+ * prázdného stolu, ne přes čísla.
+ */
 .game-scoreboard {
-  grid-row: 2;
-  padding-bottom: 0.2rem;
+  grid-row: 1;
+  padding-top: 0.1rem;
 }
 
 /*
@@ -1906,20 +1910,21 @@
 /* ─────────────────────────── Dole: ruka a ovládání ─────────────────────────── */
 
 /*
- * Ruka uprostřed, Zahrát a Zahodit u sebe vpravo od ruky (Zahrát nad Zahodit — myš je má na jednom místě),
- * vlevo počty (vybráno, velikost ruky) a pod nimi třídění. Boční sloupce mají stálou šířku — tlačítka se při
- * zahrání neposouvají za zmenšenou rukou. Obaly ruky a ovládání (`.gb-hand-wrap`, `.gb-controls`, `.gb-mid`)
+ * Ruka přes celou šířku, pod ní uprostřed jedna řada ovládání jako u klasiky žánru: Zahrát | Seřadit | Zahodit
+ * (myš má obě hlavní tlačítka hned pod kartami), vlevo od ní počty (vybráno, velikost ruky). Tlačítka mají stálou
+ * šířku, takže se při zahrání neposouvají. Obaly ruky a ovládání (`.gb-hand-wrap`, `.gb-controls`, `.gb-mid`)
  * jsou `display: contents`, ať jejich prvky sedí v jedné mřížce. Balíček stojí v horní řadě (index.ts).
  */
 .game-bottom {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(9rem, 13rem) minmax(0, 1fr) minmax(9rem, 13rem);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
   grid-template-areas:
-    'counts hand play'
-    'sort hand discard';
-  gap: 0.5rem 1rem;
+    'hand hand hand hand hand'
+    'counts play sort discard .';
+  gap: 0.25rem 0.75rem;
+  align-items: center;
 }
 
 .game-main.is-handless .game-bottom {
@@ -2026,13 +2031,13 @@
   display: none;
 }
 
-/* Zahrát = zelený blok, Zahodit = rumělkový blok s krémovým písmem; velké, nad sebou vpravo od ruky. */
+/* Zahrát = zelený blok, Zahodit = rumělkový blok s krémovým písmem; velké, pod rukou kolem třídění. */
 .gb-play,
 .gb-discard {
-  justify-self: stretch;
+  width: 11.5rem;
   min-width: 0;
-  min-height: 4rem;
-  font-size: 1.85rem;
+  min-height: 3.2rem;
+  font-size: 1.6rem;
   --btn-shadow: 5px 5px 0 var(--ink);
 }
 
@@ -2040,17 +2045,14 @@
   --wash: var(--wash-green);
 
   grid-area: play;
-  align-self: end;
 }
 
 .gb-discard {
   grid-area: discard;
-  align-self: start;
 }
 
 .gb-sort {
   grid-area: sort;
-  align-self: start;
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
@@ -2087,8 +2089,9 @@
   flex-wrap: wrap;
   gap: 0.15rem 0.6rem;
   align-items: baseline;
-  align-self: end;
-  justify-content: center;
+  justify-self: end;
+  justify-content: flex-end;
+  text-align: right;
 }
 
 .gb-selected {
@@ -2097,10 +2100,10 @@
   color: var(--on-felt);
 }
 
-/* Krátká hláška u tlačítek (nejvýš 5 karet, nejdřív vyber karty) — cedulka nad spodním okrajem ruky. */
+/* Krátká hláška u tlačítek (nejvýš 5 karet, nejdřív vyber karty) — cedulka nad řadou tlačítek. */
 .gb-alert {
   position: absolute;
-  bottom: 0;
+  bottom: 3.7rem;
   left: 50%;
   z-index: 4;
   max-width: min(26rem, 90vw);
@@ -2200,17 +2203,13 @@
   }
 }
 
-/* Užší boční sloupce na menším notebooku (1024–1199 px). */
+/* Menší notebook (1024–1199 px): o kus menší tlačítka. */
 @media (max-width: 1199px) {
-  .game-bottom {
-    grid-template-columns: minmax(8rem, 11rem) minmax(0, 1fr) minmax(8rem, 11rem);
-    column-gap: 0.75rem;
-  }
-
   .gb-play,
   .gb-discard {
-    min-height: 3.6rem;
-    font-size: 1.6rem;
+    width: 10rem;
+    min-height: 3rem;
+    font-size: 1.45rem;
   }
 
   /* Popisek „Seřadit“ jen pro čtečky — tlačítka Hodnota / Barva se vejdou vedle sebe. */
@@ -2223,37 +2222,32 @@
   }
 }
 
-/* Tablet na výšku (≤ 900 px): pod rukou vlevo třídění a počty, vpravo Zahrát a Zahodit vedle sebe. */
+/* Tablet na výšku (≤ 900 px): stejná řada pod rukou, užší tlačítka; počty nad řadou. */
 @media (max-width: 900px) {
   .game-bottom {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 13rem) minmax(0, 13rem);
-    grid-template-rows: auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
     grid-template-areas:
-      'hand hand hand'
-      'mid play discard';
-    gap: 0.3rem 0.6rem;
+      'hand hand hand hand hand'
+      'counts counts counts counts counts'
+      '. play sort discard .';
+    column-gap: 0.5rem;
   }
 
-  .gb-mid {
-    grid-area: mid;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    align-items: flex-start;
+  .gb-counts {
+    justify-self: center;
     justify-content: center;
   }
 
   .gb-play,
   .gb-discard {
-    align-self: center;
-    min-height: 3.2rem;
-    font-size: 1.5rem;
+    width: 9rem;
+    min-height: 3rem;
+    font-size: 1.4rem;
     --btn-shadow: 4px 4px 0 var(--ink);
   }
 
-  .gb-play,
-  .gb-discard {
-    justify-self: stretch;
+  .gb-alert {
+    bottom: 3.4rem;
   }
 }
 
@@ -2774,24 +2768,16 @@
   .ui-large .game {
     --card-w: clamp(
       48px,
-      min(calc((100vw - 20rem) / 6.8), calc((100dvh - 18rem) / 4.4)),
+      min(calc((100vw - 3rem) / 7.4), calc((100dvh - 19.5rem) / 4.4)),
       calc(200px * var(--vp-scale, 1))
     );
   }
 
-  .ui-large .game-bottom {
-    grid-template-columns: minmax(8rem, 11rem) minmax(0, 1fr) minmax(8rem, 11rem);
-    column-gap: 0.75rem;
-  }
-
-  .ui-large .game-bottom {
-    row-gap: 0.4rem;
-  }
-
   .ui-large .gb-play,
   .ui-large .gb-discard {
-    min-height: 2.8rem;
-    font-size: 1.4rem;
+    width: 9rem;
+    min-height: 2.6rem;
+    font-size: 1.3rem;
   }
 
   /* Lišta o kus nižší (žetony a čísla), ať karty a panely fází dostanou víc výšky. */
@@ -2973,7 +2959,7 @@
 
 /*
  * Telefon („best effort“): stránka se posouvá. Lišta ve třech řadách (útrata, skóre a cíl, žetony a tlačítka),
- * žolíci přes celou šířku, ruka a pod ní Zahrát / Zahodit vedle sebe, balíček vpravo vedle třídění.
+ * žolíci přes celou šířku, ruka a pod ní Zahrát / Zahodit vedle sebe, pod nimi třídění.
  */
 @media (max-width: 600px) {
   .game {
@@ -3160,8 +3146,9 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       'hand hand'
+      'counts counts'
       'play discard'
-      'mid mid';
+      'sort sort';
     gap: 0.3rem 0.4rem;
   }
 
@@ -3187,9 +3174,9 @@
     font-size: 1.35rem;
   }
 
-  .gb-mid {
-    flex-flow: row wrap;
-    justify-content: center;
+  .gb-alert {
+    bottom: auto;
+    top: 0;
   }
 
   .gb-deck__head {
