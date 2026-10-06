@@ -1,7 +1,8 @@
 /*
- * Meta obrazovky: záložky (components/tabs.ts), sbírka (screens/collection.ts), statistiky a historie
- * (screens/stats.ts) a doplňky nové hry pro odemykání (zamčené balíčky a síly piva, tácek, stav seedu).
- * Animuje se jen transform/opacity; silueta neobjevené položky je statický filtr.
+ * Meta obrazovky ve stylu „Sirkárna“ (retro tisk): záložky (components/tabs.ts), sbírka (screens/collection.ts),
+ * statistiky a historie (screens/stats.ts), výzvy, denní run a doplňky nové hry pro odemykání (zamčené balíčky
+ * a síly piva, tácek, stav seedu). Kartonové plochy se silnou linkou a tvrdým stínem, plné tiskové barvy, vybrané
+ * = hořčicová. Animuje se jen transform/opacity; neobjevené položky mají levnou zástupnou kartu (žádné filtry).
  */
 
 /* ─────────────────────────── Záložky ─────────────────────────── */
@@ -9,7 +10,7 @@
 .tabs {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.1rem;
   width: 100%;
   max-width: 72rem;
 }
@@ -17,35 +18,42 @@
 .tabs__list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
-/* Záložka: lístek na suknu (tmavší lazura, čárkovaný krémový obrys); vybraná = papír polit zlatou vodovkou. */
+/* Záložka: tmavý štítek na stole s krémovou linkou; vybraná = hořčicový štítek s černou linkou a tvrdým stínem. */
 .tabs__tab {
   display: inline-flex;
   align-items: center;
   gap: 0.45em;
   min-height: 2.5rem;
-  padding: 0.35em 0.95em;
-  font-size: 1rem;
-  font-weight: 600;
+  padding: 0.3em 0.85em 0.35em;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--on-felt);
-  background: var(--felt-panel);
-  border: 1.5px dashed var(--felt-line);
-  border-radius: 8px 12px 7px 10px / 10px 7px 12px 8px;
-  transition: transform var(--t-fast) ease-out;
+  background: rgb(8 14 28 / 45%);
+  border: 2px solid rgb(243 232 207 / 55%);
+  border-radius: var(--radius-small);
+  transition:
+    transform var(--t-fast) ease-out,
+    box-shadow var(--t-fast) ease-out;
 }
 
 .tabs__tab:hover:not(.is-active) {
-  transform: translateY(-1px);
-  background: rgb(6 30 19 / 36%);
+  background: rgb(8 14 28 / 70%);
+  box-shadow: 3px 3px 0 rgb(5 9 18 / 55%);
+  transform: translateY(-2px);
 }
 
 .tabs__tab.is-active {
   color: var(--ink);
-  background: radial-gradient(ellipse at 40% 45%, #efc874, var(--accent) 62%, #cf9530);
-  border: 2px solid rgb(31 26 23 / 70%);
-  box-shadow: 0 3px 8px rgb(6 26 16 / 35%);
+  background: var(--ink-mustard);
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
 }
 
 .tabs__tab:focus-visible {
@@ -53,15 +61,19 @@
   outline-offset: 2px;
 }
 
+/* Cedulka „N nových“: rumělkový štítek s linkou (tmavší rumělka — drobné písmo má kontrast ≥ 4,5 : 1). */
 .tabs__badge {
   min-width: 1.5em;
-  padding: 0.05em 0.45em;
-  font-size: 0.78rem;
-  font-weight: 700;
+  padding: 0.04em 0.4em 0.08em;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
   text-align: center;
+  text-transform: none;
   color: var(--paper);
-  background: var(--wash-red);
-  border-radius: 40% 55% 45% 60% / 60% 45% 55% 40%;
+  background: var(--danger);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
 }
 
 .tabs__panel:focus-visible {
@@ -78,12 +90,15 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 0.75rem 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.1rem;
 }
 
 .codex-count {
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.03em;
   color: var(--money-light);
 }
 
@@ -96,23 +111,29 @@
 .codex-select {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
 
 .codex-select__label {
-  font-size: 0.88rem;
-  color: var(--on-felt-muted);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--on-felt);
 }
 
 .codex-select__input {
   min-height: 2.5rem;
   padding: 0.3rem 0.6rem;
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--ink);
   background: var(--paper);
   border: var(--line) solid var(--ink);
   border-radius: var(--radius-small);
+  box-shadow: 3px 3px 0 rgb(5 9 18 / 55%);
 }
 
 .codex-select__input:focus-visible {
@@ -123,54 +144,75 @@
 .codex-grids {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
 .codex-group__title {
-  margin-bottom: 0.6rem;
-  font-size: 1.2rem;
-  font-weight: 600;
+  margin-bottom: 0.7rem;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--on-felt);
 }
 
+/*
+ * Mřížka dlaždic přes celou šířku: karta je velká (≥ 130 px na notebooku), dlaždice se roztáhnou, co se vejde.
+ * Medailony (achievementy, kombinace) a kulaté žetony jsou menší.
+ */
 .codex-grid {
-  --card-w: 84px;
+  --card-w: 7.75rem;
 
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(7.25rem, 1fr));
-  gap: 1rem 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--card-w) + 1.6rem), 1fr));
+  gap: 1rem 0.9rem;
+}
+
+.codex-grid--achievements,
+.codex-grid--hands {
+  --card-w: 5.25rem;
 }
 
 .codex-grid__cell {
   display: flex;
-  justify-content: center;
+  min-width: 0;
 }
 
+/* Dlaždice: kartonový lístek s linkou a tvrdým stínem, obrázek nahoře, název pod ním. */
 .codex-item {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   width: 100%;
-  padding: 0.5rem 0.3rem 0.6rem;
-  color: var(--on-felt);
+  padding: 0.7rem 0.45rem 0.6rem;
+  color: var(--ink);
   text-align: center;
-  background: rgb(6 30 19 / 18%);
-  border: 1px dashed rgb(246 239 224 / 18%);
-  border-radius: 8px 12px 7px 10px / 10px 7px 12px 8px;
-  transition: transform var(--t-fast) ease-out;
+  background: var(--paper);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius-small);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform var(--t-fast) ease-out,
+    box-shadow var(--t-fast) ease-out;
 }
 
 @media (hover: hover) {
   .codex-item:hover {
-    transform: translateY(-3px);
+    box-shadow: 4px 7px 0 rgb(5 9 18 / 55%);
+    transform: translate(-1px, -3px);
   }
 }
 
 .codex-item:focus-visible {
   outline: 3px solid var(--accent);
-  outline-offset: 2px;
+  outline-offset: 3px;
+}
+
+.codex-item.is-locked,
+.codex-item.is-unknown {
+  background: var(--paper-shade);
 }
 
 .codex-item__art {
@@ -180,60 +222,123 @@
   pointer-events: none;
 }
 
+/* Záložky a skupiny jen s kulatými obrázky (štítky, šéfové, síla piva, vylepšení, pečetě, medailony): bez díry. */
+.codex-grid--tags .codex-item__art,
+.codex-grid--bosses .codex-item__art,
+.codex-group--enhancements .codex-item__art,
+.codex-group--seals .codex-item__art,
+.codex-grid--stakes .codex-item__art,
+.codex-grid--hands .codex-item__art,
+.codex-grid--achievements .codex-item__art {
+  min-height: var(--card-w);
+}
+
 .codex-item__name {
-  font-size: 0.85rem;
-  line-height: 1.2;
+  margin-top: auto;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   overflow-wrap: anywhere;
 }
 
 .codex-item.is-locked .codex-item__name,
 .codex-item.is-unknown .codex-item__name {
-  color: var(--on-felt-muted);
+  color: var(--ink-soft);
 }
 
 .codex-item__new {
   position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
+  top: -0.6rem;
+  right: -0.45rem;
   z-index: 2;
-  padding: 0.08em 0.5em 0.12em;
-  font-size: 0.75rem;
-  font-weight: 700;
+  padding: 0.04em 0.45em 0.08em;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--paper);
-  background: var(--wash-red);
-  border-radius: 40% 55% 45% 60% / 60% 45% 55% 40%;
-  box-shadow: 0 2px 4px rgb(6 26 16 / 35%);
+  background: var(--danger);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: 2px 2px 0 var(--ink);
+  transform: rotate(4deg);
 }
 
-/* Silueta: neodemčeno / neobjeveno — tvar ano, detaily ne. */
-.is-silhouette > :not(.codex-detail__mark) {
-  filter: brightness(0) saturate(0);
-  opacity: 0.42;
+/*
+ * Zástupná karta neobjevené / zamčené položky (collection.ts `placeholder`, zamčená výzva): tiskový rub — modrá
+ * plocha s linkou a vnitřním krémovým rámečkem, hořčicový otazník, nebo krémový zámek na tmavém rubu.
+ */
+.codex-ph {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--card-w);
+  height: calc(var(--card-w) * 1.4);
+  color: var(--ink-mustard);
+  background: var(--ink-navy);
+  border: var(--line) solid var(--ink);
+  border-radius: calc(var(--card-w) * 0.072);
+  box-shadow:
+    inset 0 0 0 calc(var(--card-w) * 0.05) var(--ink-navy),
+    inset 0 0 0 calc(var(--card-w) * 0.05 + 2px) rgb(243 232 207 / 65%);
 }
 
-/* Nezískaný achievement: ikona je vidět, jen vybledlá (skrytý má místo ní otazník). */
-.codex-item[data-category='achievements'] .is-silhouette > *,
-.codex-detail[data-category='achievements'] .is-silhouette > * {
-  filter: grayscale(1);
-  opacity: 0.5;
+.codex-ph--round {
+  height: var(--card-w);
+  border-radius: 50%;
 }
 
-/* Medailon (achievementy, kombinace): kolečko papíru s dvojitým kroužkem tuší, ikona sépiovou tuší. */
+.codex-ph--locked {
+  color: var(--paper);
+  background: var(--felt-dark);
+  box-shadow:
+    inset 0 0 0 calc(var(--card-w) * 0.05) var(--felt-dark),
+    inset 0 0 0 calc(var(--card-w) * 0.05 + 2px) rgb(243 232 207 / 40%);
+}
+
+.codex-ph__q {
+  font-family: var(--font-display);
+  font-size: calc(var(--card-w) * 0.6);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.codex-ph--round .codex-ph__q {
+  font-size: calc(var(--card-w) * 0.5);
+}
+
+/* Dvě třídy: obecné `.icon` (1em, styles/cards.css) se načítá později a jinak by zámek zmenšilo. */
+.codex-ph .codex-ph__mark.icon {
+  width: calc(var(--card-w) * 0.34);
+  height: calc(var(--card-w) * 0.34);
+}
+
+/* Medailon (achievementy, kombinace): kolečko s linkou a vnitřním kroužkem, ikona černě; získaný = hořčicový. */
 .codex-icon {
+  --medal: var(--ink-mustard);
+
   position: relative;
   display: grid;
   place-items: center;
   width: var(--card-w);
   height: var(--card-w);
   font-size: calc(var(--card-w) * 0.5);
-  color: var(--wood);
-  background:
-    radial-gradient(circle, transparent 0 60%, rgb(31 26 23 / 55%) 61% 62.5%, transparent 63.5%),
-    radial-gradient(circle at 40% 36%, rgb(226 171 63 / 28%), transparent 70%), var(--paper);
+  color: var(--ink);
+  background: var(--medal);
+  border: var(--line) solid var(--ink);
   border-radius: 50%;
   box-shadow:
-    inset 0 0 0 2px rgb(31 26 23 / 75%),
-    0 4px 8px rgb(6 26 16 / 35%);
+    inset 0 0 0 calc(var(--card-w) * 0.06) var(--medal),
+    inset 0 0 0 calc(var(--card-w) * 0.06 + 2px) var(--ink),
+    3px 3px 0 var(--ink);
+}
+
+[data-category='hands'] .codex-icon {
+  --medal: var(--ink-sky);
 }
 
 .codex-icon .icon {
@@ -241,42 +346,57 @@
   height: 1em;
 }
 
+/* Nezískaný achievement: vybledlý medailon, ikona je vidět jen obrysově (skrytý má místo ní otazník). */
+.is-silhouette .codex-icon {
+  --medal: var(--paper-deep);
+
+  color: rgb(26 23 20 / 45%);
+  box-shadow:
+    inset 0 0 0 calc(var(--card-w) * 0.06) var(--medal),
+    inset 0 0 0 calc(var(--card-w) * 0.06 + 2px) rgb(26 23 20 / 45%);
+}
+
 .codex-icon__extra {
   position: absolute;
-  right: -0.2rem;
-  bottom: -0.2rem;
-  min-width: 1.6rem;
-  padding: 0.05rem 0.35rem;
-  font-size: 0.85rem;
-  font-weight: 700;
+  right: -0.3rem;
+  bottom: -0.3rem;
+  min-width: 1.7rem;
+  padding: 0.04rem 0.35rem 0.08rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.2;
   color: var(--ink);
   background: var(--paper);
+  border: 2px solid var(--ink);
   border-radius: 999px;
-  box-shadow: 0 2px 0 rgb(0 0 0 / 30%);
+  box-shadow: 2px 2px 0 var(--ink);
 }
 
 .codex-empty {
   padding: 1.5rem;
+  font-size: 1.05rem;
   color: var(--on-felt-muted);
   text-align: center;
 }
 
 /* Detail (dialog) */
 .codex-detail {
-  --card-w: 120px;
+  --card-w: 9rem;
 
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem 1.25rem;
+  gap: 1rem 1.4rem;
+}
+
+.codex-detail[data-category='achievements'],
+.codex-detail[data-category='hands'] {
+  --card-w: 7rem;
 }
 
 .codex-detail__art {
   position: relative;
   flex: 0 0 auto;
-}
-
-.codex-detail__art .codex-icon {
-  color: var(--wood);
 }
 
 .codex-detail__text {
@@ -287,14 +407,23 @@
   min-width: 0;
 }
 
+/* Druh a vzácnost: černý štítek nad popisem. */
 .codex-detail__kind {
+  align-self: flex-start;
+  padding: 0.08rem 0.55rem 0.12rem;
+  font-family: var(--font-display);
   font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--ink-soft);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: var(--ink);
+  border-radius: 4px;
 }
 
 .codex-detail__desc {
-  font-size: 1.05rem;
+  font-size: 1.08rem;
+  font-weight: 600;
   line-height: 1.4;
 }
 
@@ -330,16 +459,20 @@
 }
 
 .codex-detail__heading {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.3rem;
   font-size: 1.02rem;
-  font-weight: 700;
-  color: var(--wood);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
 .codex-detail__condition,
 .codex-detail__stats {
-  padding: 0.6rem 0.8rem;
-  border: var(--line) solid var(--ink);
+  padding: 0.6rem 0.8rem 0.7rem;
+  background: var(--paper-shade);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-small);
 }
 
 .codex-detail__stats ul {
@@ -353,33 +486,57 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin-top: 0.4rem;
+  margin-top: 0.45rem;
 }
 
+/* Průběh: drážka s linkou, hotová část hořčicová. */
 .codex-progress__bar {
   flex: 1;
-  height: 0.75rem;
-  accent-color: var(--accent-dark);
+  height: 0.9rem;
+  overflow: hidden;
+  color: var(--ink-mustard);
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.codex-progress__bar::-webkit-progress-bar {
+  background: var(--paper);
+}
+
+.codex-progress__bar::-webkit-progress-value {
+  background: var(--ink-mustard);
+  border-right: 2px solid var(--ink);
+}
+
+.codex-progress__bar::-moz-progress-bar {
+  background: var(--ink-mustard);
 }
 
 .codex-progress__text {
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
 }
 
 /* ─────────────────────────── Nová hra: odemykání ─────────────────────────── */
 
+/* Zamčený balíček: vybledlý karton bez stínu, místo rubu jen vzor a zámek. */
 .deck-option.is-locked {
   cursor: not-allowed;
-  background: linear-gradient(rgb(120 96 60 / 14%), rgb(120 96 60 / 14%)), var(--paper-shade);
+  background: var(--paper-shade);
+  border-color: rgb(26 23 20 / 70%);
+  box-shadow: none;
 }
 
 .deck-option.is-locked:hover {
   transform: none;
 }
 
-.deck-option.is-locked .art-svg {
-  filter: brightness(0) saturate(0);
-  opacity: 0.4;
+.deck-option.is-locked .deck-option__art {
+  border-right-color: rgb(26 23 20 / 70%);
 }
 
 .deck-option__art {
@@ -388,61 +545,72 @@
 
 /* Dvě třídy: obecné `.icon` (1em, styles/cards.css) se načítá později a jinak by zámek zmenšilo. */
 .deck-option__art .deck-option__lock,
-.challenge-detail__art .challenge-detail__lock,
-.codex-detail__art .codex-detail__mark {
+.challenge-detail__art .challenge-detail__lock {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 1.6rem;
+  height: 1.6rem;
   color: var(--paper);
-  filter: drop-shadow(0 2px 0 rgb(0 0 0 / 45%));
   transform: translate(-50%, -50%);
 }
 
+.challenge-detail__art .challenge-detail__lock {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+/* Tácek nejsilnější výhry v rohu obrázku balíčku. */
 .deck-option__coaster {
   position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
+  top: 0.35rem;
+  left: 0.35rem;
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  font-size: 0.95rem;
-  font-weight: 700;
+  width: 2rem;
+  height: 2rem;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 800;
   color: var(--ink);
-  background:
-    radial-gradient(circle, transparent 0 58%, rgb(31 26 23 / 55%) 59% 61%, transparent 62%), var(--paper);
+  background: var(--paper);
+  border: 2px solid var(--ink);
   border-radius: 50%;
-  box-shadow:
-    inset 0 0 0 2px rgb(31 26 23 / 70%),
-    0 3px 5px rgb(6 26 16 / 35%);
+  box-shadow: 2px 2px 0 var(--ink);
 }
 
 .deck-option__condition {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1.35;
 }
 
 .deck-option__locked {
   display: inline-block;
   margin-right: 0.2em;
-  padding: 0.05em 0.5em 0.08em;
-  font-size: 0.8rem;
-  font-weight: 600;
+  padding: 0.02em 0.45em 0.06em;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--paper);
-  background: var(--ink-soft);
-  border-radius: 3px 7px 4px 6px / 6px 4px 7px 3px;
+  background: var(--ink);
+  border-radius: 3px;
 }
 
-/* Zamčená síla piva: vybledlý tácek, ale název čitelný (tlumená barva místo průhlednosti celé položky). */
+/* Zamčená síla piva: tmavý vtlačený tácek, název čitelný v tlumené barvě. */
 .stake-option.is-locked {
   cursor: not-allowed;
 }
 
 .stake-option.is-locked .stake-option__coaster {
-  opacity: 0.45;
+  color: var(--on-felt-muted);
+  background: var(--felt-dark);
+  border-color: rgb(243 232 207 / 45%);
+  box-shadow:
+    inset 0 0 0 3px var(--felt-dark),
+    inset 0 0 0 5px rgb(243 232 207 / 30%);
 }
 
 .stake-option.is-locked .stake-option__name {
@@ -455,16 +623,21 @@
 
 .stake-detail__lock {
   margin-top: 0.7rem;
+  padding-top: 0.55rem;
   font-size: 0.9rem;
   color: var(--ink-soft);
+  border-top: 2px solid rgb(26 23 20 / 25%);
 }
 
 .seed-field__status {
-  margin-top: 0.5rem;
-  padding: 0.5rem 0.8rem;
   max-width: 44rem;
+  margin-top: 0.6rem;
+  padding: 0.5rem 0.8rem;
   font-size: 0.95rem;
+  font-weight: 600;
+  border: 2px solid var(--ink);
   border-radius: var(--radius-small);
+  box-shadow: 3px 3px 0 rgb(5 9 18 / 55%);
 }
 
 .seed-field__status.is-note {
@@ -478,9 +651,8 @@
 }
 
 .seed-field__input[aria-invalid='true'] {
-  box-shadow:
-    inset 0 2px 4px rgb(0 0 0 / 25%),
-    0 0 0 3px var(--danger);
+  border-color: var(--danger);
+  box-shadow: 3px 3px 0 var(--danger);
 }
 
 /* ─────────────────────────── Statistiky a historie ─────────────────────────── */
@@ -488,7 +660,7 @@
 .stats-body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-  gap: 1rem;
+  gap: 1.1rem;
   align-items: start;
 }
 
@@ -502,16 +674,40 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
 }
 
+/* Sekce = kartonový list s barevným záhlavím přes celou šířku (barvy se střídají jako na plakátu). */
 .stats-section {
-  padding: 1rem 1.25rem;
+  --sec-color: var(--ink-navy);
+  --sec-text: var(--paper);
+
+  padding: 0 1.25rem 1rem;
+}
+
+.stats-body > .stats-section:nth-child(4n + 1) {
+  --sec-color: var(--ink-teal);
+}
+
+.stats-body > .stats-section:nth-child(4n + 2) {
+  --sec-color: var(--ink-red);
+}
+
+.stats-body > .stats-section:nth-child(4n + 3) {
+  --sec-color: var(--ink-sky);
+  --sec-text: var(--ink);
+}
+
+.stats-body > .stats-section:nth-child(4n + 4) {
+  --sec-color: var(--ink-mustard);
+  --sec-text: var(--ink);
 }
 
 .stats-section__title,
 .stats-heading {
-  margin-bottom: 0.6rem;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--wood);
+  margin-bottom: 0.7rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
 .stats-section__title {
@@ -519,7 +715,18 @@
   background: linear-gradient(var(--ink), var(--ink)) 0 100% / 100% 3px no-repeat;
 }
 
+.stats-section > .stats-section__title {
+  margin: 0 -1.25rem 0.8rem;
+  padding: 0.5rem 1.25rem;
+  color: var(--sec-text);
+  background: var(--sec-color);
+  border-bottom: var(--line) solid var(--ink);
+  border-radius: calc(var(--radius) - 3px) calc(var(--radius) - 3px) 0 0;
+}
+
+/* Nadpis na stole (historie, denní runy). */
 .stats-heading {
+  font-size: 1.5rem;
   color: var(--on-felt);
 }
 
@@ -532,7 +739,7 @@
 .stat-list--compact {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
-  gap: 0.3rem 1.25rem;
+  gap: 0.3rem 1.5rem;
 }
 
 .stat-row {
@@ -542,15 +749,19 @@
   justify-content: space-between;
   gap: 0.15rem 0.75rem;
   padding-bottom: 0.3rem;
-  border-bottom: 1px dashed rgb(31 26 23 / 22%);
+  border-bottom: 1px solid rgb(26 23 20 / 20%);
 }
 
 .stat-row__label {
+  font-weight: 600;
   color: var(--ink-soft);
 }
 
 .stat-row__value {
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
   text-align: right;
 }
 
@@ -566,17 +777,20 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-weight: 400;
+  font-family: var(--font-game);
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .stats-note {
   margin-top: 0.75rem;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--ink-soft);
 }
 
 .stats-empty {
   padding: 0.75rem 0;
+  font-weight: 600;
   color: var(--ink-soft);
 }
 
@@ -584,16 +798,17 @@
   padding: 1rem 1.25rem;
 }
 
-/* Tabulka širší než karta (telefon) se posouvá vodorovně; stín u okraje napoví, že pokračuje (stíny se při
-   posunu odkryjí — pozadí `local` jede s obsahem, `scroll` stojí). */
+/*
+ * Tabulka širší než karta (telefon) se posouvá vodorovně; černá linka u okraje napoví, že pokračuje (linky se při
+ * posunu odkryjí — krycí karton `local` jede s obsahem, linky `scroll` stojí).
+ */
 .stats-table-wrap {
   overflow-x: auto;
   background:
-    linear-gradient(to right, var(--paper) 40%, rgb(251 248 241 / 0%)) left / 1.5rem 100% no-repeat local,
-    linear-gradient(to left, var(--paper) 40%, rgb(251 248 241 / 0%)) right / 1.5rem 100% no-repeat local,
-    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 22%), transparent) left / 0.6rem 100% no-repeat scroll,
-    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 22%), transparent) right / 0.6rem 100% no-repeat
-      scroll;
+    linear-gradient(var(--paper), var(--paper)) left / 0.75rem 100% no-repeat local,
+    linear-gradient(var(--paper), var(--paper)) right / 0.75rem 100% no-repeat local,
+    linear-gradient(var(--ink), var(--ink)) left / 4px 100% no-repeat scroll,
+    linear-gradient(var(--ink), var(--ink)) right / 4px 100% no-repeat scroll;
 }
 
 .stats-table {
@@ -604,14 +819,18 @@
 
 .stats-table th,
 .stats-table td {
-  padding: 0.35rem 0.5rem;
-  border-bottom: 1px solid rgb(31 26 23 / 14%);
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid rgb(26 23 20 / 18%);
 }
 
 .stats-table thead th {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--ink-soft);
+  border-bottom: 2px solid var(--ink);
 }
 
 .stats-table .is-name {
@@ -623,8 +842,12 @@
   white-space: nowrap;
 }
 
+.stats-table td.is-num {
+  font-weight: 700;
+}
+
 .stats-table tbody th {
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .history-list {
@@ -635,20 +858,21 @@
   list-style: none;
 }
 
+/* Záznam runu: kartonový lístek s barevným pruhem vlevo (výhra hořčicová, prohra rumělková). */
 .history-item {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  padding: 0.8rem 1rem;
-  border-left: 6px solid var(--ink-soft);
+  padding: 0.75rem 1rem 0.8rem;
+  border-left: 12px solid var(--ink-soft);
 }
 
 .history-item.is-won {
-  border-left-color: var(--accent);
+  border-left-color: var(--ink-mustard);
 }
 
 .history-item.is-lost {
-  border-left-color: var(--danger);
+  border-left-color: var(--ink-red);
 }
 
 .history-item__head {
@@ -659,12 +883,17 @@
 }
 
 .history-item__outcome {
-  font-size: 1.1rem;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .history-item__no,
 .history-item__date {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 600;
   color: var(--ink-soft);
 }
 
@@ -675,16 +904,20 @@
 .history-item__tag {
   display: inline-block;
   margin-left: 0.5em;
-  padding: 0.05em 0.5em 0.08em;
-  font-size: 0.8rem;
-  font-weight: 400;
+  padding: 0.02em 0.45em 0.06em;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 0.05em;
   color: var(--paper);
-  background: var(--ink-soft);
-  border-radius: 3px 7px 4px 6px / 6px 4px 7px 3px;
+  background: var(--ink);
+  border-radius: 4px;
 }
 
 .history-item__line {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
 }
 
 .history-item__jokers {
@@ -696,19 +929,23 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem 0.6rem;
+  margin-top: 0.15rem;
 }
 
 .history-item__seed-label {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 600;
   color: var(--ink-soft);
 }
 
 .history-item__seed-value {
-  padding: 0.1em 0.45em;
-  font-size: 0.95rem;
-  letter-spacing: 0.06em;
+  padding: 0.05em 0.45em 0.1em;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   background: var(--paper-shade);
-  border-radius: var(--radius-small);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
   overflow-wrap: anywhere;
 }
 
@@ -725,7 +962,7 @@
 
 .stat-best__seed code,
 .history-item__seed-value {
-  font-family: var(--font-game);
+  font-family: var(--font-display);
 }
 
 /* Počítadla přes celou šířku (víc sloupců). */
@@ -736,7 +973,12 @@
 @media (max-width: 600px) {
   /* Tabulky statistik na telefonu: užší okraje a zalomené záhlaví, ať se vejdou bez vodorovného posouvání. */
   .stats-section {
-    padding: 0.85rem 0.9rem;
+    padding: 0 0.9rem 0.85rem;
+  }
+
+  .stats-section > .stats-section__title {
+    margin-inline: -0.9rem;
+    padding-inline: 0.9rem;
   }
 
   .stats-table {
@@ -750,25 +992,54 @@
 
   .stats-table thead th,
   .stats-table thead .is-num {
-    font-size: 0.68rem;
+    font-size: 0.8rem;
     letter-spacing: 0;
     white-space: normal;
     vertical-align: bottom;
   }
 
   .codex-grid {
-    --card-w: 62px;
+    --card-w: 5.1rem;
 
-    grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+    gap: 0.6rem 0.5rem;
+  }
+
+  .codex-grid--achievements,
+  .codex-grid--hands {
+    --card-w: 4rem;
+  }
+
+  .codex-grid {
+    grid-template-columns: repeat(auto-fill, minmax(calc(var(--card-w) + 1.1rem), 1fr));
+  }
+
+  .codex-item {
+    gap: 0.35rem;
+    padding: 0.45rem 0.25rem 0.45rem;
+  }
+
+  .codex-item__name {
+    font-size: 0.85rem;
+  }
+
+  .codex-detail {
+    --card-w: 7rem;
+  }
+
+  .tabs__list {
+    gap: 0.35rem;
   }
 
   .tabs__tab {
-    font-size: 0.85rem;
+    min-height: 2.3rem;
+    padding: 0.25em 0.6em 0.3em;
+    font-size: 0.95rem;
   }
 }
 
 /* ─────────────────────────── Ikona novinky (toast, pitva, výhra) ─────────────────────────── */
 
+/* Odznak: tmavé kolečko s linkou, krémová ikona; achievement hořčicový. */
 .meta-icon {
   display: grid;
   flex: 0 0 auto;
@@ -777,12 +1048,10 @@
   height: 3rem;
   padding: 0.55rem;
   color: var(--paper);
-  background: radial-gradient(circle at 40% 36%, rgb(255 248 222 / 16%), transparent 70%), var(--felt);
-  border: 3px solid var(--accent);
+  background: var(--ink-navy);
+  border: var(--line) solid var(--ink);
   border-radius: 50%;
-  box-shadow:
-    0 0 0 2px rgb(31 26 23 / 60%),
-    0 3px 6px rgb(6 26 16 / 30%);
+  box-shadow: 2px 2px 0 var(--ink);
 }
 
 .meta-icon svg {
@@ -792,12 +1061,11 @@
 
 .meta-icon--achievement {
   color: var(--ink);
-  background: var(--accent);
-  border-color: var(--accent-dark);
+  background: var(--ink-mustard);
 }
 
 .meta-icon--stake {
-  background: var(--wood);
+  background: var(--ink-red);
 }
 
 /* ─────────────────────────── Novinky runu (pitva, výhra) ─────────────────────────── */
@@ -810,16 +1078,18 @@
 }
 
 .run-news__title {
-  margin-bottom: 0.35rem;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--wood);
+  margin-bottom: 0.4rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
 .run-news__list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 0.5rem;
+  gap: 0.4rem 0.5rem;
   padding: 0;
   list-style: none;
 }
@@ -831,6 +1101,7 @@
   max-width: 100%;
   padding: 0.2rem 0.75rem 0.2rem 0.2rem;
   background: var(--paper-shade);
+  border: 2px solid var(--ink);
   border-radius: 999px;
 }
 
@@ -847,7 +1118,7 @@
 }
 
 .run-news__name {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   font-weight: 700;
 }
 
@@ -887,15 +1158,20 @@
 
 .daily-share__label {
   flex-basis: 100%;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 600;
   color: var(--ink-soft);
 }
 
 .daily-share__text {
-  padding: 0.2em 0.5em;
-  font-family: var(--font-game);
+  padding: 0.15em 0.5em 0.2em;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
   background: var(--paper-shade);
-  border-radius: var(--radius-small);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
   overflow-wrap: anywhere;
 }
 
@@ -910,6 +1186,7 @@
 .challenges__next {
   margin-top: 0.5rem;
   font-size: 0.92rem;
+  font-weight: 600;
   color: var(--ink-soft);
 }
 
@@ -925,25 +1202,28 @@
 .challenges__list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.1rem;
 }
 
 .challenges__group-title {
-  margin-bottom: 0.4rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  /* Světlejší pivní zlatá: drobný nadpis na suknu má v `--accent` kontrast jen 3,8 : 1. */
+  margin-bottom: 0.45rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  /* Světlejší pivní zlatá: drobný nadpis na stole má v `--accent` kontrast jen 3,8 : 1. */
   color: var(--money-light);
 }
 
 .challenges__items {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
   padding: 0;
   list-style: none;
 }
 
+/* Výzva v seznamu: tmavý štítek na stole s krémovou linkou; vybraná = hořčicový štítek s tvrdým stínem. */
 .challenge-item {
   display: flex;
   gap: 0.6rem;
@@ -954,44 +1234,47 @@
   font: inherit;
   color: var(--on-felt);
   text-align: left;
-  background: var(--felt-panel);
-  border: 1.5px dashed rgb(246 239 224 / 26%);
-  border-radius: 6px 10px 7px 9px / 9px 7px 10px 6px;
-  transition: transform var(--t-fast) ease-out;
+  background: rgb(8 14 28 / 45%);
+  border: 2px solid rgb(243 232 207 / 45%);
+  border-radius: var(--radius-small);
+  transition:
+    transform var(--t-fast) ease-out,
+    box-shadow var(--t-fast) ease-out;
 }
 
 .challenge-item:hover:not(.is-selected) {
+  background: rgb(8 14 28 / 70%);
   transform: translateX(3px);
 }
 
 .challenge-item.is-selected {
   color: var(--ink);
-  background: var(--paper);
-  border: 2px solid rgb(31 26 23 / 70%);
-  box-shadow:
-    inset 4px 0 0 var(--accent),
-    0 3px 8px rgb(6 26 16 / 35%);
+  background: var(--ink-mustard);
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
 }
 
 .challenge-item:focus-visible {
-  outline: 3px solid var(--accent);
+  outline: 3px solid var(--paper);
   outline-offset: 2px;
 }
 
 .challenge-item.is-locked {
   color: var(--on-felt-muted);
+  border-color: rgb(243 232 207 / 25%);
 }
 
 .challenge-item.is-selected.is-locked {
-  color: var(--ink-soft);
+  color: var(--ink);
+  border-color: var(--ink);
 }
 
 .challenge-item__no {
   flex: 0 0 1.8rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
   text-align: right;
-  /* 0,85: i u zamčené výzvy (tlumená barva na plstě) kontrast ≥ 4,5 : 1 (Lighthouse color-contrast). */
-  opacity: 0.85;
 }
 
 .challenge-item__name {
@@ -1001,20 +1284,25 @@
 }
 
 .challenge-item__new {
-  padding: 0.05em 0.5em 0.08em;
-  font-size: 0.78rem;
+  padding: 0.02em 0.45em 0.06em;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--paper);
-  background: var(--wash-red);
-  border-radius: 40% 55% 45% 60% / 60% 45% 55% 40%;
+  background: var(--danger);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
 }
 
 .challenge-item__status {
   display: inline-flex;
   gap: 0.3rem;
   align-items: center;
-  font-size: 0.78rem;
+  font-size: 0.85rem;
+  font-weight: 600;
   white-space: nowrap;
-  opacity: 0.85;
 }
 
 .challenge-item__status .icon {
@@ -1023,12 +1311,12 @@
 }
 
 .challenge-item.is-completed .challenge-item__status {
-  color: var(--accent);
-  opacity: 1;
+  font-weight: 700;
+  color: var(--money-light);
 }
 
 .challenge-item.is-selected.is-completed .challenge-item__status {
-  color: var(--accent-dark);
+  color: var(--ink);
 }
 
 .challenge-detail {
@@ -1040,12 +1328,12 @@
 
 .challenge-detail__head {
   display: flex;
-  gap: 1rem;
+  gap: 1.1rem;
   align-items: flex-start;
 }
 
 .challenge-detail__art {
-  --card-w: 92px;
+  --card-w: 6rem;
 
   position: relative;
   flex: 0 0 auto;
@@ -1056,22 +1344,31 @@
 }
 
 .challenge-detail__name {
-  font-size: 1.65rem;
-  font-weight: 700;
-  color: var(--wood);
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
+/* Odznak dokončené výzvy: hořčicový štítek s linkou, trochu nakřivo. */
 .challenge-detail__badge {
   display: inline-flex;
   gap: 0.35rem;
   align-items: center;
-  margin-top: 0.25rem;
-  padding: 0.1em 0.65em 0.14em;
-  font-weight: 700;
+  margin-top: 0.35rem;
+  padding: 0.08em 0.6em 0.12em;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--ink);
-  background: radial-gradient(ellipse at 40% 45%, #efc874, var(--accent) 62%, #cf9530);
-  border-radius: 3px 8px 4px 7px / 7px 4px 8px 3px;
-  box-shadow: 0 0 0 1px rgb(31 26 23 / 45%);
+  background: var(--ink-mustard);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: 2px 2px 0 var(--ink);
+  transform: rotate(-2deg);
 }
 
 .challenge-detail__badge .icon {
@@ -1081,6 +1378,7 @@
 
 .challenge-detail__desc {
   margin-top: 0.4rem;
+  font-weight: 600;
 }
 
 .challenge-detail__flavor {
@@ -1089,10 +1387,12 @@
 }
 
 .challenge-detail__heading {
-  margin-top: 0.4rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--wood);
+  margin-top: 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
 .challenge-detail__rules {
@@ -1100,6 +1400,14 @@
   flex-direction: column;
   gap: 0.3rem;
   padding-left: 1.2rem;
+}
+
+.challenge-detail__condition {
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  background: var(--paper-shade);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-small);
 }
 
 .challenge-detail__note,
@@ -1121,7 +1429,7 @@
 .daily__layout {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
-  gap: 1rem 1.25rem;
+  gap: 1.1rem 1.25rem;
   align-items: start;
   width: 100%;
   max-width: 72rem;
@@ -1138,16 +1446,19 @@
   padding: 1.1rem 1.25rem 1.25rem;
 }
 
+/* Balíček dne: rub karty na vzoru balíčku, v rámečku s linkou. */
 .daily-today__art {
   flex: 0 0 8rem;
   width: 8rem;
   height: 10rem;
+  border: var(--line) solid var(--ink);
   border-radius: var(--radius-small);
+  box-shadow: 3px 3px 0 var(--ink);
 }
 
 .daily-today__art .art-svg {
   width: auto;
-  height: 86%;
+  height: 82%;
   transform: rotate(-5deg);
 }
 
@@ -1157,31 +1468,33 @@
 }
 
 .daily-today__seed {
-  font-family: var(--font-game);
+  font-family: var(--font-display);
   letter-spacing: 0.05em;
 }
 
+/* Stav oficiálního pokusu: kartonový štítek s barevným pruhem vlevo. */
 .daily-today__status {
-  margin-top: 0.75rem;
+  margin-top: 0.8rem;
   padding: 0.5rem 0.75rem;
   font-weight: 700;
   background: var(--paper-shade);
-  border-left: 5px solid var(--accent);
+  border: 2px solid var(--ink);
+  border-left: 10px solid var(--ink-mustard);
   border-radius: var(--radius-small);
 }
 
 .daily-today.is-outcome-won .daily-today__status {
-  border-left-color: var(--felt-light);
+  border-left-color: var(--ink-green);
 }
 
 .daily-today.is-lost .daily-today__status,
 .daily-today.is-outcome-lost .daily-today__status {
-  border-left-color: var(--danger);
+  border-left-color: var(--ink-red);
 }
 
 .daily-today__desc {
   margin-top: 0.5rem;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   color: var(--ink-soft);
 }
 
@@ -1194,7 +1507,7 @@
 
 .daily-today .setting__hint {
   margin-top: 0.4rem;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--ink-soft);
 }
 
@@ -1240,6 +1553,8 @@
   }
 }
 
-.no-anim .challenge-item {
+.no-anim .challenge-item,
+.no-anim .codex-item,
+.no-anim .tabs__tab {
   transition: none;
 }

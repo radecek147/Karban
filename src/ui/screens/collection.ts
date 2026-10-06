@@ -2,9 +2,9 @@
  * Sbírka (codex, DESIGN 11.4): záložky Žolíci · Pranostiky · Babské rady · Razítka · Kupóny · Štítky · Šéfové ·
  * Balíčky · Síla piva · Vylepšení, pečetě a edice · Kombinace · Výzvy · Achievementy.
  *
- * Stav položky z profilu (`collectionState`): **neodemčeno** (silueta + podmínka odemčení s průběhem) →
- * **odemčeno, neobjeveno** (silueta + „???“) → **objeveno** (plná karta; detail s mechanikou, flavorem,
- * vzácností, cenou a statistikou použití). Balíčky, síly piva a výzvy ukazují název i zamčené (jsou to režimy, ne
+ * Stav položky z profilu (`collectionState`): **neodemčeno** (zástupná karta se zámkem + podmínka odemčení
+ * s průběhem) → **odemčeno, neobjeveno** (zástupná karta s otazníkem + „???“) → **objeveno** (plná karta; detail
+ * s mechanikou, flavorem, vzácností, cenou a statistikou použití). Balíčky, síly piva a výzvy ukazují název i zamčené (jsou to režimy, ne
  * tajemství); žolíci a kupóny zamčení jen „Zamčeno“. Štítek „Nové“ (`Profile.unseen`) zmizí po otevření detailu
  * nebo při odchodu ze záložky. Žolíky jde filtrovat podle vzácnosti a zaměření (`JokerTag`), všechno řadit podle
  * pořadí, názvu a četnosti použití (žolíci i podle vzácnosti); počítadlo „Objeveno x / y“.
@@ -726,6 +726,42 @@ function sortModes(tab: CollectionTab): SortMode[] {
 
 // ─────────────────────────── Vykreslení ───────────────────────────
 
+/** Kategorie s kulatým obrázkem (žeton, odznak, tácek, medailon) — podle toho má zástupná karta tvar. */
+const ROUND_CATEGORIES: ReadonlySet<CollectionCategory> = new Set([
+  'tags',
+  'bosses',
+  'stakes',
+  'enhancements',
+  'seals',
+  'hands',
+]);
+
+/** Má položka místo obrázku zástupnou kartu? (Achievementy ukazují vybledlou ikonu, ta je levná a napoví.) */
+function usesPlaceholder(entry: CollectionEntry): boolean {
+  return entry.state !== 'discovered' && entry.category !== 'achievements';
+}
+
+/**
+ * Zástupná karta neobjevené / zamčené položky: jeden levný tiskový rub (otazník, nebo zámek) místo plného
+ * obrázku zčernalého filtrem — u stovky žolíků se nevykreslí stovka SVG, které stejně nejsou vidět.
+ */
+function placeholder(entry: CollectionEntry, markClass?: string): HTMLElement {
+  const locked = entry.state === 'locked';
+  return h(
+    'span',
+    {
+      class: [
+        'codex-ph',
+        ROUND_CATEGORIES.has(entry.category) ? 'codex-ph--round' : '',
+        locked ? 'codex-ph--locked' : 'codex-ph--unknown',
+      ],
+    },
+    locked
+      ? iconElement('padlock', { className: ['codex-ph__mark', markClass].filter(Boolean).join(' ') })
+      : h('span', { class: ['codex-ph__mark', 'codex-ph__q', markClass] }, '?'),
+  );
+}
+
 function stateLabel(entry: CollectionEntry): string {
   if (entry.category === 'achievements')
     return t(
@@ -754,7 +790,7 @@ function tile(
     h(
       'span',
       { class: ['codex-item__art', silhouette ? 'is-silhouette' : ''], 'aria-hidden': 'true' },
-      entry.art(),
+      usesPlaceholder(entry) ? placeholder(entry) : entry.art(),
     ),
     h('span', { class: 'codex-item__name', 'aria-hidden': 'true' }, entry.name),
     entry.isNew
@@ -780,11 +816,8 @@ function detailBody(entry: CollectionEntry): HTMLElement {
     h(
       'div',
       { class: ['codex-detail__art', silhouette ? 'is-silhouette' : ''], 'aria-hidden': 'true' },
-      entry.art(),
-      // Silueta v dialogu na papíře je jen šedý obdélník — zámek (neodemčeno) nebo otazník (neobjeveno) přes ni.
-      silhouette && entry.category !== 'achievements'
-        ? iconElement(entry.state === 'locked' ? 'padlock' : 'help', { className: 'codex-detail__mark' })
-        : null,
+      // Neodemčeno / neobjeveno: zástupná karta se zámkem nebo otazníkem (obrázek se neprozradí).
+      usesPlaceholder(entry) ? placeholder(entry, 'codex-detail__mark') : entry.art(),
     ),
     h(
       'div',
@@ -1020,7 +1053,7 @@ export const collectionScreen: ScreenFactory = (app: App, params) => {
       ...[...groups].map(([g, list]) =>
         h(
           'section',
-          { class: 'codex-group', 'aria-label': groupTitle(g) },
+          { class: ['codex-group', g ? `codex-group--${g}` : ''], 'aria-label': groupTitle(g) },
           groupTitle(g) ? h('h2', { class: 'codex-group__title' }, groupTitle(g)) : null,
           h(
             'div',

@@ -1,9 +1,9 @@
 /**
  * Nastavení (docs/DESIGN.md 13.4): hlasitosti, rychlost 1×–4×, animace, screen shake, celá obrazovka,
- * barvoslepý režim, velikost UI 80–140 %, rady Štamgasta (a „Zapnout tutoriál znovu“), přehled klávesových
- * zkratek, export/import uložení (JSON přes Blob, žádná síť; profil i rozehraný run, validace a migrace) a reset
- * profilu s dvojím potvrzením. Profil se nikdy neztratí: import i reset ho předtím zazálohují do
- * `karban.profile.backup.<ms>` (zálohy jdou do exportu).
+ * barvoslepý režim, velikost UI 80–140 % s ukázkou písma, rady Štamgasta (a „Zapnout tutoriál znovu“), přehled
+ * klávesových zkratek, export/import uložení (JSON přes Blob, žádná síť; profil i rozehraný run, validace
+ * a migrace) a reset profilu s dvojím potvrzením. Profil se nikdy neztratí: import i reset ho předtím zazálohují
+ * do `karban.profile.backup.<ms>` (zálohy jdou do exportu).
  *
  * Funguje jako samostatná obrazovka (`settingsScreen`) i jako dialog ze hry (`openSettingsModal(app)`).
  * Změny jdou výhradně přes `app.updateSettings` (uloží a promítne do <html>).
@@ -343,6 +343,12 @@ interface RangeOptions {
   hint?: string;
 }
 
+/** Vyplněná část drážky posuvníku v procentech (CSS `--fill`). */
+function rangeFill(o: Pick<RangeOptions, 'min' | 'max'>, v: number): string {
+  const span = o.max - o.min;
+  return `${span > 0 ? Math.round(((v - o.min) / span) * 100) : 0}%`;
+}
+
 function rangeControl(o: RangeOptions): HTMLElement {
   const output = h('output', { class: 'setting__value', for: o.id }, o.format(o.value));
   const input = h('input', {
@@ -356,10 +362,12 @@ function rangeControl(o: RangeOptions): HTMLElement {
     'aria-valuetext': o.format(o.value),
     'aria-describedby': o.hint ? `${o.id}-hint` : undefined,
     'data-testid': o.id,
+    style: { '--fill': rangeFill(o, o.value) },
     onInput: () => {
       const v = Number(input.value);
       output.textContent = o.format(v);
       input.setAttribute('aria-valuetext', o.format(v));
+      input.style.setProperty('--fill', rangeFill(o, v));
       o.onInput(v);
     },
     onChange: () => o.onChange?.(Number(input.value)),
@@ -461,6 +469,26 @@ function keysTable(): HTMLElement {
         ),
       ),
     ),
+  );
+}
+
+/**
+ * Ukázka písma: pangram s celou českou diakritikou v obou písmech (plakátové na nadpisy, textové na popisky) —
+ * hned je vidět, jestli se písmo načetlo i s háčky (e2e test ho hledá podle `typo-test`).
+ */
+function fontSample(): HTMLElement {
+  return h(
+    'div',
+    { class: 'setting setting--sample' },
+    h('p', { class: 'setting__label' }, t('settings.fontSample')),
+    h(
+      'div',
+      { class: 'font-sample' },
+      // Plakátový řádek je jen ozdoba (stejná věta), čtečka přečte jednou textový.
+      h('p', { class: 'font-sample__display', lang: 'cs', 'aria-hidden': 'true' }, t('typoTest')),
+      h('p', { class: 'font-sample__text', lang: 'cs', 'data-testid': 'typo-test' }, t('typoTest')),
+    ),
+    h('p', { class: 'setting__hint' }, t('settings.fontSampleHint')),
   );
 }
 
@@ -748,6 +776,7 @@ function settingsPanel(app: App, opts: PanelOptions): Panel {
         format: pct,
         onInput: (v) => app.updateSettings({ uiScale: v / 100 }),
       }),
+      fontSample(),
     ),
   );
 

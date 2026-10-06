@@ -1,8 +1,8 @@
 /**
  * Hlavní menu: Nová hra, Pokračovat (jen s uloženým runem), Výzvy (s počtem nově odemčených), Denní run
  * (cedulka „Dnes“, dokud čeká oficiální pokus), Sbírka (s počtem novinek), Statistiky, Nastavení, Titulky;
- * náhodná rada Štamgasta, verze a kontrolní věta pro font. Ovládání: Tab / šipky nahoru a dolů mezi položkami,
- * Enter / mezerník aktivuje.
+ * náhodná rada Štamgasta a verze (kontrolní věta pro font je v Nastavení → Zobrazení). Ovládání: Tab / šipky
+ * nahoru a dolů mezi položkami, Enter / mezerník aktivuje.
  */
 import { version } from '../../../package.json';
 import { t, tList } from '../../i18n/cs';
@@ -90,7 +90,6 @@ export const menuScreen: ScreenFactory = (app) => {
     ? h(
         'aside',
         { class: 'menu__tip', 'aria-labelledby': 'menu-tip-label' },
-        h('span', { class: 'menu__tip-pin', 'aria-hidden': 'true' }),
         h('span', { id: 'menu-tip-label', class: 'menu__tip-label' }, t('app.tipLabel')),
         tipText,
         h(
@@ -114,6 +113,8 @@ export const menuScreen: ScreenFactory = (app) => {
   const nav = h(
     'nav',
     { class: 'menu__board', 'aria-label': t('menu.label') },
+    // Záhlaví lístku (jako nápojový lístek v hospodě) — jen ozdoba, navigaci pojmenuje `aria-label`.
+    h('p', { class: 'menu__board-title', 'aria-hidden': 'true' }, t('menu.boardTitle')),
     h(
       'ul',
       { class: 'menu__list', role: 'list' },
@@ -183,7 +184,6 @@ export const menuScreen: ScreenFactory = (app) => {
     ),
     nav,
     tipEl,
-    h('p', { class: 'menu__typo', lang: 'cs', 'data-testid': 'typo-test' }, t('typoTest')),
     h(
       'footer',
       { class: 'menu__footer' },

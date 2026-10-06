@@ -77,11 +77,10 @@ function challengeDetail(app: App, def: ChallengeDef, onStart: () => void): HTML
   const tx = challengeTexts(def.id, { registry: reg });
   const cs = app.profile.stats.challenges[def.id];
   const locked = status === 'locked';
-  const art = createContentCard('challenge', def.id, {
-    registry: reg,
-    tooltip: false,
-    className: locked ? 'is-silhouette' : undefined,
-  });
+  // Zamčená výzva: zástupná karta (tiskový rub) místo obrázku — obrázek se odhalí až po odemčení.
+  const art = locked
+    ? h('span', { class: 'codex-ph codex-ph--locked' })
+    : createContentCard('challenge', def.id, { registry: reg, tooltip: false });
   const head = h(
     'header',
     { class: 'challenge-detail__head' },
@@ -89,7 +88,7 @@ function challengeDetail(app: App, def: ChallengeDef, onStart: () => void): HTML
       'div',
       { class: 'challenge-detail__art', 'aria-hidden': 'true' },
       art,
-      // Zamčená výzva: zámek přes siluetu karty (jako zamčený balíček v Nové hře).
+      // Zamčená výzva: zámek přes zástupnou kartu (jako zamčený balíček v Nové hře).
       locked ? iconElement('padlock', { className: 'challenge-detail__lock' }) : null,
     ),
     h(
