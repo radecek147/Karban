@@ -307,8 +307,14 @@
   background: repeating-linear-gradient(-45deg, var(--ink-green) 0 9px, #4a8331 9px 18px);
 }
 
-/* Mimo kolo (výběr útraty, Večerka…) je skóre jen informační. */
-.game-sidebar:not([data-phase='round'], [data-phase='round_end'], [data-phase='game_over']) .gs-score,
+/*
+ * Mimo kolo (výběr útraty, Večerka…) je skóre jen informační: ztlumené barvou, ne průhledností — popisek drží
+ * kontrast ≥ 4,5 : 1 (playtest: 2,77 : 1 s průhledností).
+ */
+.game-sidebar:not([data-phase='round'], [data-phase='round_end'], [data-phase='game_over']) .gs-score__value {
+  color: var(--ink-soft);
+}
+
 .game-sidebar:not([data-phase='round'], [data-phase='round_end'], [data-phase='game_over']) .gs-progress {
   opacity: 0.55;
 }
@@ -674,13 +680,14 @@
   pointer-events: none;
 }
 
-/* Prázdná řada: hláška uvnitř prvního obrysu slotu. */
+/* Prázdná řada: hláška uvnitř prvního obrysu slotu (písmo podle šířky slotu — slova se nelámou po písmenech). */
 .gt-empty {
   align-self: center;
   justify-self: start;
   width: var(--card-w);
-  padding: 0 0.5rem;
-  font-size: 0.92rem;
+  padding: 0 0.4rem;
+  font-size: clamp(0.6rem, calc(var(--card-w) * 0.13), 0.92rem);
+  overflow-wrap: normal;
   line-height: 1.25;
   text-align: center;
   font-weight: 600;
@@ -1534,15 +1541,12 @@
   margin-bottom: 0.45rem;
 }
 
-/* Šest možností (mega obálka): tlačítka drobnější, ať se Použít / Nechat si vejdou vedle sebe i na 1024 px. */
-.game-main:not(.is-handless) .booster__options:has(> :nth-child(6)) .booster-option__actions .btn {
-  padding-inline: 0.35em;
-  font-size: 0.8rem;
-}
-
-/* Použít / Nechat si vedle sebe (jedna řada tlačítek místo dvou). */
+/*
+ * Použít / Nechat si vedle sebe (jedna řada tlačítek místo dvou), drobnějším písmem — šířka možnosti v rem, ať se
+ * dvojice vejde i při velikosti UI 140 %.
+ */
 .game-main:not(.is-handless) .booster-option {
-  width: max(calc(var(--card-w) * 1.8), 7.5rem);
+  width: max(calc(var(--card-w) * 1.8), 9rem);
 }
 
 .game-main:not(.is-handless) .booster-option__actions {
@@ -1552,6 +1556,8 @@
 .game-main:not(.is-handless) .booster-option__actions .btn {
   flex: 1 1 auto;
   min-width: 0;
+  padding-inline: 0.4em;
+  font-size: 0.8rem;
   white-space: nowrap;
 }
 
@@ -1606,7 +1612,7 @@
 
   /* S rukou jsou tlačítka vedle sebe — možnost potřebuje víc šířky (zúžit se smí). */
   .game-main:not(.is-handless) .booster__options:has(> :nth-child(6)) > .booster-option {
-    flex-basis: max(calc(var(--card-w) * 1.75), 7.2rem);
+    flex-basis: max(calc(var(--card-w) * 1.75), 9rem);
   }
 }
 
@@ -2785,6 +2791,83 @@
   .ui-large .gb-discard {
     min-height: 3.2rem;
     font-size: 1.45rem;
+  }
+
+  /* Lišta o kus nižší (žetony a čísla), ať karty a panely fází dostanou víc výšky. */
+  .ui-large .gs-stat__value {
+    --stat-fs: 1.25rem;
+  }
+
+  .ui-large .gs-score__value {
+    font-size: clamp(0.9rem, calc(100cqi / (var(--chars, 6) * 0.52)), 1.55rem);
+  }
+
+  /* Výběr útraty sevřenější: karty i s tlačítky Vybrat / Přeskočit se vejdou bez posouvání (playtest). */
+  .ui-large .blind-select .game-panel__title {
+    font-size: 1.65rem;
+  }
+
+  .ui-large .blind-select .game-panel__subtitle {
+    font-size: 0.85rem;
+  }
+
+  .ui-large .blind-select .game-panel__header {
+    margin-bottom: 0.3rem;
+  }
+
+  .ui-large .blind-card {
+    gap: 0.25rem;
+    padding-bottom: 0.55rem;
+  }
+
+  .ui-large .blind-card__token {
+    width: 2.3rem;
+    height: 2.3rem;
+  }
+
+  .ui-large .blind-card__name {
+    font-size: 1.15rem;
+  }
+
+  .ui-large .blind-card__target,
+  .ui-large .blind-card__reward {
+    font-size: 1.15rem;
+  }
+
+  .ui-large .blind-card__status,
+  .ui-large .blind-card__tag {
+    font-size: 0.78rem;
+  }
+
+  .ui-large .blind-card__tag {
+    --card-w: 2.4rem;
+
+    padding: 0.25rem 0.4rem;
+  }
+
+  .ui-large .blind-card__actions .btn {
+    min-height: 2.4rem;
+    font-size: 1rem;
+  }
+
+  /* Mimo kolo (výběr útraty, Večerka, obálka) menší horní řada — panel fáze se vejde bez posouvání. */
+  .ui-large .game:not([data-phase='round'], [data-phase='booster']) .game-top {
+    --joker-w: calc(var(--game-card-w) * 0.82);
+  }
+
+  .ui-large .shop__title {
+    font-size: 1.6rem;
+  }
+
+  .ui-large .shop__sign .game-panel__subtitle {
+    font-size: 0.8rem;
+  }
+}
+
+/* Velké UI v nízkém okně: žeton útraty jen v liště, na kartách útrat by bral řádek. */
+@media (min-width: 901px) and (max-height: 800px) {
+  .ui-large .blind-card__token {
+    display: none;
   }
 }
 

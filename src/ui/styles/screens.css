@@ -1733,8 +1733,9 @@ html.modal-open {
     height: 44px;
   }
 
-  /* Křížek oznámení: dotykový cíl 44 px, oznámení přitom nezvětšuje (záporný okraj). */
-  .toast__close {
+  /* Křížek oznámení: dotykový cíl 44 px (i v rohu herní obrazovky), oznámení přitom nezvětšuje (záporný okraj). */
+  .toast__close,
+  .toast-region--anchored .toast__close {
     width: 44px;
     height: 44px;
     margin: -0.45rem -0.45rem -0.45rem 0;

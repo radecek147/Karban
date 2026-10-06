@@ -3794,3 +3794,52 @@ jsou v `docs/PLAYTEST-2026-10-05.md`.
 
 **Proč:** jednoznačné chyby nemá smysl nechávat ležet. Rozvržení a výkon by se při změně stylu stejně
 předělávaly, proto čekají na rozhodnutí.
+
+## 2026-10-06 — Výtvarný styl „Sirkárna“ a nové rozvržení herní obrazovky
+
+**Co:** Hráč napsal, že žolíci jsou moc malí, a chtěl opravit všechno, co jsem o designu napsal. Rozhodnutí
+nechal na mně. Vybral jsem doporučený návrh 1, „Sirkárna“: retro sítotisk jako zápalkové nálepky a plakáty
+ze 60. let. K tomu nové rozvržení.
+
+- **Kresby** (`src/ui/art/print.ts` místo `watercolor.ts`, API zůstalo):
+  - každá barva se přichytí k jedné z 32 tiskových barev,
+  - silná lazura je plná plocha s nesoutiskem (posun o 2,2 × 1,6), slabá je rastr z teček,
+  - linka je plná černá,
+  - žádné SVG filtry, `mix-blend-mode` ani bitmapová keš (`raster.ts` je pryč),
+  - žolík má pod obrázkem štítek se jménem v barvě vzácnosti.
+    Data kreseb (scény, portréty, `ArtSpec`) se nemění, změnil se jen renderer.
+- **Písma:** Big Shoulders Display (nadpisy, čísla, tlačítka, jména) a Barlow Semi Condensed (text). Obě jsou OFL
+  a mají české znaky. Fraunces končí. Kurzíva zůstává jen u hlášek.
+- **Rozhraní:**
+  - tmavě modrý stůl s jemným rastrem,
+  - karton s linkou 3–4 px a tvrdé stíny bez rozmazání,
+  - plná tlačítka s verzálkami,
+  - tiskové barvy (rumělka, hořčice, nebesky modrá, zelená, tyrkys, fialová).
+    Textury z E1 (`src/assets/textures`, `scripts/gen-textures.ts`) jsou smazané, nic je nepoužívá.
+- **Herní obrazovka:**
+  - Levý panel nahradila horní lišta: útrata, skóre s ukazatelem postupu, cíl s odměnou, žetony Ruce / Zahození /
+    Peníze / Patro / Kolo a tlačítka. Pod 1200 px má dvě řady.
+  - Žolíci jsou asi o 30 % větší (`--joker-w` = 1,04 × karta) a mají jméno na kartě. Volné sloty mají čárkované
+    obrysy, takže je vidět, kolik místa zbývá.
+  - Balíček je v horní řadě vedle spotřebek.
+  - Náhled čipy × mult je velký uprostřed stolu pod zahranými kartami. Stůl už není prázdný a hlavní okamžik hry
+    je uprostřed.
+  - Ruka je větší (karta se počítá ze šířky i výšky okna). Zahrát a Zahodit jsou velké bloky po stranách
+    ve sloupcích stálé šířky, takže při zahrání neuhýbají. Třídění je pod Zahrát, počty pod Zahodit.
+  - Bubliny skórování jsou tištěné nálepky (plná barva, linka, tvrdý stín). Velké skóre dává hořčicový rastr
+    místo zlaté záře.
+  - Hlášky jdou do volného místa v horní řadě mezi žolíky a spotřebkami. Když tam místo není, jdou do pravého
+    horního rohu jeviště.
+  - Obálka s rukou: menší ruka a možnosti, Použít / Nechat si vedle sebe. Tlačítka jsou nad rukou i na 1024 × 768.
+  - Dlouhá jména šéfů se v liště zmenší a nezkracují se.
+- **Ostatní obrazovky** (menu, nová hra, nastavení, titulky, sbírka, statistiky, výzvy, denní run) dostaly stejný
+  styl. Sbírka má velké karty a zamčené položky kreslí jednu levnou siluetu místo začerněných celých obrázků.
+  Volba síly piva je v Nové hře nahoře. Pangram je v Nastavení jako ukázka písma.
+
+**Proč:**
+
+- Hráč si stěžoval na malé žolíky, playtest našel prázdný stůl, formulářový levý panel, krabice v krabicích,
+  málo energie, drahý akvarel a drobné kurzívové popisky.
+- Tisk je levný (žádné filtry, žádné rastrování v `toBlob`), čitelný v každé velikosti a česky retro, aniž by
+  kopíroval cizí hru.
+- Rozvržení s lištou nahoře uvolní šířku pro velké žolíky a dá skórování doprostřed obrazovky.

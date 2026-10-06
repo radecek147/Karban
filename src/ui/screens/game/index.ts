@@ -5,7 +5,7 @@
  * a vpravo dole balíček.
  *
  * Stav čte jen přes `controller.state` / `controller.engine` (dotazy), mění ho jen akcemi controlleru.
- * Překreslení je levné: levý panel a karty se aktualizují na místě, panel fáze se postaví znovu, jen když
+ * Překreslení je levné: lišta a karty se aktualizují na místě, panel fáze se postaví znovu, jen když
  * se změní jeho podpis. Animace událostí přehrává presenter (src/ui/present.ts), částice src/ui/fx.
  *
  * Klávesy: 1–8 výběr karty, Enter zahrát (i na zaměřené kartě; ve výběru útraty vybrat, na konci kola
@@ -152,7 +152,7 @@ class GameView implements PresentView {
       this.live,
     );
 
-    // Screen shake třese jen hlavní částí (žolíci, stůl, ruka) — levý panel s čísly zůstává čitelný.
+    // Screen shake třese jen hlavní částí (žolíci, stůl, ruka) — horní lišta s čísly zůstává čitelná.
     this.shaker = new Shaker(
       () => (this.main.isConnected ? this.main : null),
       () => ({ ...this.app.settings, instant: this.anim.instant }),

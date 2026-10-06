@@ -9,7 +9,7 @@
  *    visí (zahraná ruka, výplata, výběr útraty… — jen přeřazení karet či žolíků ne). Rada, kterou hráč nestihl vidět
  *    (kolo vyhrané první rukou), se nabídne později — tiše se nedokončí. „Přeskočit tutoriál“ ho vypne celý.
  *  - Číslování „Rada n z 9“ jde podle počtu už viděných rad (rady chodí podle situace, ne v pevném pořadí).
- *  - Bublina nesmí zakrýt Skóre kola a cíl v levém panelu; toasty a tooltipy ji obcházejí (`data-overlay-avoid`).
+ *  - Bublina nesmí zakrýt Skóre kola a cíl v horní liště; toasty a tooltipy ji obcházejí (`data-overlay-avoid`).
  *  - Stav je v profilu (`Profile.tutorial`, rady `Settings.tutorial`); dokončení všech kroků přepočítá meta vrstvu
  *    (`profiles.refresh`) → achievement „Štamgastův žák“.
  *  - V e2e testech se vypne parametrem `?tutorial=off` (src/main.ts ho pak vůbec nenainstaluje) nebo profilem.
@@ -99,7 +99,7 @@ interface StepTarget {
 
 const HAND = '[data-testid="hand"]';
 
-/** Kam bublina kroku ukazuje (podle fáze — šéf v kole ukazuje na levý panel, ve výběru útraty na kartu šéfa). */
+/** Kam bublina kroku ukazuje (podle fáze — šéf v kole ukazuje na horní lištu, ve výběru útraty na kartu šéfa). */
 function stepTarget(step: TutorialStepId, phase: RunState['phase']): StepTarget {
   switch (step) {
     case 'select':
@@ -119,16 +119,19 @@ function stepTarget(step: TutorialStepId, phase: RunState['phase']): StepTarget 
     case 'goal':
       return { selectors: ['.gs-target', '[data-testid="round-target"]'], placements: ['right', 'bottom'] };
     case 'roundEnd':
-      // Nad rozpisem by zakryla nadpis a skóre panelu, vlevo Skóre kola v levém panelu — záložně pod panel.
+      // Nad rozpisem by zakryla nadpis a skóre panelu — záložně pod panel.
       return {
         selectors: ['[data-testid="round-end"] .round-end__lines', '[data-testid="round-end"]'],
         placements: ['right', 'left', 'top', 'bottom'],
         fallbacks: [{ selector: '[data-testid="round-end"]', placements: ['bottom'] }],
       };
     case 'shop':
+      // Pod policí bývá okraj okna a vedle ní další police — záložně volné místo horní řady vlevo od kapsy
+      // spotřebek (nad volnými sloty žolíků), ať bublina nezakryje zboží, o kterém mluví.
       return {
         selectors: ['[data-testid="shop"] .shop-section--items', '[data-testid="shop"] .shop__shelves'],
         placements: ['bottom', 'right', 'left', 'top'],
+        fallbacks: [{ selector: '.gt-group--consumables', placements: ['left'] }],
       };
     case 'jokerOrder':
       return {

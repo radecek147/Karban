@@ -380,7 +380,7 @@ async function presentHand(
     if (big) {
       sound('bigScore');
       const strength = Math.min(1, 0.45 + 0.35 * Math.log10(result.score / target + 1));
-      // „To je rána!“ nad obří bublinou (ne přes počítadlo skóre v levém panelu).
+      // „To je rána!“ nad obří bublinou (ne přes počítadlo skóre v liště).
       if (tableRect)
         bubble(
           view,
@@ -511,7 +511,7 @@ export function createPresenter(view: PresentView): Presenter {
           const e = events[i]!;
           if (batch.deferred.has(e)) continue;
           await presentEvent(view, e, batch, events);
-          // Animace nové úrovně v levém panelu skončila — zpátky na živý náhled (další úroveň ho ukáže znovu).
+          // Animace nové úrovně v náhledu kombinace skončila — zpátky na živý náhled (další úroveň ho ukáže znovu).
           if (batch.levelShown && events[i + 1]?.type !== 'handLeveled') {
             view.showScoring(null);
             batch.levelShown = false;
@@ -549,7 +549,7 @@ async function presentEvent(
     }
     case 'blindSkipped': {
       // Hláška se žetonem štítku. Štítek použitý hned (peníze, obálka) se ohlásí tady i s tím, co udělal — jeho
-      // `tagTriggered` v téže dávce se pak už neopakuje; jinak štítek čeká v levém panelu.
+      // `tagTriggered` v téže dávce se pak už neopakuje; jinak štítek čeká v horní liště.
       const reg = view.controller.registry;
       if (!e.tagId || !reg.tags[e.tagId]) {
         say(t('game.events.skipped'));

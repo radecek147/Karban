@@ -244,10 +244,10 @@ button.kcard[aria-disabled='true'] {
     110deg,
     transparent 30%,
     rgb(255 255 255 / 0%) 38%,
-    rgb(255 255 255 / 55%) 44%,
-    rgb(220 232 255 / 25%) 48%,
+    rgb(255 255 255 / 70%) 44%,
+    rgb(220 232 255 / 35%) 48%,
     transparent 54%,
-    rgb(255 255 255 / 35%) 62%,
+    rgb(255 255 255 / 45%) 62%,
     transparent 68%
   );
   mix-blend-mode: screen;
@@ -262,7 +262,7 @@ button.kcard[aria-disabled='true'] {
     rgb(255 255 160 / 30%) 12% 18%
   );
   mix-blend-mode: color-dodge;
-  opacity: 0.75;
+  opacity: 0.9;
 }
 
 /* Duhová: celé spektrum přes barvu obrázku. */
@@ -281,7 +281,54 @@ button.kcard[aria-disabled='true'] {
     #f5ff4d
   );
   mix-blend-mode: color;
-  opacity: 0.55;
+  opacity: 0.65;
+}
+
+/*
+ * Nálepka edice na horním okraji karty (žolík i hrací karta): proužek se vzorem edice obtažený linkou — edice je
+ * vidět na první pohled i bez třpytu (vypnuté animace, malé karty). Stříbrná = lesklá, růžovo-tyrkysová =
+ * holografická, duha = duhová, černobílá = negativní.
+ */
+.kcard.ed-foil::after,
+.kcard.ed-holo::after,
+.kcard.ed-poly::after,
+.kcard.ed-negative::after,
+.pcard.ed-foil::after,
+.pcard.ed-holo::after,
+.pcard.ed-poly::after,
+.pcard.ed-negative::after {
+  position: absolute;
+  top: calc(var(--card-w) * -0.045);
+  left: 50%;
+  z-index: 3;
+  width: max(1.4rem, calc(var(--card-w) * 0.42));
+  height: max(0.5rem, calc(var(--card-w) * 0.11));
+  pointer-events: none;
+  content: '';
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 2px 2px 0 var(--ink);
+  transform: translateX(-50%);
+}
+
+.kcard.ed-foil::after,
+.pcard.ed-foil::after {
+  background: linear-gradient(110deg, #8d99ab, #f6f8fb 45%, #c3ccd8 60%, #8d99ab);
+}
+
+.kcard.ed-holo::after,
+.pcard.ed-holo::after {
+  background: repeating-linear-gradient(90deg, #ff8ccf 0 22%, #7fe3f0 22% 44%, #fff59a 44% 60%);
+}
+
+.kcard.ed-poly::after,
+.pcard.ed-poly::after {
+  background: linear-gradient(90deg, #d7442c, #e9b030, #5d9a3e, #2f8077, #2f5fa8, #6b4a9e);
+}
+
+.kcard.ed-negative::after,
+.pcard.ed-negative::after {
+  background: linear-gradient(90deg, #1a1714 50%, #f3e8cf 50%);
 }
 
 /* Negativní: převrácené barvy (staticky). */

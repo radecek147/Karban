@@ -29,7 +29,7 @@ export interface PresentView {
   cardEl(id: number): HTMLElement | null;
   jokerEl(uid: number): HTMLElement | null;
   consumableEl(uid: number): HTMLElement | null;
-  /** Rámeček kombinace v levém panelu (zdroj kroků `hand` a `boss`). */
+  /** Náhled kombinace uprostřed stolu (zdroj kroků `hand` a `boss`). */
   handInfoEl(): HTMLElement | null;
   /** Stůl se zahranými kartami. */
   tableEl(): HTMLElement | null;
@@ -39,7 +39,7 @@ export interface PresentView {
   roundScoreEl(): HTMLElement | null;
   /** Vrstva pro bubliny (position: fixed přes obrazovku). */
   fxLayer(): HTMLElement | null;
-  /** Kombinace a čipy × mult v levém panelu během skórování; null = zpět na živý náhled. */
+  /** Kombinace a čipy × mult v náhledu na stole během skórování; null = zpět na živý náhled. */
   showScoring(s: { hand: HandType; level: number; chips: number; mult: number } | null): void;
   setChipsMult(chips: number, mult: number): void;
   setRoundScore(n: number): void;
@@ -48,7 +48,7 @@ export interface PresentView {
   shake(intensity?: number): void;
   /** Velké skóre: zlatý záblesk přes obrazovku a záře počítadla skóre kola (síla 0–1; nepovinné — testy). */
   bigScore?(strength: number): void;
-  /** Čísla čipů a multu v levém panelu (krátké „povyskočení“ při změně; nepovinné). */
+  /** Čísla čipů a multu v náhledu kombinace (krátké „povyskočení“ při změně; nepovinné). */
   chipsEl?(): HTMLElement | null;
   multEl?(): HTMLElement | null;
   /** Hlášení pro čtečky obrazovky (živá oblast). */
@@ -98,7 +98,7 @@ export interface BubbleOptions {
   caption?: string;
   /** Zdroj (např. `card:12`): nový velký nápis u stejného zdroje ten starší rychle odsune. */
   anchor?: string;
-  /** Nápis zarovnaný k levému okraji zdroje (úzký levý panel — dlouhý text roste doprava). */
+  /** Nápis zarovnaný k levému okraji zdroje (nápis vedle náhledu kombinace — dlouhý text roste doprava). */
   alignStart?: boolean;
 }
 
@@ -257,7 +257,7 @@ export function say(message: string, kind: ToastKind = 'info'): void {
 
 /** Kontext jedné dávky událostí (jedna akce hráče). */
 export interface Batch {
-  /** Peníze, jak je ukazuje levý panel během přehrávání. */
+  /** Peníze, jak je ukazuje horní lišta během přehrávání. */
   money: { value: number };
   /** Štítky, které se v dávce spotřebovaly (`tagTriggered`). */
   tagsTriggered: ReadonlySet<string>;
@@ -275,7 +275,7 @@ export interface Batch {
   heldConsumables: Map<number, number>;
   /** Animace, které ještě dobíhají (postupné otáčení karet) — dávka na ně na konci počká. */
   pending: Promise<void>[];
-  /** Ukazuje levý panel animaci nové úrovně (po ní se vrátí živý náhled). */
+  /** Ukazuje náhled kombinace animaci nové úrovně (po ní se vrátí živý náhled). */
   levelShown: boolean;
   /** Počet zvýšení úrovně v dávce (víc najednou = kratší animace každého). */
   levelCount: number;

@@ -79,7 +79,7 @@ export function hasConsumableRoom(ctx: GameCtx, edition: EditionId | null): bool
   return ctx.controller.state.consumables.length < consumableSlots(ctx) + extraSlots(ctx, edition);
 }
 
-/** Číslo kola pro levý panel: rozehrané nebo příští kolo (vyhraná kola + 1), po výhře kola počet vyhraných. */
+/** Číslo kola pro horní lištu: rozehrané nebo příští kolo (vyhraná kola + 1), po výhře kola počet vyhraných. */
 export function roundNumber(s: Readonly<RunState>): number {
   const won = s.stats.roundsWon;
   if (s.phase === 'round' || s.phase === 'game_over' || s.phase === 'blind_select') return won + 1;
@@ -137,7 +137,7 @@ export async function copySeed(seed: string): Promise<void> {
 
 /** Klíč pro návrat focusu po překreslení panelu (tlačítka nesou `data-focus-key`). */
 /**
- * Po zavření dialogu otevřeného z levého panelu (Info o runu, Nastavení, Menu) mimo kolo vrátí focus na hlavní akci
+ * Po zavření dialogu otevřeného z horní lišty (Info o runu, Nastavení, Menu) mimo kolo vrátí focus na hlavní akci
  * fáze (Vybrat / Vyplatit / Pokračovat, `data-autofocus`). Jinak by focus zůstal na tlačítku panelu a Enter by
  * dialog otevřel znovu místo akce fáze (QA 2026-10-05). V kole focus patří ruce (klávesy 1–8 ho vrátí samy).
  */

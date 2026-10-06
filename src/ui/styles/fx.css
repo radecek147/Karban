@@ -555,7 +555,7 @@
 
 /*
  * Záblesk části karty, která efekt způsobila (cardFx.ts → flashOrigin): pečeť vlevo dole a odznak vylepšení
- * vpravo nahoře (pozice podle viewBoxu karty 250 × 350, src/ui/art/cards.ts), lesk edice přes celou kartu.
+ * vpravo nahoře (pozice podle viewBoxu karty 250 × 350, src/ui/art/cards.ts `SEAL_CENTER`), lesk edice přes celou kartu.
  * Barva z obsahu v `--flash-color`.
  */
 .fx-flash {
@@ -577,8 +577,8 @@
 }
 
 .fx-flash--seal {
-  top: 91.4%;
-  left: 12%;
+  top: 87.4%;
+  left: 16%;
 }
 
 .fx-flash--enhancement {

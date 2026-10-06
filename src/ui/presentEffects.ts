@@ -6,7 +6,7 @@
  *  - **změna karty** (`cardChanged` s `change` z enginu): karta se zvedne, otočí, uprostřed se překreslí na nový
  *    vzhled, zajiskří a bublina řekne co („Zlatá pečeť!“, „♠ → ♥“, „9 → 10“); víc karet postupně,
  *  - **nová karta** přiletí do ruky nebo do balíčku (kopie vyletí z původní karty), **zničená** se rozpadne,
- *  - **nová úroveň kombinace** se ukáže v levém panelu (úroveň, čipy a mult naskočí, „Barva úr. 3!“, jiskry),
+ *  - **nová úroveň kombinace** se ukáže v náhledu kombinace uprostřed stolu (úroveň, čipy a mult naskočí, „Barva úr. 3!“, jiskry),
  *  - **konec kola**: zlatá karta, modrá pečeť a peníze žolíků / balíčku se ukážou na nich, než se otevře rozpis,
  *  - **nový žolík / spotřebka** po překreslení na konci dávky naskočí na své místo.
  *
@@ -132,7 +132,7 @@ export function releaseHolds(batch: Batch): void {
 }
 
 /**
- * Konec dávky: počká na dobíhající animace (postupné otáčení karet, odlétající spotřebka), vrátí levý panel na
+ * Konec dávky: počká na dobíhající animace (postupné otáčení karet, odlétající spotřebka), vrátí náhled kombinace na
  * živý náhled, uvolní podržené karty a nové položky (žolíci, spotřebky, karty v ruce) po překreslení naskočí.
  */
 export async function finishBatch(view: PresentView, batch: Batch): Promise<void> {
@@ -168,7 +168,7 @@ export async function finishBatch(view: PresentView, batch: Batch): Promise<void
 
 // ─────────────────────────── Spotřebka ───────────────────────────
 
-/** Kam spotřebka „letí“: první karta, které se dávka týká, levý panel (pranostika) nebo střed stolu. */
+/** Kam spotřebka „letí“: první karta, které se dávka týká, náhled kombinace (pranostika) nebo střed stolu. */
 function consumableTarget(view: PresentView, events: readonly GameEvent[]): RectLike | null {
   for (const e of events) {
     if (e.type === 'cardChanged' || e.type === 'cardDestroyed') {
@@ -189,7 +189,7 @@ function consumableTarget(view: PresentView, events: readonly GameEvent[]): Rect
 
 /**
  * Začátek dávky s použitou spotřebkou: spotřebka se ve slotu (obálce, Večerce) zvedne a odletí ke kartám, kterých
- * se týká (pranostika do levého panelu). Událost `consumableUsed` přijde až za efekty — zvuk tedy zazní tady.
+ * se týká (pranostika do náhledu kombinace). Událost `consumableUsed` přijde až za efekty — zvuk tedy zazní tady.
  */
 export async function presentConsumableUse(
   view: PresentView,
@@ -204,7 +204,7 @@ export async function presentConsumableUse(
     if (!el) continue;
     soundForEvent(e, anim);
     batch.silenced.add(e);
-    // Pranostika: levý panel s kombinací se ukáže hned (mimo kolo je jinak schovaný), ať je kam letět.
+    // Pranostika: náhled kombinace se ukáže hned (mimo kolo je jinak schovaný), ať je kam letět.
     const level = events.find((x): x is Ev<'handLeveled'> => x.type === 'handLeveled');
     if (level) showLevel(view, level.hand, level.level - level.delta, batch);
     const from = measure(el);
@@ -372,7 +372,7 @@ function showLevel(view: PresentView, hand: HandType, level: number, batch: Batc
 }
 
 /**
- * Nová úroveň kombinace (pranostika, žolík, kupón, štítek): levý panel ukáže kombinaci na staré úrovni, panel
+ * Nová úroveň kombinace (pranostika, žolík, kupón, štítek): náhled kombinace ukáže kombinaci na staré úrovni, panel
  * poskočí, úroveň, čipy a mult naskočí na nové hodnoty, „Barva úr. 3!“ a jiskry. Víc úrovní v dávce (Úřední hodiny:
  * všechny kombinace) = kratší animace každé. `keep` = panel zůstane (skórování ruky si ho převezme).
  */
@@ -405,7 +405,7 @@ export async function presentLevelUp(
   const mult = view.multEl?.() ?? null;
   void trigger(anim, chips, 'soft');
   void trigger(anim, mult, 'soft');
-  // Nápis vpravo vedle rámečku kombinace (na suknu) — nad ním by zakryl skóre kola v úzkém levém panelu.
+  // Nápis vpravo vedle rámečku kombinace (na stole) — nad ním by zakryl zahrané karty.
   const beside = rect
     ? { left: rect.left + rect.width + 10, top: rect.top + rect.height * 0.7, width: 1, height: 1 }
     : null;

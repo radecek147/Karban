@@ -315,7 +315,7 @@ flavor a že texty dodržují typografii.
 - Obrazovky v `src/ui/screens/*`, komponenty v `src/ui/components/*`.
 - Přehrávání událostí: `src/ui/present.ts` (ruka, skórování, události), `src/ui/presentEffects.ts` (viditelné efekty:
   spotřebka odletí ze slotu, změněné karty se otočí s popisem změny z `CardChange` — „Zlatá pečeť!“, „♠ → ♥“ —,
-  přidané karty přiletí, zničené se rozpadnou, nová úroveň kombinace v levém panelu, efekty konce kola na kartách
+  přidané karty přiletí, zničené se rozpadnou, nová úroveň kombinace u náhledu kombinace, efekty konce kola na kartách
   v ruce a žolících podle `roundRewards.held`), `src/ui/presentKit.ts` (sdílené bubliny a měření) a
   `src/ui/fx/cardFx.ts` (poskočení zdroje `is-triggered`, záblesk pečeti / vylepšení / edice podle
   `ScoreStep.origin`, let mincí k panelu Peníze). Kroky efektů trvají při 1× aspoň ~0,5 s (`stepTiming`); vše
@@ -343,32 +343,36 @@ flavor a že texty dodržují typografii.
     Hudba podle `App.onScreenChange`, hlasitosti podle `App.onSettingsChange`, výběr karet a šéf podle controlleru,
     delegovaný klik na tlačítka (bez zdvojení se zvukem akce), klávesa M = ztlumit vše (`Settings.muted`).
 - Témata a barvoslepý režim přes CSS proměnné na `:root`.
-- Obrázky (`src/ui/art/`) — výtvarný styl „Pohádková knížka“ (barvy E1, linka E3; tuš a akvarel, DECISIONS 2026-10-05):
-  - `watercolor.ts` — akvarelová sada: `wcDefs` (papír = nasvícený šum, lavírování = posunutá a rozmazaná plocha
-    s tmavším okrajem a zrnem pigmentu, rozvlněná tuš, natrhlý okraj masky, zrno), primitiva `wash` / `knock` /
-    `ink` / `paint` / `paintIcon`, ikona jako tvar (`iconShape`, sdílená přes `<use>` — `iconRef`) a paleta `WC_PAL`.
-    Linka E3 je celá v `ink`: váha tuše `INK_WEIGHT` a druhý tah štětcem (barevné a čárkované tahy bez nich).
-    Sytost vodovek je celá ve `wash`: `vivid` (odtažení od šedi) a `washOpacity` (zesílené krytí).
-  - `cards.ts` — líce (pipy, eso, figury Kluk/Dáma/Král), rohové indexy kreslené cestami, vylepšení (tón papíru,
-    lavírovaný okraj), vosková pečeť, kamenná karta, rub (výchozí s tulipánem, balíčky v barvách `ArtSpec`). Barvy
-    karet jsou v obrázku zapečené: schéma `classic` / `four` (barvoslepý režim, `currentSuitScheme` čte třídu
-    `.colorblind`), komponenta karty ho má v klíči vzhledu a po přepnutí režimu karty překreslí.
-  - `art.ts` — obrázky obsahu z `ArtSpec`: lavírované pozadí `bg`, jemně namalovaný vzor `pattern`, ikona jako
-    světlá silueta s nádechem `fg` a obrysem tuší, rekvizita v kroužku, rámečky podle druhu; žolík s `scene`
-    dostane ručně kreslenou scénu (`scenes.ts` + `scenes2.ts`, 15 scén: legendární žolíci a výrazné postavy;
-    tahy `f` plocha / `l` tuš / `h` stín / `s` lavírovaná linka / `i` ikona-rekvizita; role z palety nebo `#rrggbb`).
-    `figures.ts` skládá portréty žolíků-lidí z dílů (pozadí, oblečení, obličej, účes, vousy, brýle, čepice,
-    rekvizita) do stejných tahů — scény `fig-<id>`. `stamgast.ts` — Štamgast.
-  - `raster.ts` — bitmapová keš: markup (s placeholdery `%ID%`) je klíč, obrázek se jednou vykreslí do canvasu
-    (SVG → `<img>` → canvas → WebP/PNG blob, fronta v době nečinnosti) a v DOM zůstane kořenové `<svg>` (třídy,
-    `data-*`, přístupnost) s jediným `<image>`. Do té doby se ukáže tentýž obrázek bez filtrů. Živé SVG filtry by se
-    přepočítávaly při každém překreslení vrstvy (animace karet by se trhaly). Bez canvasu (testy) plný markup.
-    `prewarmCardArt` předkreslí balíček na začátku runu.
+- Obrázky (`src/ui/art/`) — výtvarný styl „Sirkárna“ (retro sítotisk jako zápalkové nálepky a plakáty ze 60. let,
+  DECISIONS 2026-10-06):
+  - `print.ts` — tisková sada se stejným API jako dřívější akvarelová (`wash` / `knock` / `ink` / `paint` /
+    `paintIcon`, `iconShape` + `iconRef`, `beginArt`, paleta `PR_PAL`, barvy `PR`). Každá barva se přichytí k jedné
+    z 32 tiskových barev (`inkOf`, vzdálenost „redmean“). Silná lazura (krytí ≥ 0,42) = plná plocha posunutá
+    o `MISREG` (nesoutisk), slabší = rastr z teček (vzor `<pattern>` vložený do obrázku, jednou na barvu a krytí).
+    Linka je plná černá s váhou `INK_WEIGHT`. Žádné SVG filtry ani `mix-blend-mode` — obrázek se kreslí přímo.
+  - `svg.ts` — `withUniqueIds` (placeholder `%ID%` → unikátní id, víc kopií téhož obrázku na stránce) a `svgElement`
+    (markup → `<svg>` přes `<template>`). Bitmapová keš zmizela: tisk bez filtrů je levný i jako živé SVG.
+  - `cards.ts` — líce (pipy, eso, figury Kluk/Dáma/Král), rohové indexy kreslené cestami, vylepšení, pečeť, kamenná
+    karta, rub (výchozí s tulipánem, balíčky v barvách `ArtSpec`). Barvy karet jsou v obrázku zapečené: schéma
+    `classic` / `four` (barvoslepý režim, `currentSuitScheme` čte třídu `.colorblind`), komponenta karty ho má
+    v klíči vzhledu a po přepnutí režimu karty překreslí.
+  - `art.ts` — obrázky obsahu z `ArtSpec`: plné pozadí `bg`, přetisk vzoru `pattern`, ikona jako plná silueta
+    s rastrovým stínem a linkou, rekvizita v kroužku, rámečky podle druhu. Žolík má okno s obrázkem a pod ním
+    štítek se jménem v barvě vzácnosti (`ArtOptions.title`, písmo Big Shoulders, `textLength` u dlouhých jmen).
+    Žolík se `scene` dostane ručně kreslenou scénu (`scenes.ts` + `scenes2.ts`; tahy `f` plocha / `l` linka /
+    `h` stín / `s` barevná linka / `i` ikona-rekvizita). `figures.ts` skládá portréty žolíků-lidí z dílů (pozadí,
+    oblečení, obličej, účes, vousy, brýle, čepice, rekvizita) do stejných tahů — scény `fig-<id>`. `stamgast.ts` —
+    Štamgast.
+- Herní obrazovka (Sirkárna): nahoře kartonová lišta (`sidebar.ts`: útrata, skóre s ukazatelem, cíl, žetony, tlačítka),
+  pod ní řada žolíků se jménem a obrysy volných slotů, spotřebky a balíček (`topRow.ts`, balíček přesune `index.ts`),
+  uprostřed stůl se zahranými kartami a pod nimi velký náhled čipy × mult (`sidebar.handInfoEl` v `.game-scoreboard`),
+  dole ruka a po stranách velká Zahrát / Zahodit ve sloupcích stálé šířky (`handArea.ts`). Velikost karet
+  `--card-w` plyne z šířky i výšky okna (game.css).
 - Šéfové a štítky v UI (fáze 6): texty přes `describe.ts` (`bossTexts` dosazuje `BossDef.params`, `bossReasonText`
   = „Šéf X: pravidlo“ jen když pravidlo v kole platí). Příchod šéfa = plakát nad stolem (`screens/game/bossBanner.ts`,
   `PresentView.showBossIntro`, neblokuje a zmizí sám), porážka a použitý štítek = oznámení se žetonem (`toast` s
   `title`/`media`), vypnutí žolíka šéfem = bublina (`jokerDebuffChanged`). Tooltip karty mimo provoz / lícem dolů a
-  žolíka v `round.jokerDebuffs` vysvětlí pravidlo šéfa. Levý panel: šéf + pravidlo (Imperial „Pravidlo navíc“),
+  žolíka v `round.jokerDebuffs` vysvětlí pravidlo šéfa. Horní lišta: šéf + pravidlo (Imperial „Pravidlo navíc“),
   aktivní štítky (žetony s tooltipem), varování „Neskóruje“ z `preview.blockedReason`; ruka ukazuje velikost
   (`Modifiers.handSize`) se změnou proti začátku kola (Velká voda). Pitva ukáže žeton a pravidlo šéfa vedle hlášky
   `death`, Info o runu šéfa patra; zboží ze štítků ve Večerce má nálepku (`extra`, `priceMult`, `noEditionSurcharge`).
@@ -378,11 +382,11 @@ flavor a že texty dodržují typografii.
 - Detail zboží a možnosti obálky (`openOfferDetail` v `screens/game/modals.ts`): tap / klik na kartu otevře dialog
   s popisem a kopiemi tlačítek slotu, které „zmáčknou“ původní tlačítko; důvod neaktivního tlačítka je i jako text pod
   slotem (`blockReasonsLine`).
-- Písmo rozhraní Fraunces (OFL, `src/assets/fonts/`, řezy 400/600/700 + kurzívy, latin + latin-ext) a textury
-  stylu E1 (`src/assets/textures/*.webp`: papír, sukno, natrhlé okraje, tahy tuše, tvary a tón lavírování,
-  skvrna za nápisem v menu) — vlastní procedurální bitmapy z `scripts/gen-textures.ts` (`npm run gen-textures`,
-  šum se `stitchTiles`, nasvícení na dlaždici 3 × 3 a ořez středu → bezešvé). Lavírovaná tlačítka a panely jsou
-  statické masky na pseudo-elementech tónované CSS proměnnými; žádné živé SVG filtry v CSS.
+- Písma rozhraní (OFL, `src/assets/fonts/`, latin + latin-ext, `npm run fetch-assets`): Big Shoulders Display
+  (nadpisy, čísla, popisky, štítky žolíků; 700/800) a Barlow Semi Condensed (text; 500/600/700 + kurzíva pro hlášky).
+  CSS tokeny Sirkárny v `base.css`: tmavě modrý stůl s jemným rastrem, karton `--paper`, linka `--line`
+  / `--line-bold`, tvrdé stíny (`--shadow-card`, `--shadow-sheet`, `--hard-shadow`) a tiskové barvy `--ink-*`.
+  Žádné textury, rozmazané stíny ani živé filtry v CSS.
 
 ## 5. Ukládání
 

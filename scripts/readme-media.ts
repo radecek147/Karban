@@ -2,6 +2,7 @@
  * Snímky obrazovek a animovaný GIF do README (`docs/media/`).
  *
  *   npx tsx scripts/readme-media.ts [--no-build] [--only menu,shop,…] [--no-gif] [--port 4180] [--out dir] [--size 1366x768]
+ *     [--ui-scale 1.3]
  *
  * Skript sestaví hru (`npm run build`, s `--no-build` použije existující `dist/`), spustí `vite preview`,
  * stavy připraví enginem v Node (uložený run a profil vloží do localStorage stejně jako e2e testy) a projde
@@ -53,6 +54,8 @@ const OUT = path.resolve(arg('out') ?? path.join(ROOT, 'docs/media'));
 /** Okno (`--size 1024x768` pro kontrolu menších obrazovek). */
 const [VW, VH] = (arg('size') ?? '1366x768').split('x').map(Number);
 const VIEWPORT = { width: VW || 1366, height: VH || 768 };
+/** Velikost UI z nastavení (`--ui-scale 1.3` pro kontrolu velkého UI); bez volby výchozí nastavení. */
+const UI_SCALE = arg('ui-scale') ? Number(arg('ui-scale')) : null;
 const PORT = Number(arg('port') ?? 4180);
 const BASE = `http://localhost:${PORT}/`;
 const ONLY = arg('only')?.split(',').filter(Boolean) ?? null;
@@ -359,6 +362,14 @@ addEventListener('DOMContentLoaded', () => {
   addEventListener('mousemove', (e) => { c.style.transform = 'translate(' + e.clientX + 'px,' + e.clientY + 'px)'; }, { capture: true, passive: true });
 });`;
 
+/** Velikost UI (`--ui-scale`) zapsaná do nastavení v uloženém profilu. */
+function withUiScale(profile: string): string {
+  if (!UI_SCALE) return profile;
+  const save = JSON.parse(profile) as { data: { settings?: Record<string, unknown> } };
+  save.data.settings = { ...save.data.settings, uiScale: UI_SCALE };
+  return JSON.stringify(save);
+}
+
 async function openPage(browser: Browser, store: Storage, cursor = false): Promise<Page> {
   const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1, baseURL: BASE });
   const page = await context.newPage();
@@ -367,7 +378,7 @@ async function openPage(browser: Browser, store: Storage, cursor = false): Promi
     if (msg.type() === 'error' || msg.type() === 'warning') console.error(`${msg.type()}: ${msg.text()}`);
   });
   const values = {
-    profile: store.profile ?? veteranProfile(),
+    profile: withUiScale(store.profile ?? veteranProfile()),
     run: store.run ? serializeRun(store.run, NOW) : null,
   };
   await page.addInitScript((v) => {

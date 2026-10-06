@@ -68,7 +68,7 @@ export function createSidebar(ctx: GameCtx, actions: SidebarActions): Sidebar {
     h('div', { class: 'gs-blind__text' }, blindNameEl, blindRule),
   );
 
-  // Aktivní štítky (DESIGN 7: hromadí se a ukazují v levém panelu) — žetony s tooltipem (hover, focus, dlouhý stisk).
+  // Aktivní štítky (DESIGN 7: hromadí se a ukazují v horní liště) — žetony s tooltipem (hover, focus, dlouhý stisk).
   const tagList = h('ul', { class: 'gs-tags__list', role: 'list' });
   const tagsBox = h(
     'section',

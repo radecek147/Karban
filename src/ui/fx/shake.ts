@@ -1,7 +1,7 @@
 /**
  * Screen shake (DESIGN 13.6): „trauma“ model — každé zatřesení přidá trauma (0–1), to plynule vyprchává a výchylka
  * roste s jeho druhou mocninou (malé otřesy jsou jemné, velké výrazné). Zapisuje se jen `transform` jednoho obalu
- * (herní obrazovka: `.game-main` — žolíci, stůl a ruka; levý panel s čísly stojí, ať jdou číst), nic se neměří.
+ * (herní obrazovka: `.game-main` — žolíci, stůl a ruka; horní lišta s čísly stojí, ať jdou číst), nic se neměří.
  *
  *   const shaker = new Shaker(() => mainEl, () => ({ ...app.settings, instant: app.anim.instant }));
  *   shaker.shake(shakeForScore(score, target));   // velké skóre

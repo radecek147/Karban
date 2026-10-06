@@ -271,15 +271,17 @@ Ikony aplikace se generují z `src-tauri/icon.svg` příkazem `npm run desktop:i
 ## Licence a atribuce
 
 - **Kód** je pod licencí [MIT](LICENSE).
-- **Písmo** [Fraunces](https://github.com/undercasetype/Fraunces) — Undercase Type (Phaedra Charles, Flavia
-  Zimbardi), © 2020 The Fraunces Project Authors, licence SIL Open Font License 1.1 (`src/assets/fonts/OFL.txt`).
+- **Písma** [Big Shoulders Display](https://github.com/xotypeco/big_shoulders) — Patric King (XO Type Co.),
+  © 2019 The Big Shoulders Project Authors, a [Barlow Semi Condensed](https://github.com/jpt/barlow) — Jeremy Tribby,
+  © 2017 The Barlow Project Authors; obě pod licencí SIL Open Font License 1.1
+  (`src/assets/fonts/OFL-big-shoulders-display.txt`, `src/assets/fonts/OFL-barlow-semi-condensed.txt`).
 - **Ikony** z [game-icons.net](https://game-icons.net) — autoři Delapouite, Lorc, Skoll, Sbed, Caro Asercion,
   Faithtoken, Guard13007, Cathelineau a Willdabeast, licence
   [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Ikony jsou přebarvené a skládané do obrázků
   karet; zůstávají pod CC BY 3.0. Rozpis ikon podle autorů je v [ASSETS.md](ASSETS.md).
-- **Hrací karty, ilustrace a portréty žolíků, obrázky šéfů a dalších karet, textury rozhraní, zvukové efekty
-  i hudba** vznikají přímo v kódu (akvarelové SVG v `src/ui/art/`, bitmapy z `npm run gen-textures`,
-  syntezátor ve Web Audio) a patří pod licenci projektu.
+- **Hrací karty, ilustrace a portréty žolíků, obrázky šéfů a dalších karet, zvukové efekty i hudba** vznikají
+  přímo v kódu (tiskové SVG ve stylu „Sirkárna“ v `src/ui/art/`, syntezátor ve Web Audio) a patří pod licenci
+  projektu.
 - **Žádné assety, texty, jména ani čísla z Balatra** ani jiné komerční hry. Balatro je jen inspirace
   mechanikami.
 

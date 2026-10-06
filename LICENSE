@@ -21,5 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 Third-party assets bundled in this repository keep their own licenses:
-the Fraunces font (SIL Open Font License 1.1, src/assets/fonts/OFL.txt)
-and the icons from game-icons.net (CC BY 3.0). See ASSETS.md for details.
+the Big Shoulders Display and Barlow Semi Condensed fonts (SIL Open Font
+License 1.1, src/assets/fonts/OFL-*.txt) and the icons from game-icons.net
+(CC BY 3.0). See ASSETS.md for details.

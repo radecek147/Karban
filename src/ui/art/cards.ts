@@ -574,20 +574,28 @@ function enhancementBadge(enhancement: string, reg: ContentRegistry): string {
   );
 }
 
-/** Pečeť vlevo dole: vosková pečeť v barvě `SealDef.art`. */
+/** Střed pečeti (viewBox karty 250 × 350); záblesk pečeti v fx.css (`.fx-flash--seal`) míří sem. */
+const SEAL_CENTER = { x: 40, y: 306 } as const;
+
+/**
+ * Pečeť vlevo dole: vosková pečeť v barvě `SealDef.art` jako nálepka — zubatý kruh s tvrdým černým stínem,
+ * vnitřní kroužek a ikona. Velká (asi pětina šířky karty), ať je vidět i na malé kartě.
+ */
 function sealBadge(seal: string, reg: ContentRegistry): string {
   const art = reg.seals[seal]?.art;
   const bg = safeColor(art?.bg, '#7e22ce');
-  let wax = '';
-  for (let i = 0; i < 10; i++) {
-    const a = (Math.PI * 2 * i) / 10;
-    wax += shp.circle(30 + Math.cos(a) * 15, 320 + Math.sin(a) * 15, 5);
+  const { x, y } = SEAL_CENTER;
+  let wax = shp.circle(x, y, 21);
+  for (let i = 0; i < 12; i++) {
+    const a = (Math.PI * 2 * i) / 12;
+    wax += shp.circle(x + Math.cos(a) * 20, y + Math.sin(a) * 20, 6.5);
   }
   return (
     `<g class="pc-seal" data-seal="${escapeXml(seal)}">` +
-    wash(wax + shp.circle(30, 320, 16), bg, { op: 0.9, dx: 0, dy: 0 }) +
-    ink(shp.circle(30, 320, 11.5), 1.2, { color: mixColor(bg, '#000000', 0.45), op: 0.7 }) +
-    knock(iconKnockShape(art?.icon ?? 'star', 22, 312, 16)) +
+    `<g fill="${PR.ink}" transform="translate(3 3)">${wax}</g>` +
+    wash(wax, bg, { op: 0.95, dx: 0, dy: 0 }) +
+    ink(shp.circle(x, y, 15), 2.2, { color: mixColor(bg, '#000000', 0.5), op: 0.85 }) +
+    knock(iconKnockShape(art?.icon ?? 'star', x - 11, y - 11, 22)) +
     `</g>`
   );
 }
