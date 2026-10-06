@@ -549,8 +549,8 @@
 /* ─────────────────────────── Nová hra ─────────────────────────── */
 
 /*
- * Rozvržení: vlevo balíčky, vpravo lístek se silou piva, seedem a „Rozdat karty“ — síla piva je na šířku hned
- * nahoře, ne pod všemi balíčky. Na úzké obrazovce pod sebou (balíčky na telefonu ve vodorovném pásu).
+ * Rozvržení: vlevo balíčky, vpravo lístek se silou piva, seedem a „Rozdat karty“ — síla piva je od tabletu výš
+ * hned nahoře, ne pod všemi balíčky. Na telefonu pod sebou, balíčky ve vodorovném pásu.
  */
 .newgame__form {
   display: flex;
@@ -568,7 +568,7 @@
   container: newgame-side / inline-size;
 }
 
-@container app (min-width: 900px) {
+@container app (min-width: 700px) {
   .newgame__form {
     display: grid;
     grid-template-columns: minmax(0, 1fr) clamp(18rem, 30vw, 24rem);
@@ -1994,13 +1994,6 @@ html.modal-open {
 }
 
 /* ─────────────────────────── Menší obrazovky (tablet, telefon) ─────────────────────────── */
-
-/* Nová hra v jednom sloupci (tablet na výšku): tácky síly piva v jedné řadě, detail vedle sebe. */
-@container app (min-width: 700px) and (max-width: 899px) {
-  .stake-row {
-    grid-template-columns: repeat(8, minmax(0, 1fr));
-  }
-}
 
 @media (max-width: 600px) {
   .screen {
