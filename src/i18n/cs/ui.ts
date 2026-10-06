@@ -278,9 +278,7 @@ export const credits = {
     text: 'Postaveno v prohlížeči bez frameworku, s poctivým TypeScriptem. Pomáhali:',
   },
   font: {
-    title: 'Písmo',
     license: 'Licence SIL Open Font License 1.1',
-    note: 'Patkové písmo jako z pohádkové knížky. Háčky i čárky má na svém místě, což se o leckterém úředním dopise říct nedá.',
   },
   /** Písma stylu „Sirkárna“ (jména a autoři jsou data v credits.ts). */
   fonts: {
@@ -293,10 +291,6 @@ export const credits = {
   print: {
     title: 'Obrázky',
     text: 'Plné tiskové barvy, silné černé linky a tvrdé stíny jako na zápalkách a plakátech ze šedesátých let. Všechno je nakreslené v kódu – tiskárna nebyla zneužita, jen procesor se zapotil.',
-  },
-  art: {
-    title: 'Obrázky a textury',
-    text: 'Tuš, vodovky, papír i zelené sukno jsou namalované v kódu – žádný štětec nebyl zneužit, jen procesor se zapotil.',
   },
   icons: {
     title: 'Ikony',

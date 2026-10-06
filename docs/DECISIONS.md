@@ -3833,8 +3833,16 @@ ze 60. let. K tomu nové rozvržení.
   - Obálka s rukou: menší ruka a možnosti, Použít / Nechat si vedle sebe. Tlačítka jsou nad rukou i na 1024 × 768.
   - Dlouhá jména šéfů se v liště zmenší a nezkracují se.
 - **Ostatní obrazovky** (menu, nová hra, nastavení, titulky, sbírka, statistiky, výzvy, denní run) dostaly stejný
-  styl. Sbírka má velké karty a zamčené položky kreslí jednu levnou siluetu místo začerněných celých obrázků.
-  Volba síly piva je v Nové hře nahoře. Pangram je v Nastavení jako ukázka písma.
+  styl: kartonové listy s barevnými pruhy nadpisů, čísla písmem Big Shoulders, plné linky místo čárkovaných krabic.
+  - **Sbírka:** velké karty (asi 140 px na 1366 × 768, 7 sloupců) se jménem pod kartou. Zamčené a neobjevené
+    položky kreslí jednu levnou kartu „?“ nebo zámek místo celého obrázku začerněného filtrem (101 plných SVG
+    zbytečně). Achievementy mají ploché medailony.
+  - **Nová hra:** balíčky vlevo jako kompaktní dlaždice, síla piva, seed a „Rozdat karty“ v pravém sloupci (od
+    700 px šířky, tedy i tablet na výšku). Volba síly piva je hned nahoře, stránka na 1366 px má místo 2 012 px
+    1 126 px. Na telefonu jsou balíčky vodorovný pás na posouvání. Zamčené balíčky nekreslí rub.
+  - **Pangram** „Příliš žluťoučký kůň…“ zmizel z hlavního menu. Je v Nastavení → Zobrazení jako ukázka obou písem.
+  - **Menu** při velikosti UI 120–140 % zůstává ve dvou sloupcích (přepíná podle šířky v rem).
+  - **Titulky** uvádějí nová písma a popis tiskového stylu.
 
 **Proč:**
 

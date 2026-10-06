@@ -83,13 +83,6 @@
   --t-fast: calc(120ms / var(--speed));
   --t-med: calc(240ms / var(--speed));
 
-  /* Dřívější textury akvarelu — prázdné (odkazy ve starších pravidlech nic nevykreslí). */
-  --tex-paper: none;
-  --tex-felt: none;
-  --tex-ink-frame: none;
-  --tex-ink-line: none;
-  --tex-splash: none;
-
   color-scheme: dark;
 }
 

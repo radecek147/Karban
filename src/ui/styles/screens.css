@@ -191,7 +191,8 @@
   font-weight: 800;
   letter-spacing: 0.04em;
   color: var(--paper);
-  background: var(--ink-red);
+  /* Tmavší rumělka: krémový text drobným písmem drží kontrast ≥ 4,5 : 1. */
+  background: var(--danger);
   border: 2px solid var(--ink);
   border-radius: var(--radius-small);
   transform: rotate(-4deg);

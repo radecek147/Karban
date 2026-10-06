@@ -526,8 +526,8 @@ Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba h
       tabletu 820×1180, telefonu 390×844 a při velikosti UI 130 %
 - [x] Doladění podle playtestu: pečetě a edice čitelné na první pohled, kontrast skóre mimo kolo, křížek hlášky
       44 px na dotyku, bublina tutoriálu ve Večerce mimo zboží, ikona aplikace a favicon
-- [ ] S4: ostatní obrazovky (menu, nová hra, nastavení, titulky, sbírka, statistiky, výzvy, denní run) — agent
-      ve worktree, sloučit
+- [x] S4: ostatní obrazovky (menu, nová hra se silou piva nahoře, nastavení s ukázkou písma, titulky, sbírka
+      s velkými kartami a levnou kartou „?“ pro neobjevené, statistiky, výzvy, denní run)
 - [ ] S5: celé ověření (unit, e2e), snímky do README, artefakt s hrou, desktopový workflow
 
 ---
