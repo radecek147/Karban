@@ -528,7 +528,10 @@ Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba h
       44 px na dotyku, bublina tutoriálu ve Večerce mimo zboží, ikona aplikace a favicon
 - [x] S4: ostatní obrazovky (menu, nová hra se silou piva nahoře, nastavení s ukázkou písma, titulky, sbírka
       s velkými kartami a levnou kartou „?“ pro neobjevené, statistiky, výzvy, denní run)
-- [ ] S5: celé ověření (unit, e2e), snímky do README, artefakt s hrou, desktopový workflow
+- [x] S5: celé ověření (typecheck, lint, 3929 unit testů, 85 e2e; vizuální sady jen s `KARBAN_VISUAL`), nové
+      snímky a GIF v README, artefakt s hrou aktualizovaný, desktopový workflow spuštěný s novou ikonou
+- [ ] Dál: tempo (výchozí rychlost 2×, nápověda k mezerníku), balanc z playtestu, přístupnost (aria-label vs. text,
+      pořadí Tab ve Večerce), popis karty pod kartou ve Večerce a obálce
 
 ---
 
