@@ -329,18 +329,17 @@ flavor a že texty dodržují typografii.
   - `tilt.ts` — náklon karty za myší s odleskem (CSS proměnné, jeden zápis za snímek, měření jen při najetí),
   - `transitions.ts` — přechody obrazovek pro `App.go` (Web Animations, jen opacity/transform),
   - styly v `src/ui/styles/fx.css` (importuje se v `main.ts` až za styly obrazovek).
-- Zvuk: `src/ui/audio/` — syntetizované SFX (jsfxr-like) a procedurální chiptune, bez jediného zvukového souboru:
+- Zvuk: `src/ui/audio/` — syntetizované SFX (jsfxr-like), bez jediného zvukového souboru. Hudba ve hře není
+  (hráčům vadila, DECISIONS 2026-10-07):
   - `engine.ts` — `AudioEngine`: líný `AudioContext` až po gestu hráče (`installGestureUnlock`, kontrola
-    `navigator.userActivation`), graf `sfxBus` / `musicBus` → `master` → výstup, hlasitosti z nastavení
+    `navigator.userActivation`), graf `sfxBus` → `master` → limiter → výstup, hlasitosti z nastavení
     (`syncVolumes`, kvadratická křivka, plynulé `setTargetAtTime`), skrytá karta = ztlumit + `suspend()`.
     Bez Web Audio tichá no-op.
   - `sfx.ts` — syntéza hlasu (`synthVoice`: oscilátor / šum → filtr → obálka, slide, skok výšky, vibrato přes
     `detune`), banka `SOUNDS` a `SfxPlayer` (škrcení opakování, limit hlasů, `playCount`).
-  - `music.ts` — `composeSong` (seedovaný skladatel: valčík do menu, polka do hry, znělky) a `MusicPlayer`
-    (plánovač „lookahead“ po 25 ms na hodinách Web Audio; nálada a tempo šéfa se mění na hranici taktu).
   - `hooks.ts` — `installAudio(app)` (src/main.ts) a funkce pro presenter: `soundForEvent` na začátku přehrání
     každé události, `soundScoreStep` za krok skórování, `sound(name)` odkudkoli (no-op bez instalace).
-    Hudba podle `App.onScreenChange`, hlasitosti podle `App.onSettingsChange`, výběr karet a šéf podle controlleru,
+    Hlasitost podle `App.onSettingsChange`, výběr karet podle controlleru (připojí se na herní obrazovce),
     delegovaný klik na tlačítka (bez zdvojení se zvukem akce), klávesa M = ztlumit vše (`Settings.muted`).
 - Témata a barvoslepý režim přes CSS proměnné na `:root`.
 - Obrázky (`src/ui/art/`) — výtvarný styl „Sirkárna“ (retro sítotisk jako zápalkové nálepky a plakáty ze 60. let,

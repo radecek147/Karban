@@ -1,11 +1,11 @@
 /**
- * Zapojení zvuku do aplikace (DESIGN 13.6). `installAudio(app)` v src/main.ts vytvoří engine, efekty a hudbu
- * a připojí je:
+ * Zapojení zvuku do aplikace (DESIGN 13.6). `installAudio(app)` v src/main.ts vytvoří engine a efekty a připojí
+ * je (hudba ve hře není — hráčům vadila, DECISIONS 2026-10-07):
  *
  * - **gesto hráče** → vznikne / probudí se `AudioContext` (autoplay politika — nikdy dřív),
- * - **nastavení** (`app.onSettingsChange`) → hlasitosti živě, hudba se zastaví na 0 % / při ztlumení,
- * - **obrazovky** (`app.onScreenChange`) → nálada hudby: hra = polka, jinde valčík; připojí controller runu,
- * - **controller** → výběr / zrušení výběru karty (rozdíl `selected`), šéf v kole = tempo +15 %,
+ * - **nastavení** (`app.onSettingsChange`) → hlasitost efektů a ztlumení živě,
+ * - **obrazovky** (`app.onScreenChange`) → připojí controller runu na herní obrazovce,
+ * - **controller** → výběr / zrušení výběru karty (rozdíl `selected`),
  * - **tlačítka** → delegovaný „klik“ na dokumentu; když akce tlačítka zazní sama (koupě = pokladna, Zahrát =
  *   karty na stůl), klik se vynechá (žádné zdvojení). `data-sfx="none"` klik vypne,
  * - **klávesa M** → ztlumit / pustit všechno (všude kromě psaní do textového pole).
@@ -14,15 +14,13 @@
  * každý krok skórování — zvuk tak sedí na animaci. Bez nainstalovaného zvuku (testy, `#gallery`) jsou všechny
  * funkce no-op.
  */
-import type { GameEvent, RunState, ScoreStep } from '../../engine';
+import type { GameEvent, ScoreStep } from '../../engine';
 import { t } from '../../i18n/cs';
-import type { App, ScreenId } from '../app';
+import type { App } from '../app';
 import { toast } from '../components/toast';
 import type { GameController } from '../controller';
 import type { ContextFactory } from './engine';
 import { AudioEngine } from './engine';
-import type { MusicMood, MusicPlayerOptions } from './music';
-import { MusicPlayer } from './music';
 import type { PlayOptions, SoundName } from './sfx';
 import { SfxPlayer } from './sfx';
 
@@ -40,7 +38,6 @@ export interface AnimTiming {
 export interface AudioService {
   readonly engine: AudioEngine;
   readonly sfx: SfxPlayer;
-  readonly music: MusicPlayer;
   /** Ztlumí / pustí všechno (klávesa M, přepínač v nastavení) a ohlásí to. Vrací nový stav (true = ticho). */
   toggleMute(): boolean;
   dispose(): void;
@@ -51,7 +48,6 @@ export interface InstallAudioOptions {
   canStart?: () => boolean;
   /** Dokument pro posluchače (gesta, viditelnost, kliky, M) — null = žádné posluchače (testy v Node). */
   doc?: Document | null;
-  music?: MusicPlayerOptions;
   /** Odložení „kliku“ za akci tlačítka (výchozí setTimeout 0). */
   defer?: (fn: () => void) => void;
 }
@@ -66,16 +62,6 @@ export function audioService(): AudioService | null {
 /** Přehraje zvuk z banky — bezpečná no-op, když zvuk není nainstalovaný nebo je ztlumený. */
 export function sound(name: SoundName, opts?: PlayOptions): void {
   service?.sfx.play(name, opts);
-}
-
-/** Nálada hudby pro obrazovku. */
-export function moodForScreen(id: ScreenId | string): MusicMood {
-  return id === 'game' ? 'game' : 'menu';
-}
-
-/** Je rozehrané kolo se šéfem? (hudba zrychlí) */
-export function isBossRound(s: Readonly<RunState>): boolean {
-  return s.phase === 'round' && s.round?.blind === 'boss';
 }
 
 // ─────────────────────────── Skórování ───────────────────────────
@@ -211,14 +197,9 @@ export function soundForEvent(e: GameEvent, anim: AnimTiming): void {
       return;
     case 'gameOver':
       play('gameOver');
-      s.music.stinger('gameOver');
       return;
     case 'victory':
       play('victory');
-      s.music.stinger('victory');
-      return;
-    case 'endlessStarted':
-      s.music.resume();
       return;
     default:
       return;
@@ -259,31 +240,25 @@ export function installAudio(app: AudioHost, opts: InstallAudioOptions = {}): Au
     canStart: opts.canStart,
   });
   const sfx = new SfxPlayer(engine);
-  const music = new MusicPlayer(engine, opts.music);
   const defer = opts.defer ?? ((fn: () => void) => void setTimeout(fn, 0));
   const disposers: (() => void)[] = [];
   speedSource = () => app.settings.speed;
 
-  engine.onReady(() => music.sync());
   engine.installGestureUnlock(doc);
   engine.installVisibility(doc);
 
   disposers.push(
     app.onSettingsChange(() => {
       engine.syncVolumes();
-      music.sync();
     }),
   );
 
-  // Controller runu: výběr karet a šéf v kole.
+  // Controller runu: výběr karet.
   let detachController: () => void = () => undefined;
   const attach = (c: GameController | null): void => {
     detachController();
     detachController = () => undefined;
-    if (!c) {
-      music.setBoss(false);
-      return;
-    }
+    if (!c) return;
     let prev = [...c.selected];
     // Po akci (zahrání, zahození, nákup…) se výběr mění kvůli akci, ne kliknutím — bez zvuku výběru.
     let afterAction = false;
@@ -302,9 +277,7 @@ export function installAudio(app: AudioHost, opts: InstallAudioOptions = {}): Au
       }
       afterAction = false;
       prev = [...now];
-      music.setBoss(isBossRound(c.state));
     });
-    music.setBoss(isBossRound(c.state));
     detachController = () => {
       offEvents();
       offNotify();
@@ -314,7 +287,6 @@ export function installAudio(app: AudioHost, opts: InstallAudioOptions = {}): Au
 
   disposers.push(
     app.onScreenChange((id) => {
-      music.setMood(moodForScreen(id));
       attach(id === 'game' ? app.controller : null);
     }),
   );
@@ -353,7 +325,6 @@ export function installAudio(app: AudioHost, opts: InstallAudioOptions = {}): Au
   const svc: AudioService = {
     engine,
     sfx,
-    music,
     toggleMute,
     dispose() {
       for (const d of disposers.splice(0)) {
@@ -363,7 +334,6 @@ export function installAudio(app: AudioHost, opts: InstallAudioOptions = {}): Au
           // Úklid nesmí shodit zbytek.
         }
       }
-      music.dispose();
       engine.dispose();
       if (service === svc) {
         service = null;

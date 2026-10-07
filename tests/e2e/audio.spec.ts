@@ -1,6 +1,6 @@
 /**
- * Zvuk v prohlížeči (DESIGN 13.6): `AudioContext` vznikne až po gestu hráče (žádné varování autoplay), hudba
- * podle obrazovky běží, posuvníky a „ztlumit vše“ (přepínač i klávesa M) fungují a konzole zůstane čistá.
+ * Zvuk v prohlížeči (DESIGN 13.6): `AudioContext` vznikne až po gestu hráče (žádné varování autoplay), posuvník
+ * efektů a „ztlumit vše“ (přepínač i klávesa M) fungují, hudba ve hře není a konzole zůstane čistá.
  */
 import { expect, test } from '@playwright/test';
 import { expectCleanConsole, watchConsole } from './helpers';
@@ -38,14 +38,14 @@ test('AudioContext až po gestu, ztlumení klávesou M i přepínačem, čistá 
   await page.waitForTimeout(300);
   expect(await page.evaluate(() => window.__audioProbe?.count)).toBe(0);
 
-  // První klik = gesto → kontext vznikne a běží; hudba v menu plánuje noty (čas kontextu běží).
+  // První klik = gesto → kontext vznikne a běží (zahraje se klik).
   await page.getByTestId('menu-settings').click();
   await expect(page.locator('#app')).toHaveAttribute('data-screen', 'settings');
   await expect.poll(() => page.evaluate(() => window.__audioProbe?.count)).toBe(1);
   await expect.poll(() => page.evaluate(() => window.__audioProbe?.ctx?.state)).toBe('running');
-  const t0 = await page.evaluate(() => window.__audioProbe?.ctx?.currentTime ?? 0);
-  await page.waitForTimeout(200);
-  expect(await page.evaluate(() => window.__audioProbe?.ctx?.currentTime ?? 0)).toBeGreaterThan(t0);
+  // Hudba ve hře není: v nastavení je jen posuvník efektů.
+  await expect(page.getByTestId('settings-sfx')).toBeVisible();
+  await expect(page.getByTestId('settings-music')).toHaveCount(0);
 
   // Klávesa M ztlumí (hláška + přepínač v nastavení se srovná) a uloží se do profilu.
   await page.keyboard.press('m');

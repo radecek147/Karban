@@ -118,7 +118,7 @@ Hraje se myší, prstem i klávesnicí.
 | `Tab`               | přejít na další tlačítko                                  |
 
 Myší nebo prstem kartu vybereš klepnutím, karty v ruce i žolíky přesuneš tažením. V **Nastavení** najdeš
-hlasitost efektů a hudby, rychlost hry 1×–4×, vypnutí animací a třesení obrazovky, celou obrazovku,
+hlasitost efektů, rychlost hry 1×–4×, vypnutí animací a třesení obrazovky, celou obrazovku,
 barvoslepý režim, velikost rozhraní a export a import uložení. Hra se ukládá sama po každé akci.
 
 ## Co ve hře najdeš
@@ -293,7 +293,7 @@ Ikony aplikace se generují z `src-tauri/icon.svg` příkazem `npm run desktop:i
   Faithtoken, Guard13007, Cathelineau a Willdabeast, licence
   [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Ikony jsou přebarvené a skládané do obrázků
   karet; zůstávají pod CC BY 3.0. Rozpis ikon podle autorů je v [ASSETS.md](ASSETS.md).
-- **Hrací karty, ilustrace a portréty žolíků, obrázky šéfů a dalších karet, zvukové efekty i hudba** vznikají
+- **Hrací karty, ilustrace a portréty žolíků, obrázky šéfů a dalších karet, a zvukové efekty** vznikají
   přímo v kódu (tiskové SVG ve stylu „Sirkárna“ v `src/ui/art/`, syntezátor ve Web Audio) a patří pod licenci
   projektu.
 - **Žádné assety, texty, jména ani čísla z Balatra** ani jiné komerční hry. Balatro je jen inspirace

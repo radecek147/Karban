@@ -241,7 +241,7 @@ function clampFilter(f: number): number {
 
 // ─────────────────────────── Banka zvuků ───────────────────────────
 
-/** Tóny, ze kterých se banka skládá (C dur — ladí s hudbou v F a C). */
+/** Tóny, ze kterých se banka skládá (C dur). */
 const N = {
   G3: midiToHz(55),
   C4: midiToHz(60),
@@ -555,7 +555,7 @@ export const SOUNDS = {
       tone(N.C5, 0.225, { wave: 'triangle', volume: 0.24, sustain: 0.15, decay: 0.35 }),
     ],
   },
-  /** Výhra runu (krátká zvonkohra; fanfáru hraje hudba). */
+  /** Výhra runu (krátká zvonkohra). */
   victory: {
     gap: 1500,
     voices: [N.C6, N.E6, N.G6, N.C7, N.G6, N.C7].map((f, i) =>

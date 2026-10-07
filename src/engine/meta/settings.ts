@@ -6,8 +6,6 @@
 export interface Settings {
   /** Hlasitost zvukových efektů 0–1. */
   sfxVolume: number;
-  /** Hlasitost hudby 0–1. */
-  musicVolume: number;
   /** Ztlumit všechno (klávesa M) — hlasitosti zůstanou, jen se nehraje. */
   muted: boolean;
   /** Rychlost hry 1–4. */
@@ -24,7 +22,6 @@ export interface Settings {
 
 export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze({
   sfxVolume: 0.7,
-  musicVolume: 0.5,
   muted: false,
   speed: 1,
   animations: true,
@@ -38,14 +35,16 @@ function clamp(n: unknown, min: number, max: number, fallback: number): number {
   return typeof n === 'number' && Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 }
 
-/** Ze vstupu libovolného tvaru udělá platné nastavení (neznámé klíče zahodí, chybějící/neplatné doplní). */
+/**
+ * Ze vstupu libovolného tvaru udělá platné nastavení (neznámé klíče zahodí, chybějící/neplatné doplní). Starší
+ * profily mají i `musicVolume` — hudba ve hře už není, klíč se zahodí.
+ */
 export function sanitizeSettings(raw: unknown): Settings {
   const r = (raw && typeof raw === 'object' ? raw : {}) as Partial<Record<keyof Settings, unknown>>;
   const d = DEFAULT_SETTINGS;
   const bool = (v: unknown, f: boolean): boolean => (typeof v === 'boolean' ? v : f);
   return {
     sfxVolume: clamp(r.sfxVolume, 0, 1, d.sfxVolume),
-    musicVolume: clamp(r.musicVolume, 0, 1, d.musicVolume),
     muted: bool(r.muted, d.muted),
     speed: clamp(r.speed, 1, 4, d.speed),
     animations: bool(r.animations, d.animations),

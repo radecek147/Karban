@@ -1,8 +1,8 @@
 /**
- * Zvukový engine (DESIGN 13.4 a 13.6): jeden líně vytvořený `AudioContext` a tři sběrnice
+ * Zvukový engine (DESIGN 13.4 a 13.6): jeden líně vytvořený `AudioContext` a dvě sběrnice (hudba ve hře není —
+ * DECISIONS 2026-10-07)
  *
- *   zdroje SFX → sfxBus ─┐
- *   hudba      → musicBus ┴→ master → limiter → destination
+ *   zdroje SFX → sfxBus → master → limiter → destination
  *
  * - Kontext vzniká (a obnovuje se) až po gestu hráče (`unlock` z posluchačů `installGestureUnlock`) — politika
  *   autoplay prohlížečů; dřív by Chrome do konzole hlásil varování. Kde gesto ještě neproběhlo
@@ -16,15 +16,12 @@
 /** Hlasitosti z nastavení hráče (0–1) a „ztlumit vše“. */
 export interface AudioLevels {
   sfxVolume: number;
-  musicVolume: number;
   muted: boolean;
 }
 
 /** Vytvoří kontext, nebo vrátí null (Web Audio chybí / prohlížeč ho odmítl). Testy podstrčí mock. */
 export type ContextFactory = () => AudioContext | null;
 
-/** Hudba je proti efektům o kus tišší (podklad, ne hlavní role). */
-export const MUSIC_HEADROOM = 0.45;
 /** Efekty celkově (aby 100 % neřvalo přes reproduktory notebooku). */
 export const SFX_HEADROOM = 0.9;
 /** Časová konstanta plynulé změny zesílení (s) — posuvník nevrže. */
@@ -83,12 +80,11 @@ export class AudioEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private sfx: GainNode | null = null;
-  private music: GainNode | null = null;
   private hidden = false;
   /** Kontext nejde vytvořit (není Web Audio) — dál to nezkoušet. */
   private failed = false;
-  /** Poslední promítnuté zesílení (master, sfx, music) — beze změny se automatizace nepřidává. */
-  private applied: [number, number, number] = [-1, -1, -1];
+  /** Poslední promítnuté zesílení (master, sfx) — beze změny se automatizace nepřidává. */
+  private applied: [number, number] = [-1, -1];
   private readyListeners = new Set<() => void>();
   private disposers: (() => void)[] = [];
 
@@ -104,11 +100,6 @@ export class AudioEngine {
     return this.sfx;
   }
 
-  /** Vstup sběrnice hudby. */
-  get musicOut(): AudioNode | null {
-    return this.music;
-  }
-
   /** Je karta skrytá (zvuk uspaný)? */
   get isHidden(): boolean {
     return this.hidden;
@@ -118,9 +109,9 @@ export class AudioEngine {
   levels(): AudioLevels {
     try {
       const l = this.opts.levels();
-      return { sfxVolume: l.sfxVolume, musicVolume: l.musicVolume, muted: l.muted === true };
+      return { sfxVolume: l.sfxVolume, muted: l.muted === true };
     } catch {
-      return { sfxVolume: 0, musicVolume: 0, muted: true };
+      return { sfxVolume: 0, muted: true };
     }
   }
 
@@ -134,12 +125,6 @@ export class AudioEngine {
   sfxAudible(): boolean {
     const l = this.levels();
     return this.active && !l.muted && l.sfxVolume > 0;
-  }
-
-  /** Má hrát hudba? */
-  musicAudible(): boolean {
-    const l = this.levels();
-    return this.active && !l.muted && l.musicVolume > 0;
   }
 
   /**
@@ -231,15 +216,14 @@ export class AudioEngine {
    */
   syncVolumes(immediate = false): void {
     const c = this.ctx;
-    if (!c || !this.master || !this.sfx || !this.music) return;
+    if (!c || !this.master || !this.sfx) return;
     const l = this.levels();
-    const target: [number, number, number] = [
+    const target: [number, number] = [
       l.muted || this.hidden ? 0 : 1,
       volumeToGain(l.sfxVolume) * SFX_HEADROOM,
-      volumeToGain(l.musicVolume) * MUSIC_HEADROOM,
     ];
-    const nodes = [this.master, this.sfx, this.music];
-    for (let i = 0; i < 3; i++) {
+    const nodes = [this.master, this.sfx];
+    for (let i = 0; i < 2; i++) {
       const value = target[i]!;
       if (!immediate && Math.abs(this.applied[i]! - value) < 1e-6) continue;
       this.applied[i] = value;
@@ -252,7 +236,7 @@ export class AudioEngine {
     for (const d of this.disposers.splice(0)) d();
     this.readyListeners.clear();
     const c = this.ctx;
-    this.ctx = this.master = this.sfx = this.music = null;
+    this.ctx = this.master = this.sfx = null;
     if (c) {
       try {
         void c.close?.().catch(noop);
@@ -273,10 +257,8 @@ export class AudioEngine {
   private build(ctx: AudioContext): void {
     const master = ctx.createGain();
     const sfx = ctx.createGain();
-    const music = ctx.createGain();
     sfx.connect(master);
-    music.connect(master);
-    // Pojistka proti přebuzení při 100 % hudby i efektů naráz: limiter nad −3 dB (běžně do zvuku nesahá).
+    // Pojistka proti přebuzení při mnoha efektech naráz: limiter nad −3 dB (běžně do zvuku nesahá).
     if (typeof ctx.createDynamicsCompressor === 'function') {
       const limiter = ctx.createDynamicsCompressor();
       limiter.threshold.value = -3;
@@ -292,8 +274,7 @@ export class AudioEngine {
     this.ctx = ctx;
     this.master = master;
     this.sfx = sfx;
-    this.music = music;
-    this.applied = [-1, -1, -1];
+    this.applied = [-1, -1];
     this.syncVolumes(true);
     try {
       ctx.addEventListener?.('statechange', () => {
@@ -330,7 +311,7 @@ export class AudioEngine {
       try {
         fn();
       } catch {
-        // Chyba posluchače (hudba) nesmí shodit zvuk ani hru.
+        // Chyba posluchače nesmí shodit zvuk ani hru.
       }
     }
   }

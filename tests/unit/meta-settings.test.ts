@@ -20,7 +20,9 @@ const NOW = new Date('2026-10-02T10:00:00.000Z');
 describe('nastavení v profilu', () => {
   it('API zůstává: DEFAULT_SETTINGS a sanitizeSettings', () => {
     expect(sanitizeSettings({})).toEqual(DEFAULT_SETTINGS);
-    expect(sanitizeSettings({ uiScale: 3, musicVolume: -1 })).toMatchObject({ uiScale: 1.4, musicVolume: 0 });
+    expect(sanitizeSettings({ uiScale: 3, sfxVolume: -1 })).toMatchObject({ uiScale: 1.4, sfxVolume: 0 });
+    // Starší profil s hlasitostí hudby: klíč se zahodí (hudba ve hře není).
+    expect(sanitizeSettings({ musicVolume: 0.5 })).not.toHaveProperty('musicVolume');
   });
 
   it('staré karban.settings zmigruje do profilu a smaže', () => {

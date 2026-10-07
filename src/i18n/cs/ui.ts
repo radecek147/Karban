@@ -156,8 +156,6 @@ export const settings = {
     save: 'Uložení a profil',
   },
   sfxVolume: 'Hlasitost efektů',
-  musicVolume: 'Hlasitost hudby',
-  volumeHint: 'V menu hraje valčík, u stolu polka. Když přijde šéf, kapela přidá do kroku.',
   mute: 'Ztlumit všechno',
   muteHint:
     'Klávesa M ztlumí nebo zase pustí zvuk kdykoli – i uprostřed kola. Hlasitosti zůstanou, jak jsou.',
@@ -300,7 +298,7 @@ export const credits = {
   },
   sound: {
     title: 'Zvuk',
-    text: 'Zvuky i hudba se syntetizují přímo v prohlížeči. Žádný mikrofon nebyl zneužit.',
+    text: 'Zvuky se syntetizují přímo v prohlížeči. Žádný mikrofon nebyl zneužit.',
   },
   inspiration: {
     title: 'Inspirace',

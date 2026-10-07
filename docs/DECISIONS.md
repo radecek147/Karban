@@ -3867,3 +3867,18 @@ repozitáře na Karban proto web nenačetl skripty.
 prostředí `github-pages`. Ta povoluje jen větev `gh-pages`, pravidlo pro vývojovou větev bylo omylem typu Tag.
 Tohle nastavení odsud změnit nejde. Nahrání buildu na povolenou větev `gh-pages` funguje hned a bez dalšího
 nastavování. README v části Nasazení popisuje oba způsoby.
+
+## 2026-10-07 — Hudba pryč
+
+**Co:** Hudba ze hry zmizela úplně:
+
+- přehrávač a skladatel `src/ui/audio/music.ts` (valčík v menu, polka ve hře, znělky výhry a prohry),
+- sběrnice hudby v `AudioEngine`,
+- posuvník „Hlasitost hudby“ s nápovědou v Nastavení,
+- `Settings.musicVolume`.
+
+Starší profily klíč `musicVolume` mají; `sanitizeSettings` ho zahodí. Zvukové efekty zůstávají beze změny
+(karty, skórování, peníze, šéf, výhra, prohra), „Ztlumit všechno“ a klávesa M taky.
+
+**Proč:** hráči hudba vadila („je otravná“). Odchylka od CLAUDE.md kap. 7 (procedurální hudba) je vědomá.
+Smyčka bez možnosti dobré variace nudí rychleji než ticho a efekty hře zvuk dávají samy.

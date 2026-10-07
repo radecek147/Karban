@@ -1873,7 +1873,7 @@ Každý ovládací prvek je dosažitelný klávesnicí (Tab) a má viditelný fo
 
 ### 13.4 Nastavení (výchozí hodnoty)
 
-Hlasitost SFX 70 % · hudba 50 % · ztlumit vše vyp (i klávesou M) · rychlost hry 1× (1×–4×) · animace zap · screen shake zap · celá obrazovka vyp ·
+Hlasitost SFX 70 % · ztlumit vše vyp (i klávesou M) · rychlost hry 1× (1×–4×) · animace zap · screen shake zap · celá obrazovka vyp ·
 barvoslepý režim vyp · velikost UI 100 % (80–140 %) · rady Štamgasta zap (+ „Zapnout tutoriál znovu“) · přehled
 klávesových zkratek · export/import uložení · reset profilu (dvojí potvrzení). Nastavení je součást profilu
 (`karban.profile`).
@@ -1929,15 +1929,10 @@ Dokončení = achievement „Štamgastův žák“.
     nebo s vypnutými animacemi „tiky“ mlčí a hrají jen důležité zvuky.
   - Klik na tlačítko zazní jen tehdy, když akce tlačítka nemá vlastní zvuk (koupě = pokladna, Zahrát = karty na
     stůl) — nikdy dvakrát.
-- **Hudba:** procedurální chiptune smyčka; v menu klidnější, ve hře rytmičtější, u šéfa tempo +15 %.
-  - Menu: hospodský valčík (3/4, G dur, 100 BPM, ~58 s), měkký trojúhelník s vibratem. Hra: polka „um-ca“ (2/4,
-    F dur, 128 BPM, ~30 s) — basa střídá základ a kvintu, akordy na „ca“, buben, virbl, hi-hat. Forma A A′ B A;
-    melodii skládá seedovaný generátor z akordových a sousedních tónů (vlastní, žádná převzatá melodie).
-  - Šéf v kole: tempo +15 % od další hranice taktu; změna nálady (menu ↔ hra) také na hranici taktu.
-  - Výhra: fanfára s vířením a činelem, prohra: sestup do moll končící na dominantě. Smyčka pak mlčí až do další
-    obrazovky (nekonečný režim ji pustí hned).
-- **Hlasitost:** hudba i efekty z nastavení živě (kvadratická křivka, 50 % ≈ čtvrtina výkonu), „ztlumit vše“ (M).
-  Hudba při 0 % nebo ztlumení vůbec neběží. Skrytá karta prohlížeče zvuk ztlumí a kontext uspí.
+- **Hudba:** ve hře není. Původní procedurální smyčka (valčík v menu, polka ve hře) hráčům vadila, takže je
+  pryč (DECISIONS 2026-10-07). Zvuk tvoří jen efekty.
+- **Hlasitost:** efekty z nastavení živě (kvadratická křivka, 50 % ≈ čtvrtina výkonu), „ztlumit vše“ (M).
+  Skrytá karta prohlížeče zvuk ztlumí a kontext uspí.
 - **Autoplay:** `AudioContext` vzniká až po prvním gestu hráče (klik, klávesa, dotyk) — žádné varování prohlížeče;
   bez Web Audio je zvuk tichá no-op.
 - **Efekty:** částice na jediném `<canvas>` (mince, střepy skla, jiskry u ×mult), screen shake u velkého skóre,

@@ -230,10 +230,9 @@ export function asContext(ctx: MockAudioContext): AudioContext {
 }
 
 /** Hlasitosti pro engine (měnitelné v testu). */
-export function levels(over: Partial<{ sfxVolume: number; musicVolume: number; muted: boolean }> = {}): {
+export function levels(over: Partial<{ sfxVolume: number; muted: boolean }> = {}): {
   sfxVolume: number;
-  musicVolume: number;
   muted: boolean;
 } {
-  return { sfxVolume: 0.7, musicVolume: 0.5, muted: false, ...over };
+  return { sfxVolume: 0.7, muted: false, ...over };
 }

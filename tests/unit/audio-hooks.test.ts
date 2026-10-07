@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
 /**
  * Zapojení zvuku (src/ui/audio/hooks.ts): no-op bez instalace, „tik“ za krok skórování s výškou podle multu
- * a škrcením podle rychlosti, zvuky událostí, hlasitosti živě z nastavení, nálada hudby podle obrazovky, šéf =
- * tempo, výběr karet, klik na tlačítko bez zdvojení, klávesa M. Mock AudioContext, žádný skutečný zvuk.
+ * a škrcením podle rychlosti, zvuky událostí, hlasitost efektů živě z nastavení, výběr karet, klik na tlačítko
+ * bez zdvojení, klávesa M. Hudba ve hře není. Mock AudioContext, žádný skutečný zvuk.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { GameEvent, RunState, ScoreStep } from '../../src/engine';
@@ -12,9 +12,7 @@ import type { AnimTiming, AudioHost } from '../../src/ui/audio/hooks';
 import {
   audioService,
   installAudio,
-  isBossRound,
   isMuteKey,
-  moodForScreen,
   sound,
   soundForEvent,
   soundScoreStep,
@@ -100,7 +98,6 @@ function setup(over: Partial<Settings> = {}, doc: Document | null = null) {
     createContext: () => asContext(ctx),
     canStart: () => true,
     doc,
-    music: { setTimer: () => 1, clearTimer: () => undefined },
     defer: (fn) => deferred.push(fn),
   });
   svc.engine.unlock();
@@ -136,13 +133,7 @@ describe('pomocné funkce', () => {
     expect(tickGap(Number.NaN)).toBe(25);
   });
 
-  it('nálada podle obrazovky, šéf v kole, klávesa M', () => {
-    expect(moodForScreen('game')).toBe('game');
-    expect(moodForScreen('menu')).toBe('menu');
-    expect(moodForScreen('settings')).toBe('menu');
-    expect(isBossRound({ phase: 'round', round: { blind: 'boss' } } as unknown as RunState)).toBe(true);
-    expect(isBossRound({ phase: 'round', round: { blind: 'small' } } as unknown as RunState)).toBe(false);
-    expect(isBossRound({ phase: 'shop', round: { blind: 'boss' } } as unknown as RunState)).toBe(false);
+  it('klávesa M', () => {
     const k = { key: 'm', code: 'KeyM', ctrlKey: false, altKey: false, metaKey: false };
     expect(isMuteKey(k)).toBe(true);
     expect(isMuteKey({ ...k, ctrlKey: true })).toBe(false);
@@ -231,46 +222,36 @@ describe('skórování a události', () => {
     ]);
   });
 
-  it('výhra a prohra: znělka v hudbě, smyčka ztichne; nekonečný režim ji vrátí', () => {
+  it('výhra a prohra mají vlastní efekt; nekonečný režim nic nespouští (hudba ve hře není)', () => {
     const { svc, host } = setup();
     host.go('game');
-    expect(svc.music.playing).toBe(true);
+    const play = vi.spyOn(svc.sfx, 'play');
     soundForEvent({ type: 'victory', ante: 8 }, LIVE);
-    expect(svc.music.isSilenced).toBe(true);
-    expect(svc.music.playing).toBe(false);
     soundForEvent({ type: 'endlessStarted' }, LIVE);
-    expect(svc.music.playing).toBe(true);
     soundForEvent({ type: 'gameOver', info: {} as never }, LIVE);
-    expect(svc.music.isSilenced).toBe(true);
-    host.go('menu');
-    expect(svc.music.playing).toBe(true);
-    expect(svc.music.currentMood).toBe('menu');
+    expect(play.mock.calls.map((c) => c[0])).toEqual(['victory', 'gameOver']);
+    expect(svc.engine.context?.state).not.toBe('closed');
   });
 });
 
 describe('nastavení a obrazovky', () => {
-  it('hlasitosti živě: změna nastavení přenastaví sběrnice, hudba na 0 % se zastaví', () => {
+  it('hlasitost živě: změna nastavení přenastaví sběrnice; žádná sběrnice ani smyčka hudby', () => {
     const { host, ctx, svc } = setup();
     host.go('menu');
-    expect(svc.music.playing).toBe(true);
+    expect(ctx.gains).toHaveLength(2);
+    expect(ctx.oscillators).toHaveLength(0);
     host.updateSettings({ sfxVolume: 0.2 });
     expect(ctx.gains[1]!.gain.last).toBeCloseTo(0.04 * 0.9);
-    host.updateSettings({ musicVolume: 0 });
-    expect(svc.music.playing).toBe(false);
-    host.updateSettings({ musicVolume: 0.8 });
-    expect(svc.music.playing).toBe(true);
     host.updateSettings({ muted: true });
-    expect(svc.music.playing).toBe(false);
     expect(ctx.gains[0]!.gain.last).toBe(0);
     expect(svc.sfx.play('click')).toBe(false);
   });
 
-  it('obrazovka hry = polka a připojený controller (výběr karet, šéf = tempo)', () => {
+  it('obrazovka hry připojí controller (zvuk výběru karet), jiná obrazovka ho odpojí', () => {
     const { host, svc } = setup();
     const c = fakeController();
     host.controller = c as unknown as GameController;
     host.go('game');
-    expect(svc.music.currentMood).toBe('game');
     const play = vi.spyOn(svc.sfx, 'play');
     c.selected = [5];
     c.notify();
@@ -287,13 +268,7 @@ describe('nastavení a obrazovky', () => {
     c.selected = [];
     c.notify();
     expect(play).not.toHaveBeenCalled();
-    // Šéf v kole: tempo se nastaví (projeví se na hranici taktu).
-    const setBoss = vi.spyOn(svc.music, 'setBoss');
-    c.state = { phase: 'round', round: { blind: 'boss' } } as unknown as RunState;
-    c.notify();
-    expect(setBoss).toHaveBeenLastCalledWith(true);
     host.go('menu');
-    expect(setBoss).toHaveBeenLastCalledWith(false);
     // Odpojený controller už zvuky nespouští.
     play.mockClear();
     c.selected = [1];

@@ -699,17 +699,6 @@ function settingsPanel(app: App, opts: PanelOptions): Panel {
         // Zkušební cinknutí po puštění posuvníku — hned je slyšet, jak hlasitě to bude.
         onChange: () => sound('coin'),
       }),
-      rangeControl({
-        id: 'settings-music',
-        label: t('settings.musicVolume'),
-        min: 0,
-        max: 100,
-        step: 5,
-        value: Math.round(s.musicVolume * 100),
-        format: pct,
-        onInput: (v) => app.updateSettings({ musicVolume: v / 100 }),
-        hint: t('settings.volumeHint'),
-      }),
       muteToggle.el,
     ),
     section(

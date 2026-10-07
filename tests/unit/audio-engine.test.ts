@@ -1,11 +1,10 @@
 /**
- * Zvukový engine (src/ui/audio/engine.ts): líný kontext až po gestu, sběrnice master / efekty / hudba,
+ * Zvukový engine (src/ui/audio/engine.ts): líný kontext až po gestu, sběrnice master / efekty (hudba ve hře není),
  * hlasitosti z nastavení (živě, kvadratická křivka, ztlumení), skrytá karta, bezpečná no-op bez Web Audio.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   AudioEngine,
-  MUSIC_HEADROOM,
   SFX_HEADROOM,
   defaultContextFactory,
   volumeToGain,
@@ -37,7 +36,6 @@ describe('bez Web Audio', () => {
     expect(engine.context).toBeNull();
     expect(engine.sfxOut).toBeNull();
     expect(engine.sfxAudible()).toBe(false);
-    expect(engine.musicAudible()).toBe(false);
     expect(() => {
       engine.syncVolumes();
       engine.setHidden(true);
@@ -119,24 +117,23 @@ describe('vytvoření kontextu', () => {
     expect(ready).toHaveBeenCalled();
     // Chyba posluchače nic neshodí.
     engine.onReady(() => {
-      throw new Error('hudba spadla');
+      throw new Error('posluchač spadl');
     });
     expect(() => engine.unlock()).not.toThrow();
   });
 
-  it('postaví graf: efekty a hudba → master → limiter → výstup', () => {
+  it('postaví graf: efekty → master → limiter → výstup (bez sběrnice hudby)', () => {
     const { engine, ctx } = setup();
     engine.unlock();
-    const [master, sfx, music] = ctx.gains;
+    expect(ctx.gains).toHaveLength(2);
+    const [master, sfx] = ctx.gains;
     const limiter = ctx.compressors[0]!;
     expect(master!.connections).toEqual([limiter]);
     expect(limiter.connections).toContain(ctx.destination);
     expect(limiter.threshold.value).toBe(-3);
     expect(limiter.ratio.value).toBeGreaterThanOrEqual(12);
     expect(sfx!.connections).toContain(master);
-    expect(music!.connections).toContain(master);
     expect(engine.sfxOut).toBe(sfx as unknown as AudioNode);
-    expect(engine.musicOut).toBe(music as unknown as AudioNode);
   });
 });
 
@@ -164,13 +161,12 @@ describe('hlasitosti z nastavení', () => {
     expect(volumeToGain(Number.NaN)).toBe(0);
   });
 
-  it('výchozí 70 % / 50 % se promítnou hned po vytvoření', () => {
+  it('výchozích 70 % efektů se promítne hned po vytvoření', () => {
     const { engine, ctx } = setup();
     engine.unlock();
-    const [master, sfx, music] = ctx.gains;
+    const [master, sfx] = ctx.gains;
     expect(master!.gain.last).toBe(1);
     expect(sfx!.gain.last).toBeCloseTo(0.49 * SFX_HEADROOM);
-    expect(music!.gain.last).toBeCloseTo(0.25 * MUSIC_HEADROOM);
     expect(sfx!.gain.events.some((e) => e.type === 'set')).toBe(true);
   });
 
@@ -186,11 +182,11 @@ describe('hlasitosti z nastavení', () => {
     const last = sfx.gain.events.at(-1)!;
     expect(last.type).toBe('target');
     expect(last.value).toBeCloseTo(0.09 * SFX_HEADROOM);
-    lv.musicVolume = 0;
-    engine.syncVolumes();
-    expect(ctx.gains[2]!.gain.last).toBe(0);
-    expect(engine.musicAudible()).toBe(false);
     expect(engine.sfxAudible()).toBe(true);
+    lv.sfxVolume = 0;
+    engine.syncVolumes();
+    expect(sfx.gain.last).toBe(0);
+    expect(engine.sfxAudible()).toBe(false);
   });
 
   it('ztlumit vše: master na 0, nic není slyšet', () => {
@@ -200,7 +196,6 @@ describe('hlasitosti z nastavení', () => {
     engine.syncVolumes();
     expect(ctx.gains[0]!.gain.last).toBe(0);
     expect(engine.sfxAudible()).toBe(false);
-    expect(engine.musicAudible()).toBe(false);
     lv.muted = false;
     engine.syncVolumes();
     expect(ctx.gains[0]!.gain.last).toBe(1);
