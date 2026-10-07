@@ -3918,7 +3918,8 @@ Smyčka bez možnosti dobré variace nudí rychleji než ticho a efekty hře zvu
    ~7 p. b. Síla zaměření 9 → 45 %, 4 → 41 %, 3 → 40 %, 2 → 40 %, 0 → 33 %. Zvolil jsem **3** (hraná kombinace
    dostane svou pranostiku ~2,5–3× častěji než dřív) a obtížnost vrátil **cíli pater 5–8 ×1,15 ve všech třech
    křivkách** (`TARGET_CURVES`, křivka 1: 11 000 / 26 000 / 59 000 / 115 000): Desítka 29,6 / 35,4 / 35 %
-   (průměr 33 %, pásmo 25–35 %). Varianta ×1,10 dala 30 / 37 / 37,5 % a Imperial 2,5 %. Nekonečný režim navazuje
+   (průměr 33 %, pásmo 25–35 %), Ležák 10,8 / 9,6 / 10 % (pásmo 7–12 %), Imperial 2,5 / 4,2 / 1,3 % (průměr 2,7 %,
+   pásmo < 3 %; `flush` nad hranicí v rámci chyby ~1,3 p. b.). Varianta ×1,10 dala 30 / 37 / 37,5 % a Imperial 2,5 %. Nekonečný režim navazuje
    na patro 8, takže je taky o 15 % výš (patro 9 = 175 000, křivka 3 přeteče o patro dřív, v patře 294).
    Ekonomika z karet se u botů projevila málo (+1–2 Kč při vstupu do Večerky): boti zlaté karty skoro nekupují.
    Hráči, který je sbírá, pomůže víc.
