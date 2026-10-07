@@ -1,2 +1,0 @@
-import{Z as e}from"./engine-BIqi6Naa.js";import{r as t}from"./i18n-SPq2Q_kP.js";function n(){let e=globalThis.crypto;if(e&&typeof e.getRandomValues==`function`){let t=new Uint32Array(1);return()=>(e.getRandomValues(t),(t[0]??0)/2**32)}return Math.random}function r(){return e(n())}function i(e){return e===`empty`?null:t(`newGame.seed.errors.${e}`,{n:8})}export{i as n,r as t};
-//# sourceMappingURL=seed-B8JH99iO.js.map
