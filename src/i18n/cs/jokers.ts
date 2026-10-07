@@ -3,6 +3,7 @@ import { jokersCommon } from './jokers/common';
 import { jokersCommon2 } from './jokers/common2';
 import { jokersEpic } from './jokers/epic';
 import { jokersEpic2 } from './jokers/epic2';
+import { jokersExtra } from './jokers/extra';
 import { jokersLegendary } from './jokers/legendary';
 import { jokersRare } from './jokers/rare';
 import { jokersRare2 } from './jokers/rare2';
@@ -11,6 +12,7 @@ import { jokersSpecial } from './jokers/special';
 export const jokers = {
   ...jokersCommon,
   ...jokersCommon2,
+  ...jokersExtra,
   ...jokersRare,
   ...jokersRare2,
   ...jokersEpic,

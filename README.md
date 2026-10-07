@@ -119,7 +119,8 @@ Hraje se myší, prstem i klávesnicí.
 
 Myší nebo prstem kartu vybereš klepnutím, karty v ruce i žolíky přesuneš tažením. V **Nastavení** najdeš
 hlasitost efektů, rychlost hry 1×–4×, vypnutí animací a třesení obrazovky, celou obrazovku,
-barvoslepý režim, velikost rozhraní a export a import uložení. Hra se ukládá sama po každé akci.
+barvoslepý režim, velikost rozhraní a export a import uložení. Kdo nechce nic odemykat postupně, zmáčkne
+**Odemknout vše** a má hned všechny balíčky, žolíky, kupóny, výzvy i síly piva. Hra se ukládá sama po každé akci.
 
 ## Co ve hře najdeš
 
@@ -127,7 +128,7 @@ Počty jsou spočítané z registru obsahu (`src/content`):
 
 | Co                      | Kolik | Podrobnosti                                                                                                                         |
 | ----------------------- | ----: | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Žolíci                  |   101 | 44 běžných, 32 vzácných, 17 epických, 8 legendárních                                                                                |
+| Žolíci                  |   107 | 48 běžných, 34 vzácných, 17 epických, 8 legendárních                                                                                |
 | Šéfové                  |    30 | 25 běžných a 5 finálových pro 8. patro                                                                                              |
 | Štítky za přeskočení    |    20 |                                                                                                                                     |
 | Spotřebky               |    51 | 13 pranostik (jedna na každou kombinaci), 22 babských rad, 16 úředních razítek                                                      |

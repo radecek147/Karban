@@ -526,13 +526,13 @@ describe('Vrátný (doorman)', () => {
   });
 });
 
-describe('Zlatník (goldsmith)', () => {
+describe('Pozlacovač (goldsmith)', () => {
   it('na konci kola pozlatí náhodnou kartu bez vylepšení v ruce — zlatá vydělá už v tomto kole', () => {
     const game = makeGame({ registry: reg, jokers: ['goldsmith'] });
     const { rewards, events, cards } = winWith(game, 'KS 2H 3D 4C');
     const held = cards.slice(1).map((c) => game._core.card(c.id)!);
     expect(held.filter((c) => c.enhancement === 'gold')).toHaveLength(1);
-    expect(heldReward(rewards)).toBe(3);
+    expect(heldReward(rewards)).toBe(4);
     expect(messages(events)).toContain('jokers.goldsmith.gilded');
     // Stejný seed → stejná karta (náhoda jen přes RNG streamy).
     const again = makeGame({ registry: reg, jokers: ['goldsmith'] });
@@ -550,7 +550,7 @@ describe('Zlatník (goldsmith)', () => {
     const copied = makeGame({ registry: reg, jokers: ['copier', 'goldsmith'] });
     const two = winWith(copied, 'KS 2H 3D 4C');
     expect(two.cards.filter((c) => copied._core.card(c.id)!.enhancement === 'gold')).toHaveLength(2);
-    expect(heldReward(two.rewards)).toBe(6);
+    expect(heldReward(two.rewards)).toBe(8);
   });
 });
 
@@ -980,7 +980,7 @@ describe('Řezník z rohu (pig_slaughter)', () => {
     const { rewards, events, cards } = winWith(game, 'KS 2H:gold 4C 3D 3S');
     // 2♥ je zlatá (vylepšení) → zůstane a vydělá; ze dvou trojek padne ta víc vlevo.
     expect(jokerReward(rewards, 'pig_slaughter')).toBe(2);
-    expect(heldReward(rewards)).toBe(3);
+    expect(heldReward(rewards)).toBe(4);
     expect(game._core.card(cards[3]!.id)).toBeUndefined();
     expect(game._core.card(cards[4]!.id)).toBeDefined();
     expect(game.state.deck.length).toBe(deckBefore + cards.length - 1);

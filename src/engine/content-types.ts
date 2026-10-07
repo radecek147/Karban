@@ -62,6 +62,11 @@ export interface EffectResult {
   message?: string;
   /** Jen u efektů skórující karty (vylepšení, pečeť, `onCardScored`): karta se po vyhodnocení ruky zničí. */
   destroyCard?: boolean;
+  /**
+   * ×mult platí při každé aktivaci karty, i nad strop `MAX_XMULT_ACTIVATIONS_PER_CARD` (zbývá jen strop aktivací
+   * `MAX_ACTIVATIONS_PER_CARD`). Jen Fotograf z pouti — záměrné kombo s opakováním (docs/DECISIONS.md 2026-10-07).
+   */
+  uncappedXmult?: boolean;
 }
 
 export type HookResult = EffectResult | EffectResult[] | void | null | undefined;
@@ -521,6 +526,8 @@ export interface EnhancementDef {
   onHeld?(ctx: CardCtx): HookResult;
   /** Peníze za kartu drženou v ruce na konci kola (zlatá). */
   roundEndHeldMoney?(ctx: BaseCtx & { readonly card: Card }): number;
+  /** Váha při losování vylepšení náhodné hrací karty (Večerka, karetní obálky); výchozí 1. */
+  weight?: number;
   art: ArtSpec;
 }
 
@@ -533,6 +540,8 @@ export interface SealDef {
   /** Karta držená v ruce na konci kola (modrá: vytvoří pranostiku). */
   onRoundEndHeld?(ctx: BaseCtx & { readonly card: Card; readonly lastHand: HandType | null }): void;
   onDiscarded?(ctx: BaseCtx & { readonly card: Card }): void;
+  /** Váha při losování pečeti náhodné hrací karty (Večerka, karetní obálky); výchozí 1. */
+  weight?: number;
   art: ArtSpec;
 }
 

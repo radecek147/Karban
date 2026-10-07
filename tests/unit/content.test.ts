@@ -118,8 +118,8 @@ describe('vylepšení a pečetě (docs/DESIGN.md kap. 2.7–2.8)', () => {
     expect(p('glass')).toMatchObject({ xmult: 2, chance: 1, odds: 5 });
     expect(p('steel')).toEqual({ xmult: 1.5 });
     expect(p('stone')).toEqual({ chips: 50 });
-    expect(p('gold')).toEqual({ money: 3 });
-    expect(p('lucky')).toMatchObject({ mult: 10, multOdds: 3, money: 7, moneyOdds: 6 });
+    expect(p('gold')).toEqual({ money: 4 });
+    expect(p('lucky')).toMatchObject({ mult: 10, multOdds: 3, money: 7, moneyOdds: 5 });
     expect(p('worn')).toEqual({ chips: 3 });
     expect(reg.seals.gold?.params).toEqual({ money: 2 });
     expect(reg.seals.red?.retriggers).toBe(1);

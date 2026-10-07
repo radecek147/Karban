@@ -258,6 +258,16 @@ export const settings = {
     backupFailed:
       'Profil se nepodařilo zazálohovat (prohlížeč asi nemá místo), tak zůstává, jak byl. Nejdřív si udělej export uložení.',
   },
+  unlockAll: {
+    label: 'Odemknout vše',
+    hint: 'Hned zpřístupní všechny balíčky, žolíky, kupóny, výzvy i všechny síly piva. Statistiky, achievementy a sbírka zůstanou, jak jsou.',
+    confirmTitle: 'Odemknout úplně všechno?',
+    confirmMessage:
+      'Přeskočíš odemykání: všechny balíčky, žolíci, kupóny, výzvy i síly piva budou k dispozici hned teď. Zpátky to vrátí jen smazání profilu.',
+    confirm: 'Odemknout vše',
+    done: 'Odemčeno: {count|plural:položka,položky,položek}. Hospoda je otevřená dokořán.',
+    nothing: 'Všechno už máš odemčené. Víc klíčů hospodský nemá.',
+  },
 };
 
 /** Titulky. */

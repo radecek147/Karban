@@ -349,13 +349,13 @@ describe('startovní výbava se objeví až po první vyhrané útratě', () => 
 // ─────────────────────────── Počty a sbírka ───────────────────────────
 
 describe('počty obsahu fáze 8 a pokrytí sbírky', () => {
-  it('20 výzev, aspoň 60 achievementů (78), 70 žolíků odemčených od začátku', () => {
+  it('20 výzev, aspoň 60 achievementů (78), 76 žolíků odemčených od začátku', () => {
     expect(Object.keys(REG.challenges)).toHaveLength(20);
     expect(Object.keys(REG.achievements ?? {}).length).toBeGreaterThanOrEqual(60);
     expect(Object.keys(REG.achievements ?? {})).toHaveLength(78);
     const fresh = createProfile(NOW_ISO);
     const open = Object.keys(REG.jokers).filter((id) => isJokerUnlocked(fresh, REG, id));
-    expect(open).toHaveLength(70);
+    expect(open).toHaveLength(76);
   });
 
   it('každá kategorie objevů a „Nových“ má záložku ve sbírce (štítek „Nové“ jde vždy sundat)', () => {

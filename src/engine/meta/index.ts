@@ -41,6 +41,7 @@ export {
   isStakeUnlocked,
   unlockedPoolFor,
   refreshUnlocks,
+  unlockEverything,
   statValue,
   maxHandLevel,
   totalRunsPlayed,

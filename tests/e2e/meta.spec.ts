@@ -701,6 +701,32 @@ test('export → reset → import profilu obnoví odemčení, statistiky i achie
   expectCleanConsole(log);
 });
 
+test('Odemknout vše: po potvrzení jsou balíčky, výzvy i všechny síly piva dostupné', async ({ page }) => {
+  const log = watchConsole(page);
+  await page.goto('/?tutorial=off');
+  await page.getByTestId('menu-settings').click();
+  await page.getByTestId('settings-unlock-all').click();
+  await page.getByTestId('unlock-all-confirm').getByTestId('confirm-ok').click();
+  await expect(page.getByTestId('toast-unlock-all')).toBeVisible();
+  const p = await storedProfile(page);
+  expect(p.unlocks.challenges).toHaveLength(20);
+  expect(p.unlocks.stakes.pub).toBe(8);
+  expect(p.stats.runs.played).toBe(0);
+  await page.getByTestId('back').click();
+  await page.getByTestId('menu-new-game').click();
+  await expect(page.getByTestId('deck-locked-grid')).toHaveCount(0);
+  await expect(page.getByTestId('stake-8')).not.toHaveAttribute('aria-disabled', 'true');
+  await page.getByTestId('back').click();
+  // Podruhé už není co odemknout.
+  await page.getByTestId('menu-settings').click();
+  await page.getByTestId('settings-unlock-all').click();
+  await page.getByTestId('unlock-all-confirm').getByTestId('confirm-ok').click();
+  await expect(
+    page.getByTestId('toast-unlock-all').filter({ hasText: t('settings.unlockAll.nothing') }),
+  ).toBeVisible();
+  expectCleanConsole(log);
+});
+
 test('poškozený profil v localStorage: hra se spustí, data jsou v záloze a hráč dostane oznámení', async ({
   page,
 }) => {

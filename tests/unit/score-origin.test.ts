@@ -242,13 +242,13 @@ describe('cardAdded.copyOf a roundRewards.heldCards', () => {
     const created = eventsOf(events, 'consumableAdded').map((e) => e.uid);
     expect(created).toHaveLength(1);
     expect(rewards.heldCards).toEqual([
-      { cardId: gold!.id, money: 3 },
+      { cardId: gold!.id, money: 4 },
       { cardId: blue!.id, consumables: created },
     ]);
     expect(rewards.heldCards!.some((h) => h.cardId === plain!.id)).toBe(false);
     // Rozpis ve stavu zůstává beze změny (bez `heldCards`).
     expect(game.state.rewards).not.toHaveProperty('heldCards');
-    expect(game.state.rewards!.extra).toContainEqual({ source: 'held', amount: 3 });
+    expect(game.state.rewards!.extra).toContainEqual({ source: 'held', amount: 4 });
   });
 
   it('bez efektů karet v ruce událost heldCards nemá', () => {

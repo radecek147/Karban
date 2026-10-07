@@ -25,25 +25,31 @@ import { addJokers, joker, play, selectBoss } from './fixtures/registry';
 
 const reg = buildRegistry();
 
-/** Patro, od kterého se cíl (i Malé útraty) přestane vejít do konečného čísla — ve všech křivkách. */
+/** Patro, od kterého se cíl (i Malé útraty) přestane vejít do konečného čísla (křivka 1; křivka 2 stejně). */
 const OVERFLOW_ANTE = 295;
+/** Totéž podle křivky — nejtěžší křivka 3 přeteče o patro dřív (patch 1.0.2: patra 5–8 ×1,15). */
+const OVERFLOW_BY_CURVE: Record<number, number> = {
+  1: OVERFLOW_ANTE,
+  2: OVERFLOW_ANTE,
+  3: OVERFLOW_ANTE - 1,
+};
 
 // [patro, křivka 1: malá, velká, šéf, křivka 2: malá, velká, šéf, křivka 3: malá, velká, šéf]
 // Přepočítáno nezávisle podle vzorce DESIGN 1.3: base(a) = nice(base(8) × g(a)^(a − 8)), g(a) = 1,5 + 0,035 × (a − 9).
 type Row = [number, number, number, number, number, number, number, number, number, number];
 const ROWS: Row[] = [
-  [9, 150e3, 230e3, 300e3, 175e3, 260e3, 350e3, 200e3, 300e3, 400e3],
-  [10, 240e3, 360e3, 480e3, 270e3, 410e3, 540e3, 320e3, 480e3, 640e3],
-  [11, 390e3, 590e3, 780e3, 450e3, 680e3, 900e3, 520e3, 780e3, 1.05e6],
-  [12, 660e3, 990e3, 1.3e6, 760e3, 1.15e6, 1.5e6, 900e3, 1.35e6, 1.8e6],
-  [13, 1.2e6, 1.8e6, 2.4e6, 1.35e6, 2e6, 2.7e6, 1.6e6, 2.4e6, 3.2e6],
-  [14, 2.2e6, 3.3e6, 4.4e6, 2.5e6, 3.8e6, 5e6, 3e6, 4.5e6, 6e6],
-  [15, 4.3e6, 6.5e6, 8.6e6, 4.9e6, 7.4e6, 9.8e6, 5.8e6, 8.7e6, 11.5e6],
-  [16, 8.6e6, 13e6, 17e6, 9.9e6, 15e6, 20e6, 11.5e6, 17.5e6, 23e6],
-  [17, 18e6, 27e6, 36e6, 21e6, 32e6, 42e6, 24e6, 36e6, 48e6],
-  [18, 39e6, 59e6, 78e6, 45e6, 68e6, 90e6, 52e6, 78e6, 105e6],
-  [19, 87e6, 130e6, 175e6, 100e6, 150e6, 200e6, 115e6, 175e6, 230e6],
-  [20, 200e6, 300e6, 400e6, 230e6, 350e6, 460e6, 270e6, 410e6, 540e6],
+  [9, 175e3, 260e3, 350e3, 195e3, 290e3, 390e3, 230e3, 350e3, 460e3],
+  [10, 270e3, 410e3, 540e3, 310e3, 470e3, 620e3, 370e3, 560e3, 740e3],
+  [11, 450e3, 680e3, 900e3, 500e3, 750e3, 1e6, 600e3, 900e3, 1.2e6],
+  [12, 760e3, 1.15e6, 1.5e6, 860e3, 1.3e6, 1.7e6, 1.05e6, 1.6e6, 2.1e6],
+  [13, 1.35e6, 2e6, 2.7e6, 1.55e6, 2.3e6, 3.1e6, 1.85e6, 2.8e6, 3.7e6],
+  [14, 2.5e6, 3.8e6, 5e6, 2.9e6, 4.4e6, 5.8e6, 3.4e6, 5.1e6, 6.8e6],
+  [15, 4.9e6, 7.4e6, 9.8e6, 5.6e6, 8.4e6, 11e6, 6.6e6, 9.9e6, 13e6],
+  [16, 9.9e6, 15e6, 20e6, 11e6, 16.5e6, 22e6, 13.5e6, 20e6, 27e6],
+  [17, 21e6, 32e6, 42e6, 23e6, 35e6, 46e6, 28e6, 42e6, 56e6],
+  [18, 45e6, 68e6, 90e6, 50e6, 75e6, 100e6, 60e6, 90e6, 120e6],
+  [19, 100e6, 150e6, 200e6, 115e6, 175e6, 230e6, 135e6, 200e6, 270e6],
+  [20, 230e6, 350e6, 460e6, 260e6, 390e6, 520e6, 310e6, 470e6, 620e6],
 ];
 
 describe('nekonečný režim – cíle pater 9–20 (DESIGN 1.3, 2.3.3)', () => {
@@ -75,14 +81,14 @@ describe('nekonečný režim – cíle pater 9–20 (DESIGN 1.3, 2.3.3)', () => 
     }
   });
 
-  it('orientační čísla z DESIGN 2.3.3 (křivka 1): patro 24 ≈ 8e9, 30 ≈ 4,8e12, 32 ≈ 5,1e13, 40 ≈ 1,6e18', () => {
-    expect(anteBase(24, 1)).toBe(8e9);
-    expect(anteBase(30, 1)).toBe(4.8e12);
-    expect(anteBase(32, 1)).toBe(5.1e13);
-    expect(anteBase(40, 1)).toBe(1.6e18);
+  it('orientační čísla z DESIGN 2.3.3 (křivka 1): patro 24 ≈ 9,2e9, 30 ≈ 5,6e12, 32 ≈ 5,8e13, 40 ≈ 1,8e18', () => {
+    expect(anteBase(24, 1)).toBe(9.2e9);
+    expect(anteBase(30, 1)).toBe(5.6e12);
+    expect(anteBase(32, 1)).toBe(5.8e13);
+    expect(anteBase(40, 1)).toBe(1.8e18);
     // Od 1e15 vědecký zápis s čárkou.
-    expect(formatNumber(blindTarget(40, 'boss', 1))).toBe('3,2e18');
-    expect(formatNumber(anteBase(40, 1))).toBe('1,6e18');
+    expect(formatNumber(blindTarget(40, 'boss', 1))).toBe('3,6e18');
+    expect(formatNumber(anteBase(40, 1))).toBe('1,8e18');
   });
 });
 
@@ -172,27 +178,28 @@ describe('nekonečný režim – průchod patry 9–24 se skutečným obsahem', 
     expect(loaded.state.endless).toBe(true);
     expect(loaded.state.ante).toBe(9);
     loaded.dispatch({ type: 'selectBlind' });
-    expect(loaded.state.round!.target).toBe(150_000);
+    expect(loaded.state.round!.target).toBe(175_000);
   });
 });
 
 // ─────────────────────────── Přetečení ───────────────────────────
 
 describe('nekonečný režim – přetečení (≈ patro 295)', () => {
-  it('cíl Malé útraty v patře 294 je konečný (šéf v 293), od patra 295 Number.MAX_VALUE ve všech křivkách; UI ukáže „∞“', () => {
+  it('cíl Malé útraty v patře 294 je konečný (šéf v 293), od patra 295 Number.MAX_VALUE (křivka 3 o patro dřív); UI ukáže „∞“', () => {
     for (const curve of [1, 2, 3]) {
-      expect(Number.isFinite(blindTarget(OVERFLOW_ANTE - 1, 'small', curve))).toBe(true);
-      expect(blindTarget(OVERFLOW_ANTE - 1, 'small', curve)).toBeLessThan(Number.MAX_VALUE);
+      const over = OVERFLOW_BY_CURVE[curve]!;
+      expect(Number.isFinite(blindTarget(over - 1, 'small', curve))).toBe(true);
+      expect(blindTarget(over - 1, 'small', curve)).toBeLessThan(Number.MAX_VALUE);
       for (const kind of ['small', 'big', 'boss'] as BlindKind[]) {
-        const before = blindTarget(OVERFLOW_ANTE - 2, kind, curve);
+        const before = blindTarget(over - 2, kind, curve);
         expect(Number.isFinite(before)).toBe(true);
         expect(before).toBeLessThan(Number.MAX_VALUE);
         expect(formatNumber(before)).not.toContain('∞');
-        expect(blindTarget(OVERFLOW_ANTE, kind, curve)).toBe(Number.MAX_VALUE);
-        expect(blindTarget(OVERFLOW_ANTE + 50, kind, curve)).toBe(Number.MAX_VALUE);
+        expect(blindTarget(over, kind, curve)).toBe(Number.MAX_VALUE);
+        expect(blindTarget(over + 50, kind, curve)).toBe(Number.MAX_VALUE);
       }
-      // I násobek šéfa ×4,5 (víc než nejvyšší ve hře, ×2,5) se v patře 293 vejde.
-      expect(blindTarget(OVERFLOW_ANTE - 2, 'boss', curve, { bossMult: 4.5 })).toBeLessThan(Number.MAX_VALUE);
+      // I násobek šéfa ×4,5 (víc než nejvyšší ve hře, ×2,5) se dvě patra před přetečením vejde.
+      expect(blindTarget(over - 2, 'boss', curve, { bossMult: 4.5 })).toBeLessThan(Number.MAX_VALUE);
     }
     expect(formatNumber(blindTarget(OVERFLOW_ANTE, 'boss', 1))).toBe('∞');
   });

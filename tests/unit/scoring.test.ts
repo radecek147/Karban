@@ -322,7 +322,7 @@ describe('krok 2 — vylepšení karet', () => {
     expect(result.score).toBe(67);
   });
 
-  it('Zlatá: zahraná nic, držená v ruce na konci kola +3 Kč', () => {
+  it('Zlatá: zahraná nic, držená v ruce na konci kola +4 Kč', () => {
     const game = inRound();
     const [a, gold] = setupRound(game, 'AS:gold QD:gold');
     winNextHand(game);
@@ -330,7 +330,7 @@ describe('krok 2 — vylepšení karet', () => {
     expect(result.score).toBe(17);
     expect(result.moneyEarned).toBe(0);
     expect(game.state.phase).toBe('round_end');
-    expect(game.state.rewards!.extra).toContainEqual({ source: 'held', amount: 3 });
+    expect(game.state.rewards!.extra).toContainEqual({ source: 'held', amount: 4 });
     expect(gold).toBeDefined();
   });
 
@@ -350,7 +350,7 @@ describe('krok 2 — vylepšení karet', () => {
     expect(game.state.money).toBe(money + 7);
   });
 
-  it('Šťastná: s probabilityMult 3 je mult jistý, peníze 3 ze 6; s 0 nic', () => {
+  it('Šťastná: s probabilityMult 3 je mult jistý, peníze 3 z 5; s 0 nic', () => {
     const game = inRound();
     game._core.api.addPermanentModifier({ probabilityMult: 3 });
     game._core.state.round!.target = 1e12;

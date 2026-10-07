@@ -83,6 +83,16 @@ export function defaultDeckComposition(core: GameCore): CardSpec[] {
   return startingDeckSpecs(core.registry, s.deckId, s.challengeId, rngFromState(cyrb128(`${s.seed}:deck`)));
 }
 
+/** Seřazená id definic s kladnou váhou (`weight`, výchozí 1) pro `rng.weighted`. */
+function weightedIds(
+  defs: Readonly<Record<string, { weight?: number }>>,
+): { item: string; weight: number }[] {
+  return Object.keys(defs)
+    .sort()
+    .map((id) => ({ item: id, weight: defs[id]?.weight ?? 1 }))
+    .filter((e) => e.weight > 0);
+}
+
 /**
  * Náhodná hrací karta (pro obchod a karetní obálky): hodnota a barva rovnoměrně z výchozího složení
  * startovního balíčku, pak vylepšení, pečeť a edice (DESIGN 2.6) s danými šancemi. Karta není v balíčku,
@@ -95,10 +105,11 @@ export function randomPlayingCard(
 ): Card {
   const base = rng.pick(defaultDeckComposition(core));
   const card = createCard(core.uid(), { suit: base.suit, rank: base.rank });
-  const enhancements = Object.keys(core.registry.enhancements).sort();
-  const seals = Object.keys(core.registry.seals).sort();
-  if (enhancements.length && rng.next() < chances.enhancement) card.enhancement = rng.pick(enhancements);
-  if (seals.length && rng.next() < chances.seal) card.seal = rng.pick(seals);
+  // Vážené `weight` z definice (zlatá a šťastná karta i zlatá pečeť častěji — DECISIONS 2026-10-07).
+  const enhancements = weightedIds(core.registry.enhancements);
+  const seals = weightedIds(core.registry.seals);
+  if (enhancements.length && rng.next() < chances.enhancement) card.enhancement = rng.weighted(enhancements);
+  if (seals.length && rng.next() < chances.seal) card.seal = rng.weighted(seals);
   card.edition = rollEdition(core, rng, 'card');
   return card;
 }

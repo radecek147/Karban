@@ -437,3 +437,28 @@ export function refreshUnlocks(
   }
   return notices;
 }
+
+/**
+ * „Odemknout vše“ (Nastavení, přání hráče 2026-10-07): zapíše do profilu všechny balíčky, žolíky, kupóny a výzvy
+ * s podmínkou a nejvyšší sílu piva u každého balíčku. Statistiky, achievementy, objevy (sbírka) ani „Nové“ nemění.
+ * Vrací počet nově odemčených položek (síla piva = 1 za balíček). Mutuje profil.
+ */
+export function unlockEverything(profile: Profile, registry: ContentRegistry): number {
+  let added = 0;
+  for (const category of UNLOCK_ORDER) {
+    const list = profile.unlocks[category];
+    for (const id of idsOf(registry, category)) {
+      if (list.includes(id) || isUnlocked(profile, registry, category, id)) continue;
+      if (category === 'jokers' && unlockedByDiscovery(registry, id)) continue;
+      list.push(id);
+      added++;
+    }
+  }
+  const top = maxStakeLevel(registry);
+  for (const deckId of Object.keys(registry.decks)) {
+    if (maxStakeFor(profile, registry, deckId) >= top) continue;
+    profile.unlocks.stakes[deckId] = top;
+    added++;
+  }
+  return added;
+}

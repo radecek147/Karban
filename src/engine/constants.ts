@@ -47,6 +47,14 @@ export const RARITY_WEIGHTS: Readonly<Record<JokerRarity, number>> = Object.free
   legendary: 0,
 });
 
+/**
+ * Pranostiky „na míru“ (Večerka, obálky i efekty, docs/DECISIONS.md 2026-10-07): váha pranostiky se násobí
+ * `1 + PRANOSTIKA_PLAYED_FOCUS × podíl`, kde podíl = kolikrát hráč v tomto runu zahrál její kombinaci / všechny
+ * zahrané ruce. Kombinace hraná pořád má váhu 4, hraná v 60 % rukou 2,8; před první rukou platí rovnoměrné váhy.
+ * Simulace: 9 → Desítka 45 %, 4 → 41 %, 3 → 40 %, 0 → 33 % (proto zároveň vyšší cíle pater 5–8).
+ */
+export const PRANOSTIKA_PLAYED_FOCUS = 3;
+
 /** Základní cena hrací karty ve Večerce (Kč). */
 export const PLAYING_CARD_BASE_PRICE = 2;
 /** Příplatek za vylepšení hrací karty (Kč). */

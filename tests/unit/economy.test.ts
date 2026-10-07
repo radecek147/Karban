@@ -12,7 +12,12 @@ import {
 import { newJokerInstance } from '../../src/engine/effects/api';
 import { BASE_MODIFIERS } from '../../src/engine/effects/modifiers';
 import { cyrb128, rngFromState } from '../../src/engine/rng/rng';
-import { pickConsumableDefId, pickJokerDefId, rollEdition } from '../../src/engine/shop/pool';
+import {
+  consumableWeight,
+  pickConsumableDefId,
+  pickJokerDefId,
+  rollEdition,
+} from '../../src/engine/shop/pool';
 import {
   boosterPrice,
   cardPrice,
@@ -422,6 +427,36 @@ describe('spotřebky v nabídce', () => {
     const n = 20_000;
     for (let i = 0; i < n; i++) if (pickConsumableDefId(core, rng, 'razitko') === 'exception') rare++;
     expect(rare / n).toBeCloseTo(0.2, 1);
+  });
+
+  it('pranostiky na míru: kombinace hraná v runu má pranostiku častěji (váha × 1 + 3 × podíl)', () => {
+    const reg = makeRegistry({
+      consumables: [
+        consumable('p_pair', { kind: 'pranostika', cost: 3, hand: 'pair' }),
+        consumable('p_flush', { kind: 'pranostika', cost: 3, hand: 'flush' }),
+        consumable('p_trio', { kind: 'pranostika', cost: 3, hand: 'three' }),
+        consumable('p_four', { kind: 'pranostika', cost: 3, hand: 'four' }),
+      ],
+    });
+    const core = newCore(reg);
+    const share = (id: string, n = 20_000): number => {
+      const rng = rngFromState(cyrb128(`focus-${id}`));
+      let hits = 0;
+      for (let i = 0; i < n; i++) if (pickConsumableDefId(core, rng, 'pranostika') === id) hits++;
+      return hits / n;
+    };
+    // Před první rukou rovnoměrně.
+    expect(consumableWeight(core, reg.consumables.p_flush!)).toBe(1);
+    expect(share('p_flush')).toBeCloseTo(0.25, 1);
+    // Samé Barvy: 4 / (4 + 1 + 1 + 1).
+    core.state.handLevels.flush.played = 6;
+    expect(consumableWeight(core, reg.consumables.p_flush!)).toBe(4);
+    expect(consumableWeight(core, reg.consumables.p_pair!)).toBe(1);
+    expect(share('p_flush')).toBeCloseTo(4 / 7, 1);
+    // Půl na půl s Dvojicí: obě 2,5.
+    core.state.handLevels.pair.played = 6;
+    expect(consumableWeight(core, reg.consumables.p_pair!)).toBe(2.5);
+    expect(share('p_four')).toBeCloseTo(1 / 7, 1);
   });
 });
 

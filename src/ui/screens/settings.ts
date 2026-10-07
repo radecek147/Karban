@@ -20,7 +20,7 @@ import {
   serializeRun,
   validateRunState,
 } from '../../engine';
-import { mergeDailyRecords, restartTutorial } from '../../engine/meta';
+import { mergeDailyRecords, restartTutorial, unlockEverything } from '../../engine/meta';
 import { t } from '../../i18n/cs';
 import type { App, ScreenFactory } from '../app';
 import { sound } from '../audio/hooks';
@@ -656,6 +656,24 @@ function settingsPanel(app: App, opts: PanelOptions): Panel {
     opts.onReset();
   };
 
+  // ── Odemknout vše (jedno potvrzení; statistiky ani achievementy nemění) ──
+  const unlockAll = async (): Promise<void> => {
+    const ok = await confirmModal({
+      title: t('settings.unlockAll.confirmTitle'),
+      message: t('settings.unlockAll.confirmMessage'),
+      confirmLabel: t('settings.unlockAll.confirm'),
+      testId: 'unlock-all-confirm',
+    });
+    if (!ok) return;
+    const count = unlockEverything(app.profile, app.registry);
+    if (count === 0) {
+      toast(t('settings.unlockAll.nothing'), { kind: 'info', testId: 'toast-unlock-all' });
+      return;
+    }
+    app.profiles.save();
+    toast(t('settings.unlockAll.done', { count }), { kind: 'success', testId: 'toast-unlock-all' });
+  };
+
   // Ztlumit vše (i klávesou M kdekoli — pak se přepínač srovná přes `onSettingsChange`).
   const muteToggle = toggleControl({
     id: 'settings-mute',
@@ -813,6 +831,18 @@ function settingsPanel(app: App, opts: PanelOptions): Panel {
         }),
         fileInput,
         h('p', { id: 'settings-import-hint', class: 'setting__hint' }, t('settings.import.hint')),
+      ),
+      h(
+        'div',
+        { class: 'setting setting--action' },
+        button({
+          label: t('settings.unlockAll.label'),
+          variant: 'paper',
+          testId: 'settings-unlock-all',
+          describedBy: 'settings-unlock-all-hint',
+          onClick: () => void unlockAll(),
+        }),
+        h('p', { id: 'settings-unlock-all-hint', class: 'setting__hint' }, t('settings.unlockAll.hint')),
       ),
       h(
         'div',

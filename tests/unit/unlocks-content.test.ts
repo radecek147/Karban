@@ -22,7 +22,11 @@ import {
   unlockConditionFor,
   unlockText,
   unlockTextFor,
+  unlockEverything,
   unlockedPoolFor,
+  isChallengeUnlocked,
+  isStakeUnlocked,
+  maxStakeLevel,
 } from '../../src/engine';
 import type {
   ConsumableKind,
@@ -195,15 +199,15 @@ function expectGoodText(spec: UnlockTextSpec, label: string): string {
 describe('odemčeno na startu (DESIGN 11.3)', () => {
   const jokers = Object.values(reg.jokers);
 
-  it('žolíci: ≈ 70 od začátku (všichni běžní, ~60 % vzácných, ~40 % epických), 23 s podmínkou, legendární objevem', () => {
+  it('žolíci: 76 od začátku (všichni běžní, ~60 % vzácných, ~40 % epických), 23 s podmínkou, legendární objevem', () => {
     const p = fresh();
     const byRarity = (r: string) => jokers.filter((j) => j.rarity === r);
     const open = jokers.filter((j) => isJokerUnlocked(p, reg, j.id));
-    expect(jokers).toHaveLength(101);
-    expect(open).toHaveLength(70);
+    expect(jokers).toHaveLength(107);
+    expect(open).toHaveLength(76);
     expect(jokers.filter((j) => j.unlock)).toHaveLength(23);
     expect(byRarity('common').every((j) => !j.unlock)).toBe(true);
-    expect(byRarity('rare').filter((j) => !j.unlock)).toHaveLength(19); // 19/32 ≈ 59 %
+    expect(byRarity('rare').filter((j) => !j.unlock)).toHaveLength(21); // 21/34 ≈ 62 %
     expect(byRarity('epic').filter((j) => !j.unlock)).toHaveLength(7); // 7/17 ≈ 41 %
     for (const j of byRarity('legendary')) {
       expect(j.unlock, j.id).toBeUndefined();
@@ -267,6 +271,37 @@ describe('odemčeno na startu (DESIGN 11.3)', () => {
 });
 
 // ─────────────────────────── Platnost a splnitelnost ───────────────────────────
+
+describe('Odemknout vše (Nastavení)', () => {
+  it('odemkne všechny balíčky, žolíky, kupóny, výzvy a nejvyšší sílu piva; statistiky ani objevy nemění', () => {
+    const p = fresh();
+    const before = structuredClone(p);
+    const count = unlockEverything(p, reg);
+    expect(count).toBeGreaterThan(50);
+    const top = maxStakeLevel(reg);
+    for (const id of Object.keys(reg.decks)) {
+      expect(isDeckUnlocked(p, reg, id), id).toBe(true);
+      expect(isStakeUnlocked(p, reg, id, top), id).toBe(true);
+    }
+    for (const id of Object.keys(reg.vouchers)) expect(isVoucherUnlocked(p, reg, id), id).toBe(true);
+    for (const id of Object.keys(reg.challenges)) expect(isChallengeUnlocked(p, reg, id), id).toBe(true);
+    for (const j of Object.values(reg.jokers)) {
+      // Legendární bez podmínky se odemykají objevem (sbírka) — v poolu jsou vždy.
+      if (j.rarity === 'legendary' && !j.unlock) continue;
+      expect(isJokerUnlocked(p, reg, j.id), j.id).toBe(true);
+    }
+    expect(unlockedPoolFor(p, reg, 'normal').jokers).toHaveLength(Object.keys(reg.jokers).length);
+    expect(unlockedPoolFor(p, reg, 'normal').vouchers).toHaveLength(Object.keys(reg.vouchers).length);
+    expect(p.stats).toEqual(before.stats);
+    expect(p.discovered).toEqual(before.discovered);
+    expect(p.achievements).toEqual(before.achievements);
+    expect(p.unseen).toEqual(before.unseen);
+    // Podruhé už není co odemykat; seznamy bez duplicit.
+    expect(unlockEverything(p, reg)).toBe(0);
+    for (const list of [p.unlocks.decks, p.unlocks.jokers, p.unlocks.vouchers, p.unlocks.challenges])
+      expect(new Set(list).size).toBe(list.length);
+  });
+});
 
 describe('každá podmínka obsahu je platná a jde splnit', () => {
   const all = (['decks', 'jokers', 'vouchers', 'challenges'] as const).flatMap((category) =>

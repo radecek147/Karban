@@ -5,7 +5,7 @@
 
 ## Aktuální stav
 
-_Aktualizováno: 2026-10-03 (1.0.1: kalibrace obtížnosti)_
+_Aktualizováno: 2026-10-07 (1.0.2: patch „Pouť a volby“ — sekce níže; hra běží na https://radecek147.github.io/Karban/)_
 
 **Verze 1.0.1 je hotová** (`package.json` 1.0.1): opravy UI, čitelnosti a logiky z testu 1.0, odlišení od Balatra a designové opravy (DECISIONS 2026-10-03 „Oprava UI po testu 1.0“, „Oprava logických chyb po testu 1.0“, „Odlišení od Balatra a designové opravy po testu 1.0“); všechny položky sekce „Opravy po testu 1.0 (1.0.1)“ jsou odškrtnuté. **Kalibrace obtížnosti je hotová** (DECISIONS 2026-10-03 „Kalibrace 1.0.1 (obtížnost po odlišení od
 Balatra)“, DESIGN 2.3, 4.3, 4.10, 8, 9, 10, 12.2): boti oceňují kupóny a štítky 1.0.1 (splátka Půjčky, tombola,
@@ -532,6 +532,17 @@ Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba h
       snímky a GIF v README, artefakt s hrou aktualizovaný, desktopový workflow spuštěný s novou ikonou
 - [ ] Dál: tempo (výchozí rychlost 2×, nápověda k mezerníku), balanc z playtestu, přístupnost (aria-label vs. text,
       pořadí Tab ve Večerce), popis karty pod kartou ve Večerce a obálce
+
+## Patch 1.0.2 „Pouť a volby“ (2026-10-07) — DECISIONS 2026-10-07
+
+- [x] 6 nových žolíků (`src/content/jokers/extra.ts`): Fotograf z pouti (×2 při každé aktivaci první figury),
+      Volební komise, Fotbalový fanoušek, Zlatník (Kč za figuru), Žebrák, Stavební spoření; starý Zlatník =
+      Pozlacovač; portréty, testy (`tests/unit/jokers-extra.test.ts`), 107 žolíků
+- [x] Odemknout vše v Nastavení (`unlockEverything`, unit + e2e test)
+- [x] Pranostiky na míru (`consumableWeight`, `PRANOSTIKA_PLAYED_FOCUS = 3`)
+- [x] Víc peněz z karet: Zlatá 4 Kč, Šťastná 1 z 5, váhy zlaté/šťastné/zlaté pečeti 2 na náhodných kartách
+- [x] Balanc: cíle pater 5–8 ×1,15 (Desítka ~33 %, Imperial ~2–3 %), DESIGN 2.3, 2.7, 4.10, 5.2
+- [ ] Dál: přeměřit `scripts/joker-value.ts` pro nové žolíky (hodnota podle DESIGN 4.3) a balíčky s plnou sadou A–C
 
 ---
 

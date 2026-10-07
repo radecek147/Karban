@@ -537,12 +537,12 @@ describe('rozpis odměn (DESIGN 2.4.2)', () => {
     play(game, [cards[0]!]);
     const rewards = game.state.rewards!;
     expect(rewards.extra).toEqual([
-      { source: 'held', amount: 6 },
+      { source: 'held', amount: 8 },
       { source: 'joker:round_cash', amount: 2, jokerUid: cash!.uid },
       { source: 'deck:bonus_deck', amount: 1 },
       { source: 'rental:noop', amount: -RENTAL_FEE, jokerUid: rental!.uid },
     ]);
-    expect(rewards.total).toBe(3 + 3 + 6 + 2 + 1 - RENTAL_FEE);
+    expect(rewards.total).toBe(3 + 3 + 8 + 2 + 1 - RENTAL_FEE);
   });
 
   it('debuffnutá zlatá karta ani debuffnutý žolík nic nedají', () => {
@@ -555,7 +555,7 @@ describe('rozpis odměn (DESIGN 2.4.2)', () => {
     const cards = setupRound(game, 'AS 2H:gold 3C:gold');
     winNextHand(game);
     play(game, [cards[0]!]);
-    expect(game.state.rewards!.extra).toEqual([{ source: 'held', amount: 3 }]);
+    expect(game.state.rewards!.extra).toEqual([{ source: 'held', amount: 4 }]);
   });
 
   it('Ležák (moneyPerUnusedHand −1, DESIGN 10): nevyužité ruce nedávají peníze; nižší síla piva ano', () => {
@@ -1127,8 +1127,8 @@ describe('výhra v patře 8 a nekonečný režim (DESIGN 1.2, 1.3)', () => {
     ok(game.dispatch({ type: 'leaveShop' }));
     expect(game.registry.bosses[game.state.blinds[2]!.bossId!]!.final).not.toBe(true);
     ok(game.dispatch({ type: 'selectBlind' }));
-    // Cíle nekonečného režimu (DESIGN 2.3.3): patro 9, křivka 1, Malá 150 000.
-    expect(game.state.round!.target).toBe(150_000);
+    // Cíle nekonečného režimu (DESIGN 2.3.3): patro 9, křivka 1, Malá 175 000.
+    expect(game.state.round!.target).toBe(175_000);
   });
 
   it('v nekonečném režimu má patro 16 finálového šéfa, ale jeho porážka už není výhra', () => {
@@ -1140,7 +1140,7 @@ describe('výhra v patře 8 a nekonečný režim (DESIGN 1.2, 1.3)', () => {
     const events = beatBossAt(game, 16);
     expect(game.state.round!.bossId).toBe('final_boss');
     expect(events.target).toBe(blindTarget(16, 'boss', 1));
-    expect(events.target).toBe(17_000_000);
+    expect(events.target).toBe(20_000_000);
     expect(game.state.phase).toBe('round_end');
     expect(types(events)).not.toContain('victory');
   });

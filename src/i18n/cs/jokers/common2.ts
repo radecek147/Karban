@@ -40,7 +40,7 @@ export const jokersCommon2 = {
     flavor: 'Pana ředitele pozdraví, paní hlavní účetní taky. Tebe dál nepustí.',
   },
   goldsmith: {
-    name: 'Zlatník',
+    name: 'Pozlacovač',
     desc: 'Na konci kola promění náhodnou kartu bez vylepšení drženou v ruce na zlatou.',
     flavor: 'Pozlatí ti cokoli. Nejvíc účet.',
     gilded: 'Pozlaceno!',

@@ -1,6 +1,6 @@
 /** Losování obsahu (žolíci, spotřebky, edice) z dostupných poolů. */
 import type { ConsumableDef, EditionDef, JokerDef, JokerRarity, Rng } from '../content-types';
-import { FALLBACK_JOKER_ID, RARITY_WEIGHTS } from '../constants';
+import { FALLBACK_JOKER_ID, PRANOSTIKA_PLAYED_FOCUS, RARITY_WEIGHTS } from '../constants';
 import type { GameCore } from '../effects/core';
 import type { ConsumableKind, EditionId, StickerId } from '../types';
 
@@ -165,8 +165,22 @@ function consumableAllowed(core: GameCore, def: ConsumableDef): boolean {
 }
 
 /**
- * Vybere id spotřebky daného typu (vážené `ConsumableDef.weight`, výchozí 1). Preferuje id mimo `exclude`;
- * když žádné nezbývá, vezme libovolné (volající, který nesmí opakovat, si to ohlídá).
+ * Váha spotřebky při losování: `ConsumableDef.weight` (výchozí 1); pranostika navíc × (1 + `PRANOSTIKA_PLAYED_FOCUS`
+ * × podíl zahrání své kombinace v tomto runu) — hráč dostává pranostiky na kombinace, které opravdu hraje.
+ */
+export function consumableWeight(core: GameCore, def: ConsumableDef): number {
+  const base = def.weight ?? 1;
+  if (def.kind !== 'pranostika' || !def.hand || base <= 0) return base;
+  let total = 0;
+  for (const h of Object.values(core.state.handLevels)) total += h?.played ?? 0;
+  if (total <= 0) return base;
+  const played = core.state.handLevels[def.hand]?.played ?? 0;
+  return base * (1 + (PRANOSTIKA_PLAYED_FOCUS * played) / total);
+}
+
+/**
+ * Vybere id spotřebky daného typu (vážené `consumableWeight`). Preferuje id mimo `exclude`; když žádné nezbývá,
+ * vezme libovolné (volající, který nesmí opakovat, si to ohlídá).
  */
 export function pickConsumableDefId(
   core: GameCore,
@@ -180,7 +194,9 @@ export function pickConsumableDefId(
     .sort((a, b) => compareIds(a.id, b.id));
   if (pool.length === 0) return null;
   const fresh = pool.filter((d) => !exclude.has(d.id));
-  return rng.weighted((fresh.length > 0 ? fresh : pool).map((d) => ({ item: d.id, weight: d.weight ?? 1 })));
+  return rng.weighted(
+    (fresh.length > 0 ? fresh : pool).map((d) => ({ item: d.id, weight: consumableWeight(core, d) })),
+  );
 }
 
 /** Na čem se edice losuje: žolík (obchod, obálka) nebo hrací karta. */

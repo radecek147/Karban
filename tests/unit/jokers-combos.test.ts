@@ -1,5 +1,5 @@
 /**
- * Revize všech 101 žolíků (fáze 4 a 7) v kombinaci s enginem (docs/DESIGN.md 4.4, 4.6–4.10; docs/ARCHITECTURE.md
+ * Revize všech 107 žolíků (fáze 4 a 7) v kombinaci s enginem (docs/DESIGN.md 4.4, 4.6–4.10; docs/ARCHITECTURE.md
  * 2.5–2.7):
  *
  * - popisky všech žolíků vyrenderované s `params` (čísla jen z `params`, žádné natvrdo v šabloně),
@@ -7,7 +7,7 @@
  *   stav originálu se kopií nezdvojí (ani přes dvě kola),
  * - debuff (nic nedá, ani `passive`, edice, odměny a počítadla), edice (efekt platí, i když žolík sám nic nedělá),
  *   prodej (cena podle DESIGN 4.1, `onSell` se všemi žolíky, `passive` po prodeji zmizí),
- * - fuzz: runy přes boty se všemi 101 žolíky — žádná výjimka, žádná neplatná akce bota, stav JSON-bezpečný, uložení
+ * - fuzz: runy přes boty se všemi 107 žolíky — žádná výjimka, žádná neplatná akce bota, stav JSON-bezpečný, uložení
  *   a načtení uprostřed kola dá stejné akce i stav jako run bez načítání.
  */
 import { describe, expect, it } from 'vitest';
@@ -230,6 +230,19 @@ const SCENARIOS: Record<string, Scenario> = {
   pub_quiz: { hand: 'KS KH 5C 5D' },
   scrap_yard: { hand: 'KS', state: { mult: 4 } },
 
+  // ── patch 1.0.2 (extra) ──
+  fair_photographer: { hand: 'KS KH' },
+  recount_committee: { hand: 'KS KH' },
+  football_fan: { hand: 'KS KH' },
+  crown_goldsmith: { hand: 'KS KH', measure: (_g, r) => r.moneyEarned },
+  beggar: {
+    hand: '9S 9H',
+    // Jistota (2 z 2) — výsledek nezávisí na tom, kolik hodů RNG žolíků už padlo.
+    setup: (g) => g._core.api.addPermanentModifier({ probabilityMult: 2 }),
+    measure: (_g, r) => r.moneyEarned,
+  },
+  building_savings: { hand: 'KS' },
+
   // ── vzácní fáze 7 (rare2) ──
   office_connection: { hand: 'KS' },
   chronicler: { hand: 'KS KH' },
@@ -401,8 +414,8 @@ describe('žolíci – vyrenderované popisky (params + počáteční stav)', ()
     return t(`jokers.${d.id}.desc`, { ...d.params, ...d.describe?.(inst!) }).replaceAll(NBSP, ' ');
   }
 
-  it('všech 101 popisků přesně (čísla odpovídají params a kódu)', () => {
-    expect(JOKERS).toHaveLength(101);
+  it('všech 107 popisků přesně (čísla odpovídají params a kódu)', () => {
+    expect(JOKERS).toHaveLength(107);
     expect(Object.fromEntries(JOKERS.map((d) => [d.id, rendered(d)]))).toEqual({
       beer_mat: '+10 čipů a +2 mult. Jako jediný žolík se smí v nabídce opakovat.',
       hearts_man: 'Každá skórující srdcová karta dá +5 čipů a +2 mult.',
@@ -451,6 +464,12 @@ describe('žolíci – vyrenderované popisky (params + počáteční stav)', ()
       derby_fans: '+7 mult, pokud mezi skórujícími kartami je červená i černá barva.',
       pub_quiz: '+10 čipů za každou různou hodnotu mezi skórujícími kartami.',
       scrap_yard: 'Za každou zničenou hrací kartu trvale +3 mult, nejvýš +18 mult (teď +0 mult).',
+      fair_photographer: 'První skórující figura dá ×2 mult při každém svém skórování, i opakovaném.',
+      recount_committee: 'První skórující karta skóruje ještě 2×.',
+      football_fan: 'Každá skórující figura skóruje ještě 1×.',
+      crown_goldsmith: 'Každá skórující figura dá 1 Kč.',
+      beggar: 'Každá skórující karta bez figury má šanci 1 ze 2, že dá 1 Kč.',
+      building_savings: 'Strop úroku je o 5 Kč vyšší.',
       late_train: '×1,5 mult; 1 ze 6, že efekt „nabere zpoždění“ a nenastane.',
       head_waiter: '×2 mult, pokud zahraná ruka má nejvýš 3 karty.',
       old_guard: '×1,5 mult, pokud má zahraná kombinace úroveň aspoň 3.',
@@ -919,7 +938,7 @@ describe('fuzz: runy se všemi žolíky přes boty (uložení a načtení uprost
     ['obsah hry', 'max'],
     ['obsah hry', 'pairs'],
   ] as const)(
-    '%s – všech 101 žolíků naráz (%s)',
+    '%s – všech 107 žolíků naráz (%s)',
     (label, bot) => {
       const [registry, deck] = label === 'obsah hry' ? [contentReg, 'pub'] : [fuzzReg, 'easy'];
       const seed = `FUZZ-ALL-${bot}`;
@@ -936,7 +955,7 @@ describe('fuzz: runy se všemi žolíky přes boty (uložení a načtení uprost
   const GROUPS = jokerGroups('FUZZ-GROUPS', 5);
   const BOTS: BotName[] = ['max', 'flush', 'pairs', 'econ'];
 
-  it('pětice pokrývají všech 101 žolíků', () => {
+  it('pětice pokrývají všech 107 žolíků', () => {
     expect(new Set(GROUPS.flat())).toEqual(new Set(IDS));
   });
 

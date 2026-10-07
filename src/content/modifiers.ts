@@ -12,13 +12,16 @@ const GLASS_XMULT = 2;
 const GLASS_BREAK_ODDS = 5;
 const STEEL_XMULT = 1.5;
 const STONE_CHIPS = 50;
-const GOLD_MONEY = 3;
-/** Šťastná (1.0.1): častější, menší výhry — 1 ze 3 za +10 mult, nezávisle 1 ze 6 za +7 Kč. */
+/** Zlatá: Kč na konci kola v ruce. 1.0.2: 3 → 4 Kč (ekonomika z karet, DECISIONS 2026-10-07). */
+const GOLD_MONEY = 4;
+/** Šťastná (1.0.1): častější, menší výhry — 1 ze 3 za +10 mult, nezávisle 1 z 5 za +7 Kč (1.0.2: dřív 1 ze 6). */
 const LUCKY_MULT = 10;
 const LUCKY_MULT_ODDS = 3;
 const LUCKY_MONEY = 7;
-const LUCKY_MONEY_ODDS = 6;
+const LUCKY_MONEY_ODDS = 5;
 const WORN_CHIPS = 3;
+/** Váha „peněžních“ úprav při losování náhodné hrací karty (zlatá, šťastná, zlatá pečeť); ostatní 1. */
+const MONEY_WEIGHT = 2;
 
 /** „1 z N“ prasknutí skla: `Modifiers.glassBreakOdds` (> 0), jinak výchozí `GLASS_BREAK_ODDS`. */
 function glassBreakOdds(override: number): number {
@@ -68,6 +71,7 @@ export const ENHANCEMENTS: EnhancementDef[] = [
     id: 'gold',
     params: { money: GOLD_MONEY },
     roundEndHeldMoney: () => GOLD_MONEY,
+    weight: MONEY_WEIGHT,
     art: { icon: 'gold-bar', bg: '#b8860b', fg: '#fff8dc', pattern: 'stripes' },
   },
   {
@@ -80,6 +84,7 @@ export const ENHANCEMENTS: EnhancementDef[] = [
       moneyChance: 1,
       moneyOdds: LUCKY_MONEY_ODDS,
     },
+    weight: MONEY_WEIGHT,
     // Hody proběhnou při každé aktivaci (červená pečeť = dvě šance).
     onScored: (ctx) => {
       const out: EffectResult[] = [];
@@ -114,6 +119,7 @@ export const SEALS: SealDef[] = [
     id: 'gold',
     params: { money: GOLD_SEAL_MONEY },
     onScored: () => ({ money: GOLD_SEAL_MONEY }),
+    weight: MONEY_WEIGHT,
     art: { icon: 'coins', bg: '#b8860b', fg: '#fff8dc' },
   },
   {

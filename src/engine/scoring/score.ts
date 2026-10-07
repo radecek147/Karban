@@ -4,7 +4,8 @@
  *  1. základ kombinace (čipy + mult podle úrovně, případně upravený šéfem) + výsledky beforeScoring,
  *  2. skórující karty zleva doprava: čipy karty → vylepšení → edice → pečeť → žolíci `onCardScored`;
  *     opakované aktivace (max. `MAX_ACTIVATIONS_PER_CARD`) zopakují celou sekvenci; ×mult dají jen první
- *     `MAX_XMULT_ACTIVATIONS_PER_CARD` aktivace karty (další opakování jen čipy, +mult a peníze),
+ *     `MAX_XMULT_ACTIVATIONS_PER_CARD` aktivace karty (další opakování jen čipy, +mult a peníze; výjimkou je
+ *     výsledek s `uncappedXmult` — Fotograf z pouti),
  *  3. karty v ruce: vylepšení `onHeld` → žolíci `onCardHeld` (s opakováním, ×mult stejně omezený),
  *  4. žolíci zleva doprava: edice „before“ → `onHandPlayed` → edice „after“,
  *  5. skóre = floor(čipy × mult), šéf `adjustHandScore`, žolíci `afterHandScored`;
@@ -58,11 +59,14 @@ export function xmultAllowed(activation: number): boolean {
   return activation < MAX_XMULT_ACTIVATIONS_PER_CARD;
 }
 
-/** Výsledky efektu karty bez ×mult (pro aktivace nad `MAX_XMULT_ACTIVATIONS_PER_CARD`). */
+/**
+ * Výsledky efektu karty bez ×mult (pro aktivace nad `MAX_XMULT_ACTIVATIONS_PER_CARD`); výsledek s `uncappedXmult`
+ * (Fotograf z pouti) si ×mult nechá.
+ */
 function withoutXmult(results: EffectResult[]): EffectResult[] {
   return results
-    .map((r) => (r.xmult === undefined ? r : { ...r, xmult: undefined }))
-    .filter((r) => r.chips || r.mult || r.money || r.message || r.destroyCard);
+    .map((r) => (r.xmult === undefined || r.uncappedXmult ? r : { ...r, xmult: undefined }))
+    .filter((r) => r.chips || r.mult || r.xmult !== undefined || r.money || r.message || r.destroyCard);
 }
 
 /**

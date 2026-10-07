@@ -3882,3 +3882,47 @@ Starší profily klíč `musicVolume` mají; `sanitizeSettings` ho zahodí. Zvuk
 
 **Proč:** hráči hudba vadila („je otravná“). Odchylka od CLAUDE.md kap. 7 (procedurální hudba) je vědomá.
 Smyčka bez možnosti dobré variace nudí rychleji než ticho a efekty hře zvuk dávají samy.
+
+## 2026-10-07 — Patch 1.0.2 „Pouť a volby“: kombo na figury, odemknout vše, pranostiky na míru, peníze z karet
+
+**Co (přání hráče):**
+
+1. **Šest nových žolíků** (`src/content/jokers/extra.ts`, texty `src/i18n/cs/jokers/extra.ts`, portréty
+   `src/ui/art/figures.ts`, testy `tests/unit/jokers-extra.test.ts`; celkem 107):
+   - _Fotograf z pouti_ (běžný, 5 Kč): první skórující figura ×2 mult **při každé své aktivaci**. Je to jediná
+     výjimka ze stropu ×mult opakování (`MAX_XMULT_ACTIVATIONS_PER_CARD` = 2, DECISIONS 2026-10-03): výsledek nese
+     `EffectResult.uncappedXmult`, `withoutXmult` ho nechá. Zbývá strop aktivací 10 a týká se jediné karty v ruce.
+   - _Volební komise_ (běžný, 5 Kč): první skórující karta skóruje ještě 2×.
+   - _Fotbalový fanoušek_ (vzácný, 6 Kč): každá skórující figura skóruje ještě 1×.
+   - Kombo: Fotograf + Komise = ×8, + Fanoušek = ×16, s červenou pečetí ×32 na první figuře. Hráč chtěl
+     „něco overpowered z běžných žolíků“; potřebuje to 2–3 sloty a figuru jako první kartu.
+   - _Zlatník_ (`crown_goldsmith`, běžný, 5 Kč): 1 Kč za každou aktivaci skórující figury. Původní Zlatník
+     (`goldsmith`, pozlacuje kartu v ruce) se jmenuje **Pozlacovač** — id zůstává, uložené runy se nerozbijí.
+   - _Žebrák_ (běžný, 4 Kč): každá skórující karta bez figury má šanci 1 ze 2 na 1 Kč. Šance místo jistoty:
+     s jistotou by dával ~9 Kč za kolo, trojnásobek pásma běžného ekonomického žolíka (DESIGN 4.3).
+   - _Stavební spoření_ (vzácný, 6 Kč): strop úroku +5 Kč (čisté pravidlo, nejde kopírovat). Dosud ho nic nezvedalo.
+2. **Odemknout vše** v Nastavení (jedno potvrzení): `unlockEverything` v `src/engine/meta/unlocks.ts` zapíše do
+   profilu všechny balíčky, žolíky, kupóny a výzvy s podmínkou a nejvyšší sílu piva u každého balíčku. Statistiky,
+   achievementy, objevy ve sbírce ani štítky „Nové“ nemění. Legendární se dál odemykají objevem (v poolu jsou vždy).
+3. **Pranostiky na míru:** váha pranostiky ve Večerce, v obálkách i z efektů (`consumableWeight` v
+   `src/engine/shop/pool.ts`) je `1 + PRANOSTIKA_PLAYED_FOCUS × podíl`, kde podíl = kolikrát hráč v runu zahrál
+   její kombinaci / všechny zahrané ruce. Hráč si stěžoval, že pranostiky na kombinace, které hraje, skoro
+   nechodí — při rovnoměrném losování mezi 10 kombinacemi měla každá 10 %. Před první rukou platí rovnoměrné váhy.
+   Počet hodů RNG se nemění.
+4. **Víc peněz z karet:** Zlatá karta 3 → 4 Kč, Šťastná peníze 1 ze 6 → 1 z 5. Náhodná hrací karta (Večerka,
+   karetní obálky) losuje vylepšení a pečeť podle nového `weight` v `EnhancementDef` / `SealDef`: Zlatá, Šťastná
+   a Zlatá pečeť mají váhu 2 (Zlatá a Šťastná po ≈ 18 % vylepšených karet místo 11 %, Zlatá pečeť 40 % místo 25 %).
+   Zlatá pečeť zůstává na 2 Kč (3 Kč by bylo převzaté číslo).
+5. **Balanc (simulace, Desítka, boti `max` / `flush` / `pairs`, 240 runů na bota, chyba ~3 p. b.):** nové žolíky
+   a peníze z karet samy posunuly výhry z 27,8 % (kalibrace 1.0.1) na ~33 %, pranostiky na míru přidaly dalších
+   ~7 p. b. Síla zaměření 9 → 45 %, 4 → 41 %, 3 → 40 %, 2 → 40 %, 0 → 33 %. Zvolil jsem **3** (hraná kombinace
+   dostane svou pranostiku ~2,5–3× častěji než dřív) a obtížnost vrátil **cíli pater 5–8 ×1,15 ve všech třech
+   křivkách** (`TARGET_CURVES`, křivka 1: 11 000 / 26 000 / 59 000 / 115 000): Desítka 29,6 / 35,4 / 35 %
+   (průměr 33 %, pásmo 25–35 %). Varianta ×1,10 dala 30 / 37 / 37,5 % a Imperial 2,5 %. Nekonečný režim navazuje
+   na patro 8, takže je taky o 15 % výš (patro 9 = 175 000, křivka 3 přeteče o patro dřív, v patře 294).
+   Ekonomika z karet se u botů projevila málo (+1–2 Kč při vstupu do Večerky): boti zlaté karty skoro nekupují.
+   Hráči, který je sbírá, pomůže víc.
+
+**Proč:** hráč chtěl silnější kombinace z běžných žolíků, rychlý přístup ke všemu obsahu, pranostiky na
+kombinace, které hraje, a víc peněz z karet a žolíků. Pravidla mění jen data a dva malé háčky v enginu
+(`uncappedXmult`, `consumableWeight`). Cílové pásmo obtížnosti z CLAUDE.md zůstává díky vyšším cílům pozdních pater.

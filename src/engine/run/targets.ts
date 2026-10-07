@@ -7,12 +7,13 @@ import type { BlindKind } from '../types';
  * o 30–45 % výš a patro 8 o ~5 % (křivka 1: 2 700 / 6 500 / 16 000 / 39 000 / 95 000 → 3 600 / 9 400 / 23 000 / 51 000
  * / 100 000) — dřív se patra 1–5 vyhrávala první rukou a patro 8 bylo zeď (49 % proher runů, které ho dosáhly); křivka 3
  * je o ~15–19 % nad křivkou 2, aby Bock nebyl prázdný krok proti Ležáku (křivka 2 má proto v patrech 6–7 menší odstup
- * od křivky 1, +12–13 %). Hodnoty musí být „hezká“ čísla (`niceRound`).
+ * od křivky 1, +12–13 %). Patch 1.0.2 (DECISIONS 2026-10-07): patra 5–8 všech křivek ×1,15 — pranostiky na míru
+ * a nové žolíky zvedly výhry na Desítce z 33 % na 40 %. Hodnoty musí být „hezká“ čísla (`niceRound`).
  */
 export const TARGET_CURVES: readonly (readonly number[])[] = [
-  [250, 600, 1300, 3600, 9400, 23000, 51000, 100000],
-  [250, 600, 1400, 4100, 11000, 26000, 57000, 115000],
-  [250, 650, 1550, 4700, 12500, 31000, 68000, 135000],
+  [250, 600, 1300, 3600, 11000, 26000, 59000, 115000],
+  [250, 600, 1400, 4100, 12500, 30000, 66000, 130000],
+  [250, 650, 1550, 4700, 14500, 36000, 78000, 155000],
 ];
 
 /** Re-export pro starší importy — násobky útrat žijí v engine/constants.ts. */
