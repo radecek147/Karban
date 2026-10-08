@@ -3,10 +3,11 @@ import { t } from '../../src/i18n/cs';
 import { expectCleanConsole, idle, newState, readRun, seedSavedRun, watchConsole } from './helpers';
 
 /**
- * Odkaz s ukázkovou sestavou žolíků (src/content/presets.ts): sdílená stránka `sestava/<id>/`
- * (scripts/preset-pages.ts) přesměruje na `?sestava=<id>` (src/main.ts) a hra rovnou rozehraje seedovaný run se
- * sestavou ve slotech; parametr zmizí z adresy, rozehraná hra se bez potvrzení nepřepíše. Starý service worker
- * (odkaz z doby před aktualizací) ověřuje scénář se dvěma buildy v docs/DECISIONS.md 2026-10-08.
+ * Odkaz s ukázkovou sestavou žolíků (src/content/presets.ts): sdílená stránka `sestava/<id>/` je kopie app shellu
+ * (scripts/preset-pages.ts), hra si sestavu přečte z cesty nebo z `?sestava=<id>` (src/ui/linkRoute.ts) a rovnou
+ * rozdá seedovaný run se sestavou ve slotech; adresa se přepíše na kořen hry, rozehraná hra se bez potvrzení
+ * nepřepíše. Starý service worker (odkaz z doby před aktualizací) ověřuje scénář se dvěma buildy
+ * v docs/DECISIONS.md 2026-10-08.
  */
 
 const screen = (page: Page) => page.locator('#app');
@@ -17,7 +18,7 @@ test('?sestava=nejsilnejsi založí run s nejsilnější sestavou', async ({ pag
   await expect(screen(page)).toHaveAttribute('data-screen', 'game');
   await idle(page);
   await expect(page.getByTestId('joker-count')).toHaveText('5/5');
-  await expect(page.getByTestId('toast-preset')).toContainText(t('jokers.fair_photographer.name'));
+  await expect(page.getByTestId('toast-preset')).toContainText(t('newGame.preset.names.nejsilnejsi'));
   // Parametr sestavy z adresy zmizí, ostatní zůstanou.
   expect(new URL(page.url()).searchParams.get('sestava')).toBeNull();
   expect(new URL(page.url()).searchParams.get('tutorial')).toBe('off');
@@ -42,6 +43,7 @@ test('rozehraná hra se bez potvrzení nepřepíše', async ({ page }) => {
   await seedSavedRun(page, saved);
   await page.goto('/?sestava=fotograf&tutorial=off');
   await expect(page.getByTestId('overwrite-confirm')).toBeVisible();
+  await expect(page.getByTestId('overwrite-confirm')).toContainText(t('newGame.preset.overwrite.title'));
   await page.getByTestId('confirm-cancel').click();
   await expect(screen(page)).toHaveAttribute('data-screen', 'menu');
   const run = await readRun(page);
@@ -56,9 +58,11 @@ test('neznámá sestava jen oznámí, že ji tu neznají', async ({ page }) => {
   expect(new URL(page.url()).searchParams.get('sestava')).toBeNull();
 });
 
-test('stránka sestava/fotograf/ přesměruje do hry se sestavou', async ({ page }) => {
+test('stránka sestava/fotograf/ rovnou spustí hru se sestavou a adresu přepíše na kořen', async ({
+  page,
+}) => {
   const log = watchConsole(page);
-  await page.goto('/sestava/fotograf/');
+  await page.goto('/sestava/fotograf/?tutorial=off');
   await expect(screen(page)).toHaveAttribute('data-screen', 'game');
   expect(new URL(page.url()).pathname).toBe('/');
   expect(new URL(page.url()).searchParams.get('sestava')).toBeNull();
@@ -71,7 +75,26 @@ test('stránka sestava/fotograf/ přesměruje do hry se sestavou', async ({ page
     'echo',
   ]);
   await expect(page.getByTestId('toast-preset')).toContainText(t('newGame.preset.names.fotograf'));
+  // Kopie shellu nese náhled odkazu; po startu hry je titulek zase hry.
+  await expect(page).toHaveTitle(t('app.documentTitle'));
+  expect(new URL(page.url()).searchParams.get('tutorial')).toBe('off');
+  // Obnovení po přepsání adresy: kořen hry, žádný nový run.
+  const seed = (await readRun(page)).seed;
+  await page.reload();
+  await expect(screen(page)).toHaveAttribute('data-screen', 'menu');
+  expect((await readRun(page)).seed).toBe(seed);
   expectCleanConsole(log);
+});
+
+test('stránka sestavy nese náhled odkazu (titulek, Open Graph) a <base> na kořen hry', async ({
+  request,
+}) => {
+  const html = await (await request.get('/sestava/nejsilnejsi/')).text();
+  expect(html).toContain('<base href="../../" />');
+  expect(html).toContain(
+    `<title>${t('newGame.preset.pageTitle', { name: t('newGame.preset.names.nejsilnejsi') })}</title>`,
+  );
+  expect(html).toContain('property="og:description"');
 });
 
 test('s aktuálním service workerem jde odkaz přes cache a worker zůstane', async ({ page }) => {

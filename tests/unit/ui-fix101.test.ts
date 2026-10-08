@@ -417,6 +417,19 @@ describe('TabGuard — jedna aktivní karta', () => {
     expect(b.active).toBe(false);
   });
 
+  it('dvě karty naráz: událost se starším vlastníkem dorazí po vlastním zápisu → zablokuje se jen jedna', () => {
+    const shared = memoryStore();
+    const a = new TabGuard(shared, { tabId: 'A' });
+    const b = new TabGuard(shared, { tabId: 'B' });
+    a.claim();
+    b.claim();
+    // Události storage dorazí až teď a každá karta dostane zápis té druhé.
+    b.handleStorage(TAB_OWNER_KEY, 'A');
+    a.handleStorage(TAB_OWNER_KEY, 'B');
+    expect(b.active).toBe(true);
+    expect(a.active).toBe(false);
+  });
+
   it('souběh: zápis dřív, než dorazí událost, ověří vlastníka a kartu zablokuje', () => {
     const shared = memoryStore();
     const a = new TabGuard(shared, { tabId: 'A' });

@@ -15,18 +15,26 @@ export function runInProgress(app: App): boolean {
   return GameController.hasSavedRun(app.store);
 }
 
+/** Vlastní texty dotazu na přepsání (už přeložené), např. pro sestavu z odkazu. */
+export interface OverwriteTexts {
+  readonly title: string;
+  readonly message: string;
+  readonly confirmLabel: string;
+}
+
 /**
  * Zeptá se, jestli zahodit rozehraný run (bez rozehraného runu rovnou true). Rozehraný oficiální denní pokus má
- * vlastní varování — po přepsání se zapíše jako opuštěný a dnes už druhý oficiální pokus není.
+ * vlastní varování — po přepsání se zapíše jako opuštěný a dnes už druhý oficiální pokus není; to přebije i `texts`.
  */
-export async function confirmOverwrite(app: App): Promise<boolean> {
+export async function confirmOverwrite(app: App, texts?: OverwriteTexts): Promise<boolean> {
   if (!runInProgress(app)) return true;
   const cur = app.profiles.profile.current;
   const daily = !!cur && cur.mode === 'daily' && cur.official && cur.outcome === null;
+  const own = daily ? undefined : texts;
   return confirmModal({
-    title: t('newGame.overwrite.title'),
-    message: t(daily ? 'newGame.overwrite.messageDaily' : 'newGame.overwrite.message'),
-    confirmLabel: t('newGame.overwrite.confirm'),
+    title: own?.title ?? t('newGame.overwrite.title'),
+    message: own?.message ?? t(daily ? 'newGame.overwrite.messageDaily' : 'newGame.overwrite.message'),
+    confirmLabel: own?.confirmLabel ?? t('newGame.overwrite.confirm'),
     danger: true,
     testId: 'overwrite-confirm',
   });
@@ -36,8 +44,13 @@ export async function confirmOverwrite(app: App): Promise<boolean> {
  * Založí run (po potvrzení přepsání rozehraného) a přejde na hru. Chybu oznámí hláškou `failedKey`.
  * Vrací true, když se run založil.
  */
-export async function startRunFlow(app: App, req: NewRunRequest, failedKey: string): Promise<boolean> {
-  if (!(await confirmOverwrite(app))) return false;
+export async function startRunFlow(
+  app: App,
+  req: NewRunRequest,
+  failedKey: string,
+  overwrite?: OverwriteTexts,
+): Promise<boolean> {
+  if (!(await confirmOverwrite(app, overwrite))) return false;
   try {
     app.controller = app.profiles.newRun(req);
   } catch (err) {

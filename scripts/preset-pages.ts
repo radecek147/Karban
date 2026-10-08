@@ -1,41 +1,32 @@
 /**
  * Vite plugin `karban-preset-pages`: při buildu vygeneruje stránky odkazů na ukázkové sestavy žolíků
  * (src/content/presets.ts):
- *  - `sestava/<id>/index.html` — sdílený odkaz; přesměruje do hry na `../../?sestava=<id>` (src/sw/linkRedirect.ts
- *    nejdřív odregistruje zastaralý service worker, ať se nenačte stará verze hry z cache),
- *  - `sestava/index.html` — seznam sestav s odkazy,
- *  - `404.html` (jen s absolutním `base`, tedy GitHub Pages) — chytí i pokažené odkazy (`sestava/Nejsilnější!/`,
- *    `sestava/fotograf:/`) a ostatním neexistujícím adresám ukáže „nenalezeno“ s odkazem do hry.
+ *  - `sestava/<id>/index.html` — sdílený odkaz; je to kopie app shellu (`index.html`) s `<base>` na kořen hry,
+ *    takže se na té adrese rovnou spustí hra a sestavu si přečte z cesty (src/ui/linkRoute.ts),
+ *  - `sestava/index.html` — seznam sestav s odkazy (statická stránka),
+ *  - `404.html` (jen s absolutním `base`, tedy GitHub Pages) — také kopie shellu: pokažené odkazy pod `sestava/`
+ *    (`sestava/Nejsilnější!/`, `sestava/fotograf:/`) najdou sestavu, ostatní neexistující adresy skončí v menu.
+ *
+ * Proč kopie shellu, a ne přesměrování na `?sestava=`: service worker (src/sw/sw.ts, ve všech nasazených verzích)
+ * vrací z cache jen navigace na adresu hry (`<base>` a `<base>index.html`). Adresu `sestava/<id>/` pustí na síť
+ * a soubory nové verze (jiné otisky v názvech) v jeho cache nejsou, takže se načte nová verze hry — i u hráče,
+ * kterému starý worker drží starou verzi, bez odregistrování a bez čekání na instalaci nového workeru.
  * Texty jdou z src/i18n/cs.ts (načtené přes `runnerImport` jako v pluginu karban-i18n-html), nic natvrdo.
  * Viz docs/DECISIONS.md 2026-10-08 „Odkazy na sestavy a service worker“.
  */
-import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { runnerImport, transformWithOxc, type Plugin } from 'vite';
+import { runnerImport, type Plugin } from 'vite';
 
-const LINK_SCRIPT_ENTRY = fileURLToPath(new URL('../src/sw/linkRedirect.ts', import.meta.url));
 const PRESETS_ENTRY = fileURLToPath(new URL('../src/content/presets.ts', import.meta.url));
 const I18N_ENTRY = fileURLToPath(new URL('../src/i18n/cs.ts', import.meta.url));
 
 /** Výstup pro neexistující adresy (GitHub Pages ho vrací se stavem 404 pro celý web projektu). */
 export const NOT_FOUND_FILE = '404.html';
-/** Jak dlouho stránka odkazu čeká na kontrolu aktualizace service workeru, než ho radši odregistruje. */
-export const UPDATE_TIMEOUT_MS = 5000;
-
-/** Konfigurace skriptu odkazu (`__LINK__` v src/sw/linkRedirect.ts). */
-export interface LinkConfig {
-  readonly target: string | null;
-  readonly base: string | null;
-  readonly dir: string;
-  readonly param: string;
-  readonly updateTimeoutMs: number;
-}
 
 /** Část API src/content/presets.ts, kterou plugin potřebuje. */
 interface PresetsApi {
   JOKER_PRESETS: ReadonlyArray<{ readonly id: string; readonly jokers: readonly string[] }>;
   PRESET_DIR: string;
-  PRESET_PARAM: string;
 }
 
 /** Část API src/i18n/cs.ts, kterou plugin potřebuje. */
@@ -53,21 +44,52 @@ export function escapeHtml(text: string): string {
     .replace(/'/g, '&#39;');
 }
 
-/** Přeložený skript odkazu s konfigurací, zabalený do funkce (žádná globální jména na stránce). */
-export async function buildLinkScript(config: LinkConfig): Promise<string> {
-  const source = await readFile(LINK_SCRIPT_ENTRY, 'utf8');
-  const { code } = await transformWithOxc(source, LINK_SCRIPT_ENTRY, { lang: 'ts' });
-  const body = code.replace(/^export\s*\{\s*\};?\s*$/m, '').trim();
-  if (/^\s*(import|export)\s/m.test(body))
-    throw new Error('karban-preset-pages: linkRedirect.ts nesmí nic importovat');
-  if (/<\/script/i.test(body)) throw new Error('karban-preset-pages: skript nesmí obsahovat „</script“');
-  // `<` v JSONu jako < — řetězec v konfiguraci nemůže ukončit <script>.
-  const json = JSON.stringify(config).replace(/</g, '\\u003c');
-  return `(() => {\nconst __LINK__ = ${json};\n${body}\n})();`;
+/** Náhled odkazu v chatu (Open Graph). */
+export interface LinkPreview {
+  readonly title: string;
+  readonly description: string;
+  readonly siteName: string;
 }
 
-/** Vzhled stránek odkazů: barvy hry (sukno a papír), systémové písmo, nic externího. */
-const STYLE = [
+function replaceOnce(html: string, pattern: RegExp, replacement: string, what: string): string {
+  if (!pattern.test(html)) throw new Error(`karban-preset-pages: v index.html chybí ${what}`);
+  return html.replace(pattern, () => replacement);
+}
+
+/**
+ * Kopie app shellu pro jinou adresu: `<base href>` hned za `<meta charset>` (relativní adresy v dokumentu i v kódu
+ * hry — registrace workeru `./sw.js` — se počítají od kořene hry) a volitelně vlastní titulek, popis a náhled odkazu.
+ */
+export function shellCopy(indexHtml: string, baseHref: string, preview?: LinkPreview): string {
+  if (/<base\s/i.test(indexHtml)) throw new Error('karban-preset-pages: index.html už má <base>');
+  const charset = /<meta charset="[^"]*"\s*\/?>/i.exec(indexHtml);
+  if (!charset) throw new Error('karban-preset-pages: v index.html chybí <meta charset>');
+  const at = charset.index + charset[0].length;
+  let html = `${indexHtml.slice(0, at)}\n    <base href="${escapeHtml(baseHref)}" />${indexHtml.slice(at)}`;
+  if (!preview) return html;
+  const title = escapeHtml(preview.title);
+  const description = escapeHtml(preview.description);
+  html = replaceOnce(html, /<title>[\s\S]*?<\/title>/i, `<title>${title}</title>`, '<title>');
+  html = replaceOnce(
+    html,
+    /<meta name="description" content="[^"]*"\s*\/?>/i,
+    `<meta name="description" content="${description}" />`,
+    '<meta name="description">',
+  );
+  const og = [
+    `<meta property="og:title" content="${title}" />`,
+    `<meta property="og:description" content="${description}" />`,
+    '<meta property="og:type" content="website" />',
+    '<meta property="og:locale" content="cs_CZ" />',
+    `<meta property="og:site_name" content="${escapeHtml(preview.siteName)}" />`,
+  ]
+    .map((line) => `    ${line}\n`)
+    .join('');
+  return replaceOnce(html, /[ \t]*<\/head>/i, `${og}  </head>`, '</head>');
+}
+
+/** Vzhled seznamu sestav: barvy hry (sukno a papír), systémové písmo, nic externího. */
+const LIST_STYLE = [
   ':root{color-scheme:dark}',
   'body{margin:0;min-height:100vh;display:grid;place-items:center;background:#1f2e4a;color:#f3e8cf;',
   'font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}',
@@ -76,20 +98,28 @@ const STYLE = [
   'h1{margin:0 0 .5em;font-size:1.6rem;line-height:1.2}',
   'a{color:#9e2a17;font-weight:700}',
   'ul{padding-left:1.2em}li{margin:.7em 0}small{color:#4a4238}',
-  '[hidden]{display:none}',
 ].join('');
 
-interface PageParts {
+export interface PresetListTexts {
   readonly title: string;
   readonly description: string;
-  /** Hotové HTML obsahu (texty už escapované). */
-  readonly body: string;
-  readonly script?: string;
+  readonly siteName: string;
+  readonly heading: string;
+  readonly intro: string;
+  readonly back: string;
+  readonly items: ReadonlyArray<{ readonly href: string; readonly name: string; readonly jokers: string }>;
 }
 
-export function htmlPage(p: PageParts): string {
-  const title = escapeHtml(p.title);
-  const description = escapeHtml(p.description);
+/** Seznam sestav (`sestava/index.html`): odkazy na `./<id>/` a zpět do hry. */
+export function presetListPage(texts: PresetListTexts): string {
+  const title = escapeHtml(texts.title);
+  const description = escapeHtml(texts.description);
+  const items = texts.items
+    .map(
+      (i) =>
+        `<li><a href="${escapeHtml(i.href)}">${escapeHtml(i.name)}</a><br><small>${escapeHtml(i.jokers)}</small></li>`,
+    )
+    .join('');
   return [
     '<!doctype html>',
     '<html lang="cs">',
@@ -97,107 +127,29 @@ export function htmlPage(p: PageParts): string {
     '<meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
     '<meta name="theme-color" content="#1f2e4a">',
-    '<meta name="robots" content="noindex">',
     `<title>${title}</title>`,
     `<meta name="description" content="${description}">`,
     `<meta property="og:title" content="${title}">`,
     `<meta property="og:description" content="${description}">`,
+    '<meta property="og:type" content="website">',
+    '<meta property="og:locale" content="cs_CZ">',
+    `<meta property="og:site_name" content="${escapeHtml(texts.siteName)}">`,
     // Bez ikony by prohlížeč žádal /favicon.ico (na GitHub Pages 404).
     '<link rel="icon" href="data:,">',
-    `<style>${STYLE}</style>`,
+    `<style>${LIST_STYLE}</style>`,
     '</head>',
     '<body>',
-    `<main>${p.body}</main>`,
-    p.script ? `<script>${p.script}</script>` : '',
+    `<main><h1>${escapeHtml(texts.heading)}</h1><p>${escapeHtml(texts.intro)}</p><ul>${items}</ul>`,
+    `<p><a href="../">${escapeHtml(texts.back)}</a></p></main>`,
     '</body>',
     '</html>',
     '',
-  ]
-    .filter((line) => line !== '')
-    .join('\n');
+  ].join('\n');
 }
 
-export interface PresetPageTexts {
-  readonly title: string;
-  readonly description: string;
-  readonly heading: string;
-  readonly redirecting: string;
-  readonly inSlots: string;
-  readonly open: string;
-}
-
-/** Stránka jedné sestavy (`sestava/<id>/index.html`); `target` je relativní ke stránce. */
-export function presetPage(target: string, texts: PresetPageTexts, script: string): string {
-  return htmlPage({
-    title: texts.title,
-    description: texts.description,
-    body: [
-      `<h1>${escapeHtml(texts.heading)}</h1>`,
-      `<p id="link-redirect" role="status">${escapeHtml(texts.redirecting)}</p>`,
-      `<p>${escapeHtml(texts.inSlots)}</p>`,
-      `<p><a href="${escapeHtml(target)}">${escapeHtml(texts.open)}</a></p>`,
-    ].join(''),
-    script,
-  });
-}
-
-export interface PresetListTexts {
-  readonly title: string;
-  readonly description: string;
-  readonly heading: string;
-  readonly intro: string;
-  readonly back: string;
-  readonly items: ReadonlyArray<{ readonly href: string; readonly name: string; readonly jokers: string }>;
-}
-
-/** Seznam sestav (`sestava/index.html`). */
-export function presetListPage(texts: PresetListTexts): string {
-  const items = texts.items
-    .map(
-      (i) =>
-        `<li><a href="${escapeHtml(i.href)}">${escapeHtml(i.name)}</a><br><small>${escapeHtml(i.jokers)}</small></li>`,
-    )
-    .join('');
-  return htmlPage({
-    title: texts.title,
-    description: texts.description,
-    body: [
-      `<h1>${escapeHtml(texts.heading)}</h1>`,
-      `<p>${escapeHtml(texts.intro)}</p>`,
-      `<ul>${items}</ul>`,
-      `<p><a href="../">${escapeHtml(texts.back)}</a></p>`,
-    ].join(''),
-  });
-}
-
-export interface NotFoundTexts {
-  readonly title: string;
-  readonly description: string;
-  readonly heading: string;
-  readonly message: string;
-  readonly back: string;
-  readonly redirectHeading: string;
-  readonly redirecting: string;
-}
-
-/** `404.html`: „nenalezeno“, nebo (adresa pod `sestava/`) přesměrování na sestavu; `base` je absolutní. */
-export function notFoundPage(base: string, texts: NotFoundTexts, script: string): string {
-  return htmlPage({
-    title: texts.title,
-    description: texts.description,
-    body: [
-      '<div id="link-missing">',
-      `<h1>${escapeHtml(texts.heading)}</h1>`,
-      `<p>${escapeHtml(texts.message)}</p>`,
-      `<p><a href="${escapeHtml(base)}">${escapeHtml(texts.back)}</a></p>`,
-      '</div>',
-      '<div id="link-redirect" hidden>',
-      `<h1>${escapeHtml(texts.redirectHeading)}</h1>`,
-      `<p role="status">${escapeHtml(texts.redirecting)}</p>`,
-      '</div>',
-    ].join(''),
-    script,
-  });
+/** Obsah výstupu buildu jako text (Rollup dává řetězec nebo bajty). */
+function assetText(source: string | Uint8Array): string {
+  return typeof source === 'string' ? source : new TextDecoder().decode(source);
 }
 
 export function presetPagesPlugin(): Plugin {
@@ -205,11 +157,16 @@ export function presetPagesPlugin(): Plugin {
   return {
     name: 'karban-preset-pages',
     apply: 'build',
+    // Až po vložení index.html do bundlu (vite:build-html) a před pluginem karban-sw (také post, ve vite.config.ts
+    // až za tímhle), ať stránky sestav skončí v precache — offline odkaz.
+    enforce: 'post',
     configResolved(config) {
       base = config.base;
     },
-    // Před pluginem karban-sw (enforce: 'post'), ať stránky sestav skončí v precache (offline odkaz).
-    async generateBundle() {
+    async generateBundle(_options, bundle) {
+      const index = bundle['index.html'];
+      if (!index || index.type !== 'asset') throw new Error('karban-preset-pages: v buildu chybí index.html');
+      const indexHtml = assetText(index.source);
       const { module: presets } = await runnerImport<PresetsApi>(PRESETS_ENTRY);
       const { module: i18n } = await runnerImport<I18nApi>(I18N_ENTRY);
       const text = (key: string, params?: Readonly<Record<string, string>>): string => {
@@ -217,30 +174,23 @@ export function presetPagesPlugin(): Plugin {
           throw new Error(`karban-preset-pages: chybí i18n klíč „${key}“ (src/i18n/cs.ts)`);
         return i18n.t(key, params);
       };
-      const { JOKER_PRESETS, PRESET_DIR, PRESET_PARAM } = presets;
-      const config = { base: null, dir: PRESET_DIR, param: PRESET_PARAM, updateTimeoutMs: UPDATE_TIMEOUT_MS };
+      const { JOKER_PRESETS, PRESET_DIR } = presets;
+      const siteName = text('app.title');
       const jokerNames = (ids: readonly string[]): string =>
         ids.map((id) => text(`jokers.${id}.name`)).join(', ');
+      // Absolutní base (GitHub Pages) platí z libovolné hloubky; relativní se počítá od stránky sestavy.
+      const absolute = base.startsWith('/');
 
       for (const preset of JOKER_PRESETS) {
-        const target = `../../?${PRESET_PARAM}=${encodeURIComponent(preset.id)}`;
         const name = text(`newGame.preset.names.${preset.id}`);
-        const jokers = jokerNames(preset.jokers);
         this.emitFile({
           type: 'asset',
           fileName: `${PRESET_DIR}/${preset.id}/index.html`,
-          source: presetPage(
-            target,
-            {
-              title: text('newGame.preset.pageTitle', { name }),
-              description: text('newGame.preset.pageDescription', { jokers }),
-              heading: name,
-              redirecting: text('newGame.preset.redirecting'),
-              inSlots: text('newGame.preset.inSlots', { jokers }),
-              open: text('newGame.preset.open'),
-            },
-            await buildLinkScript({ ...config, target }),
-          ),
+          source: shellCopy(indexHtml, absolute ? base : '../../', {
+            title: text('newGame.preset.pageTitle', { name }),
+            description: text('newGame.preset.pageDescription', { jokers: jokerNames(preset.jokers) }),
+            siteName,
+          }),
         });
       }
 
@@ -250,6 +200,7 @@ export function presetPagesPlugin(): Plugin {
         source: presetListPage({
           title: text('newGame.preset.listTitle'),
           description: text('newGame.preset.listIntro'),
+          siteName,
           heading: text('newGame.preset.listHeading'),
           intro: text('newGame.preset.listIntro'),
           back: text('newGame.preset.backToGame'),
@@ -261,25 +212,9 @@ export function presetPagesPlugin(): Plugin {
         }),
       });
 
-      // 404.html potřebuje absolutní adresu hry — s relativním base (náhled, desktop) nevzniká.
-      if (base.startsWith('/')) {
-        this.emitFile({
-          type: 'asset',
-          fileName: NOT_FOUND_FILE,
-          source: notFoundPage(
-            base,
-            {
-              title: text('newGame.preset.notFoundTitle'),
-              description: text('newGame.preset.notFound'),
-              heading: text('newGame.preset.notFoundHeading'),
-              message: text('newGame.preset.notFound'),
-              back: text('newGame.preset.notFoundBack'),
-              redirectHeading: text('newGame.preset.title'),
-              redirecting: text('newGame.preset.redirecting'),
-            },
-            await buildLinkScript({ ...config, base, target: null }),
-          ),
-        });
+      // 404.html se servíruje z libovolné hloubky — potřebuje absolutní adresu hry (s relativním base nevzniká).
+      if (absolute) {
+        this.emitFile({ type: 'asset', fileName: NOT_FOUND_FILE, source: shellCopy(indexHtml, base) });
       }
     },
   };

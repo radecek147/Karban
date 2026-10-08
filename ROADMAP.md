@@ -557,9 +557,10 @@ Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba h
 - [x] Odkaz s ukázkovou sestavou `?sestava=nejsilnejsi|fotograf|bez-fotografa` (src/content/presets.ts, src/main.ts,
       `NewRunOptions.presetJokers`): rovnou rozehraný seedovaný run se sestavou ve slotech; testy
       tests/unit/presets.test.ts a tests/e2e/preset.spec.ts
-- [x] Sdílené odkazy `…/Karban/sestava/<id>/` fungují i u hráčů se starým service workerem (stránky odkazů
-      a 404.html ze scripts/preset-pages.ts, skript src/sw/linkRedirect.ts); tolerantní id (diakritika, interpunkce
-      z chatu, alias photochad); ověřeno dvěma buildy (stará verze v cache → nová) v Chromiu
+- [x] Sdílené odkazy `…/Karban/sestava/<id>/` fungují i u hráčů se starým service workerem: stránka sestavy
+      je kopie app shellu (scripts/preset-pages.ts, src/ui/linkRoute.ts), 404.html chytí pokažené odkazy;
+      tolerantní id (diakritika, interpunkce z chatu, alias photochad); run se sestavou bez achievementů;
+      TabGuard bez souběhu dvou karet; ověřeno dvěma buildy v Chromiu (15/15, i pomalá síť)
 
 ---
 

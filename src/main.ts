@@ -1,8 +1,8 @@
 /**
  * Vstupní bod aplikace: fonty a styly, aplikace (router, úložiště, profil hráče, registr obsahu), načtení ikon
  * (samostatný chunk), registrace obrazovek, tutoriál Štamgast (vypíná ho `?tutorial=off`), přepočet profilu,
- * globální ošetření chyb, první obrazovka (menu, nebo `#gallery`), ukázková sestava z odkazu (`?sestava=`)
- * a service worker (offline, jen produkční build).
+ * globální ošetření chyb, adresa spuštění (odkaz na ukázkovou sestavu `sestava/<id>/` nebo `?sestava=`, stránka 404 —
+ * src/ui/linkRoute.ts), první obrazovka (menu, nebo `#gallery`) a service worker (offline, jen produkční build).
  *
  * Code splitting: staticky se načítá jen menu; ostatní obrazovky jsou samostatné chunky (`registerLazy`)
  * a po zobrazení menu se v klidu načtou dopředu (`preloadScreens`), takže přechody zůstávají okamžité.
@@ -17,7 +17,7 @@ import './ui/styles/cards.css';
 import './ui/styles/game.css';
 import './ui/styles/tutorial.css';
 import { registry } from './content';
-import { PRESET_PARAM, jokerPreset } from './content/presets';
+import { JOKER_PRESETS, jokerPreset, normalizePresetId } from './content/presets';
 import { t } from './i18n/cs';
 import type { ScreenId } from './ui/app';
 import { App } from './ui/app';
@@ -30,6 +30,8 @@ import { showMetaNotices } from './ui/profile';
 import { browserStore } from './ui/storage';
 import { TabGuard, watchStorageEvents } from './ui/tabGuard';
 import { installTabLock } from './ui/tabLock';
+import type { LinkRoute } from './ui/linkRoute';
+import { linkRoute } from './ui/linkRoute';
 import { startRunFlow } from './ui/runStart';
 import { randomSeed } from './ui/seed';
 import { registerServiceWorker } from './ui/serviceWorker';
@@ -48,6 +50,10 @@ const IDLE_FALLBACK_MS = 500;
 /** Ukázková sestava se hraje na základním balíčku a Desítce. */
 const PRESET_DECK = 'pub';
 const PRESET_STAKE = 1;
+/** Oznámení o rozdané sestavě vydrží déle než běžné (název sestavy + věta o statistikách). */
+const PRESET_TOAST_MS = 6000;
+/** Delší id neznámé sestavy se v oznámení zkrátí. */
+const UNKNOWN_ID_MAX = 24;
 
 /** Neošetřené chyby: do konzole celé, hráči vtipná hláška místo tichého zamrznutí. */
 function installErrorHandlers(): void {
@@ -73,6 +79,10 @@ function installErrorHandlers(): void {
 
 function boot(): void {
   installErrorHandlers();
+  // Odkaz na sestavu nebo stránka 404 (kopie shellu): adresa se hned přepíše na kořen hry, ať ji tak vidí i zbytek
+  // startu (kotva #gallery, ?tutorial) a obnovení stránky pokračuje v rozehrané hře.
+  const route = linkRoute(location.href, document.baseURI);
+  if (route.cleanUrl !== null) history.replaceState(history.state, '', route.cleanUrl);
   document.title = t('app.documentTitle');
   const root = qs('#app');
   mount(root, h('p', { class: 'boot-loading', role: 'status' }, t('app.loading')));
@@ -119,7 +129,7 @@ function boot(): void {
     else if (app.screenId === GALLERY) app.go('menu');
   });
   app.go(location.hash === GALLERY_HASH ? GALLERY : 'menu');
-  startPresetFromUrl(app);
+  handleLinkRoute(app, route);
   // Ikony (~345 kB) a ostatní obrazovky se stahují až po vykreslení menu, ať nebrzdí první vykreslení — menu
   // ikony nepotřebuje; obrazovky s kartami na ně počkají (`withIcons`), kdyby hráč klikl dřív.
   // Chyba načtení ikon hru nezastaví (náhradní glyfy).
@@ -127,27 +137,33 @@ function boot(): void {
     void loadIcons();
     void app.preloadScreens();
   });
-  registerServiceWorker();
+  // Kopie shellu běží v nové verzi i pod starým workerem — oznámení „nová verze naskočí příště“ by tu mátlo.
+  registerServiceWorker({ quietUpdate: route.viaLinkPage });
 }
 
 /**
- * `?sestava=<id>`: rovnou založí seedovaný run (Hospodský balíček, Desítka) s ukázkovou sestavou žolíků — přes stejný
- * start jako výzvy, takže se rozehraná hra nepřepíše bez potvrzení. Parametr se z adresy hned odebere, ať obnovení
- * stránky pokračuje v rozehrané hře, místo aby zakládalo novou. Sdílí se odkaz `sestava/<id>/` (scripts/preset-pages.ts),
- * který sem přesměruje až po kontrole service workeru — tenhle parametr by u starého workeru načetl starou verzi.
+ * Sestava z odkazu: rovnou založí seedovaný run (Hospodský balíček, Desítka) s ukázkovou sestavou žolíků — přes
+ * stejný start jako výzvy, takže se rozehraná hra bez potvrzení nepřepíše. Neznámá sestava a stránka 404 jen oznámí,
+ * že tu nic není (hráč zůstane v menu).
  */
-function startPresetFromUrl(app: App): void {
-  const url = new URL(location.href);
-  const id = url.searchParams.get(PRESET_PARAM);
-  if (id === null) return;
-  url.searchParams.delete(PRESET_PARAM);
-  history.replaceState(history.state, '', url.href);
-  const preset = jokerPreset(id);
-  if (!preset && id.trim() === '') return;
-  if (!preset) {
-    toast(t('newGame.preset.unknown', { id }), { kind: 'warning', testId: 'toast-preset-unknown' });
+function handleLinkRoute(app: App, route: LinkRoute): void {
+  if (route.presetId === null) {
+    if (route.notFound) toast(t('app.notFound'), { kind: 'info', testId: 'toast-not-found' });
     return;
   }
+  const id = route.presetId;
+  const preset = jokerPreset(id);
+  if (!preset) {
+    if (normalizePresetId(id) === '') return;
+    const shown = id.length > UNKNOWN_ID_MAX ? `${id.slice(0, UNKNOWN_ID_MAX)}…` : id;
+    const ids = JOKER_PRESETS.map((p) => p.id).join(', ');
+    toast(t('newGame.preset.unknown', { id: shown, ids }), {
+      kind: 'warning',
+      testId: 'toast-preset-unknown',
+    });
+    return;
+  }
+  const name = t(`newGame.preset.names.${preset.id}`);
   const req = {
     deckId: PRESET_DECK,
     stake: PRESET_STAKE,
@@ -155,12 +171,17 @@ function startPresetFromUrl(app: App): void {
     seeded: true,
     presetJokers: preset.jokers,
   };
-  void startRunFlow(app, req, 'newGame.failed').then((started) => {
+  const overwrite = {
+    title: t('newGame.preset.overwrite.title'),
+    message: t('newGame.preset.overwrite.message', { name }),
+    confirmLabel: t('newGame.preset.overwrite.confirm'),
+  };
+  void startRunFlow(app, req, 'newGame.failed', overwrite).then((started) => {
     if (!started) return;
-    const jokers = preset.jokers.map((defId) => t(`jokers.${defId}.name`)).join(', ');
-    toast(t('newGame.preset.started', { jokers }), {
+    toast(t('newGame.preset.started'), {
       kind: 'success',
-      title: t(`newGame.preset.names.${preset.id}`),
+      title: name,
+      duration: PRESET_TOAST_MS,
       testId: 'toast-preset',
     });
   });

@@ -14,6 +14,7 @@
  * oznámení pro UI. `run` je stav **po celé akci** (události se zpracovávají po `dispatch`).
  */
 import { MSG } from '../constants';
+import { PRESET_RUN_FLAG } from '../content-types';
 import type { BoosterOption, Card, ConsumableInstance, GameEvent, JokerInstance, RunState } from '../types';
 import { HAND_TYPES } from '../types';
 import { evaluateAchievements, resolveMods } from './achievements';
@@ -83,10 +84,13 @@ function createCurrent(
   profile: Profile,
   run: Readonly<RunState>,
   ctx: MetaCtx,
-  seeded: boolean,
+  seededByPlayer: boolean,
   resume: boolean,
 ): CurrentRunMeta {
   const mode = runMode(run);
+  // Run s ukázkovou sestavou je seedovaný vždy — i když ho profil nezná (pokračování po importu, ztracený zápis).
+  const preset = run.flags[PRESET_RUN_FLAG] === true;
+  const seeded = seededByPlayer || preset;
   let official = false;
   if (mode === 'daily' && !seeded) {
     const key = dailyKeyFromSeed(run.seed);
@@ -109,6 +113,7 @@ function createCurrent(
     seeded,
     official,
     counted: !seeded && (mode !== 'daily' || official),
+    ...(preset ? { preset: true } : {}),
     startedAt: ctx.nowIso,
     outcome: null,
     cause: null,
@@ -470,7 +475,9 @@ function beginRun(
       };
     }
   }
-  if (!cur.counted) return evaluateAchievements(profile, ctx, { run, current: cur, seededOnly: true });
+  if (!cur.counted) {
+    return cur.preset ? [] : evaluateAchievements(profile, ctx, { run, current: cur, seededOnly: true });
+  }
   if (cur.mode === 'challenge' && cur.challengeId && !resume)
     challengeStats(profile, cur.challengeId).attempts++;
   const notices: MetaNotice[] = [];
@@ -588,7 +595,9 @@ export function applyRunEvent(
       cur.outcome = 'lost';
       cur.cause = event.info.cause;
     }
-    notices.push(...evaluateAchievements(profile, ctx, { run, event, current: cur, seededOnly: true }));
+    if (!cur.preset) {
+      notices.push(...evaluateAchievements(profile, ctx, { run, event, current: cur, seededOnly: true }));
+    }
     return notices;
   }
   countEvent(profile, cur, event, run, ctx, notices);

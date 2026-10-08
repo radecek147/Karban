@@ -14,7 +14,11 @@ import { isDesktopApp } from './desktop';
 /** Soubor workeru vedle index.html (musí odpovídat `SW_FILE` ve vite.config.ts). */
 export const SW_FILE = 'sw.js';
 
-export function registerServiceWorker(): void {
+/**
+ * `quietUpdate`: stránka běží v novější verzi, než drží worker (kopie shellu z odkazu na sestavu, src/ui/linkRoute.ts)
+ * — oznámení „nová verze naskočí příště“ by mátlo, nová verze už je na obrazovce.
+ */
+export function registerServiceWorker(opts: { quietUpdate?: boolean } = {}): void {
   // Desktopová aplikace má hru přibalenou — offline cache tam není potřeba (src/ui/desktop.ts).
   if (!import.meta.env.PROD || !('serviceWorker' in navigator) || isDesktopApp()) return;
   navigator.serviceWorker
@@ -24,7 +28,7 @@ export function registerServiceWorker(): void {
         const next = reg.installing;
         next?.addEventListener('statechange', () => {
           // První instalace (bez controlleru) není aktualizace — hra se jen potichu připravila na offline.
-          if (next.state === 'installed' && navigator.serviceWorker.controller) {
+          if (next.state === 'installed' && navigator.serviceWorker.controller && !opts.quietUpdate) {
             toast(t('app.updateReady'), { kind: 'info', testId: 'toast-update' });
           }
         });

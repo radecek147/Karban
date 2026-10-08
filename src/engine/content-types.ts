@@ -921,9 +921,12 @@ export interface NewRunOptions {
   daily?: boolean;
   unlockedPool?: RunState['unlockedPool'];
   /**
-   * Žolíci navíc na startu (ukázková sestava z odkazu `?sestava=`, src/content/presets.ts): přidají se po balíčku
-   * a výzvě v zadaném pořadí jako koupení (`onAcquire` se volá — Napodobitel dostane duhovou), bez nálepek
-   * a i nad limit slotů. Neznámá id se přeskočí.
+   * Žolíci navíc na startu (ukázková sestava z odkazu, src/content/presets.ts): přidají se po balíčku a výzvě
+   * v zadaném pořadí jako koupení (`onAcquire` se volá — Napodobitel dostane duhovou), bez nálepek a i nad limit
+   * slotů. Neznámá id se přeskočí. Run s aspoň jedním takovým žolíkem dostane `RunState.flags[PRESET_RUN_FLAG]`.
    */
   presetJokers?: readonly string[];
 }
+
+/** Značka v `RunState.flags`: run založený s ukázkovou sestavou — nepočítá se do statistik, odemykání ani achievementů. */
+export const PRESET_RUN_FLAG = 'presetRun';

@@ -275,6 +275,11 @@ export interface CurrentRunMeta {
   official: boolean;
   /** Počítá se do statistik, odemykání a achievementů (ne seedovaný a ne neoficiální denní run). */
   counted: boolean;
+  /**
+   * Run s ukázkovou sestavou z odkazu (`RunState.flags.presetRun`, src/content/presets.ts): vždy seedovaný
+   * a nedává ani achievementy pro seedované runy („Semínko zaseto“) — sestavu hráč nezvolil ani nezadal seed.
+   */
+  preset?: boolean;
   startedAt: string;
   /** Výsledek už zapsaný do statistik (výhra hned při `victory`, prohra při `gameOver`), jinak null. */
   outcome: RunOutcome | null;

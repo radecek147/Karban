@@ -62,6 +62,8 @@ const app = {
   footerNote: 'Při výrobě nebyl zraněn žádný žolík.',
   /** Service worker stáhl novou verzi (převezme ji při příštím spuštění, src/ui/serviceWorker.ts). */
   updateReady: 'Dorazila nová verze Karbanu. Naskočí při příštím spuštění, rozehranou hru ti nikdo nebere.',
+  /** Neexistující adresa pod hrou (GitHub Pages vrátí 404.html = kopii hry, src/ui/linkRoute.ts). */
+  notFound: 'Tuhle stránku nenašel ani hospodský, a ten najde i tácek pod stolem. Tak aspoň menu.',
   /** Hru převzala jiná karta prohlížeče (src/ui/tabGuard.ts, src/ui/tabLock.ts). */
   tabLock: {
     title: 'Hra je otevřená v jiné kartě',

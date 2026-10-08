@@ -503,15 +503,16 @@ game.modifiers() })` a uložit profil i run; po pitvě / výhře / opuštění `
 - Aktualizace je bezpečná: žádné `skipWaiting` — nový worker čeká, dokud běží stará verze, takže rozehraná hra nikdy
   nedostane soubory jiné verze; stránka hráči oznámí `app.updateReady` („naskočí při příštím spuštění“).
   Profil ani run worker nečte (jsou v `localStorage`).
-- Odkazy na ukázkové sestavy (`scripts/preset-pages.ts`, `src/sw/linkRedirect.ts`, `src/content/presets.ts`): plugin
-  `karban-preset-pages` vydá `sestava/<id>/index.html`, `sestava/index.html` a s absolutním `base` i `404.html`.
-  Stránka odkazu leží mimo adresu hry, takže ji žádná verze workeru nevrátí jako app shell z cache. Před
-  přesměrováním na `?sestava=<id>` zkontroluje worker (`registration.update()`): čeká-li nová verze (nebo kontrola
-  nedoběhne do 5 s), worker odregistruje, aby se hra načetla ze sítě v nové verzi; aktuální, chybějící nebo offline
-  worker nechá být. `404.html` pozná `sestava/<cokoli>/` a id předá hře, která ho normalizuje. Precache ukládá každý
-  `index.html` pod adresou adresáře (`sestava/nejsilnejsi/`), `404.html` vynechá.
+- Odkazy na ukázkové sestavy (`scripts/preset-pages.ts`, `src/ui/linkRoute.ts`, `src/content/presets.ts`): plugin
+  `karban-preset-pages` (`enforce: 'post'`, před `karban-sw`) vydá `sestava/<id>/index.html` jako kopii app shellu
+  s `<base>` na kořen hry a náhledem odkazu, statický seznam `sestava/index.html` a s absolutním `base` i `404.html`
+  (kopie shellu). Worker vrací z cache jen navigace na adresu hry, takže stránku sestavy pustí na síť a nová verze
+  hry se načte i pod starým workerem (soubory s novými otisky v jeho cache nejsou). Hra si sestavu přečte z cesty
+  nebo z `?sestava=`, adresu přepíše `history.replaceState` na kořen a oznámení o aktualizaci na takové stránce
+  potlačí. Precache ukládá každý `index.html` pod adresou adresáře, `404.html` vynechá; ostatní navigace hledá
+  v cache s `ignoreSearch`.
 - Testy: `tests/unit/service-worker.test.ts` (plugin + chování nad falešnými `caches`/`fetch`),
-  `tests/unit/preset-pages.test.ts` (stránky odkazů a jejich skript nad falešným `navigator.serviceWorker`),
+  `tests/unit/preset-pages.test.ts` (kopie shellu, seznam sestav, plugin), `tests/unit/link-route.test.ts`,
   e2e `tests/e2e/offline.spec.ts` (načíst, `context.setOffline(true)`, reload → menu, sbírka, nový run); stejný test
   projde i proti buildu s `BASE_PATH=/FM/` servírovanému pod `/FM/`.
 

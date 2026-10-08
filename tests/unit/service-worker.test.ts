@@ -84,9 +84,11 @@ type Listener = (e: unknown) => void;
 
 class FakeCache {
   readonly store = new Map<string, Response>();
-  match(req: Request | string): Promise<Response | undefined> {
+  match(req: Request | string, opts: { ignoreSearch?: boolean } = {}): Promise<Response | undefined> {
     const url = typeof req === 'string' ? req : req.url;
-    return Promise.resolve(this.store.get(url)?.clone());
+    const strip = (u: string): string => (opts.ignoreSearch ? u.split('?')[0]! : u);
+    const key = [...this.store.keys()].find((k) => strip(k) === strip(url));
+    return Promise.resolve(key === undefined ? undefined : this.store.get(key)?.clone());
   }
   put(req: Request | string, res: Response): Promise<void> {
     this.store.set(typeof req === 'string' ? req : req.url, res);
@@ -199,11 +201,21 @@ describe('sw.js za běhu', () => {
       `síť:${SCOPE}sestava/nejsilnejsi/`,
     );
     expect(w.fetched).toEqual([]);
+    // Parametry z chatu nebo sociální sítě (`?fbclid=…`) nevadí — stránka jde z cache i offline.
+    expect(await w.request(req(`${SCOPE}sestava/nejsilnejsi/?fbclid=abc`, { mode: 'navigate' }))).toBe(
+      `síť:${SCOPE}sestava/nejsilnejsi/`,
+    );
+    expect(w.fetched).toEqual([]);
     // Neznámá sestava (stránka z novější verze) jde na síť.
     expect(await w.request(req(`${SCOPE}sestava/nova/`, { mode: 'navigate' }))).toBe(
       `síť:${SCOPE}sestava/nova/`,
     );
     expect(w.fetched).toHaveLength(1);
+    // Soubory buildu parametry neignorují (jiný parametr = jiný soubor).
+    expect(await w.request(req(`${SCOPE}assets/game-BBBBBBBB.js?v=2`))).toBe(
+      `síť:${SCOPE}assets/game-BBBBBBBB.js?v=2`,
+    );
+    expect(w.fetched).toHaveLength(2);
   });
 
   it('fetch: navigace na hru dostane app shell (i s parametry), soubory buildu jdou z cache', async () => {

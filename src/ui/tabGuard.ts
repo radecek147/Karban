@@ -86,7 +86,10 @@ export class TabGuard {
   handleStorage(key: string | null, newValue: string | null): void {
     if (this.lostControl) return;
     if (key === TAB_OWNER_KEY) {
-      if (newValue !== null && newValue !== this.tabId) this.lose();
+      // Rozhoduje uložený vlastník, ne hodnota z události: když se dvě karty otevřou naráz (dvojklik na odkaz),
+      // může událost se zápisem té první dorazit až po vlastním, novějším zápisu — zablokovaly by se obě.
+      const owner = newValue === null ? null : this.base.get(TAB_OWNER_KEY);
+      if (owner !== null && owner !== this.tabId) this.lose();
       return;
     }
     if (key !== null && !WATCHED_KEYS.includes(key)) return;

@@ -407,6 +407,38 @@ describe('seedovaný run', () => {
     const notices = act(p, g2, { type: 'play', cardIds: g2.state.round!.hand.slice(0, 5) }, ctx);
     expect(notices).toContainEqual({ kind: 'achievement', id: 'any_hand' });
   });
+
+  it('run s ukázkovou sestavou z odkazu: seedovaný, ale bez jakýchkoli achievementů (ani Semínko zaseto)', () => {
+    const p = createProfile(NOW);
+    const ctx = ctxOf(reg2);
+    const game = newGame({ presetJokers: ['fair_photographer', 'recount_committee'] });
+    expect(game.state.flags.presetRun).toBe(true);
+    expect(startRun(p, game.state, { ...ctx, seeded: true })).toEqual([]);
+    expect(p.current).toMatchObject({ seeded: true, counted: false, preset: true });
+    act(p, game, { type: 'selectBlind' }, ctx);
+    expect(act(p, game, { type: 'play', cardIds: game.state.round!.hand.slice(0, 5) }, ctx)).toEqual([]);
+    const won = patched(game.state, { phase: 'victory', ante: 8 });
+    expect(applyRunEvent(p, { type: 'victory', ante: 8 }, won, ctx)).toEqual([]);
+    finishRun(p, won, ctx);
+    expect(p.achievements.unlocked).toEqual({});
+    expect(p.stats.runs.played).toBe(0);
+    expect(p.history[0]).toMatchObject({ seeded: true, outcome: 'won' });
+  });
+
+  it('run se sestavou se nezapočítá, ani když profil o jeho začátku neví (pokračování po importu)', () => {
+    const p = createProfile(NOW);
+    const ctx = ctxOf(reg2);
+    const game = newGame({ presetJokers: ['jukebox'] });
+    // Žádný startRun: profil run nezná, první událost ho převezme jako pokračování.
+    act(p, game, { type: 'selectBlind' }, ctx);
+    expect(p.current).toMatchObject({ seeded: true, counted: false, preset: true });
+    act(p, game, { type: 'play', cardIds: game.state.round!.hand.slice(0, 5) }, ctx);
+    expect(p.stats.totals.handsPlayed).toBe(0);
+    expect(p.achievements.unlocked).toEqual({});
+    // Značka přežije uložení a načtení profilu.
+    const loaded = deserializeProfile(serializeProfile(p, NOW));
+    expect(loaded.current).toMatchObject({ preset: true, seeded: true, counted: false });
+  });
 });
 
 describe('denní run', () => {

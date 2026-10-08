@@ -4001,20 +4001,41 @@ karty skoro nezavírají. Druhá chyba: odkaz napsaný v chatu s dvojtečkou za 
 
 **Co:**
 
-- Sdílí se odkaz `…/Karban/sestava/<id>/`. Plugin `karban-preset-pages` (scripts/preset-pages.ts) vydá stránku pro
-  každou sestavu, seznam `sestava/` a na GitHub Pages i `404.html`. Stránka leží mimo adresu hry, takže ji žádná verze
-  workeru nevrátí jako hru z cache. Skript src/sw/linkRedirect.ts zkontroluje worker (`registration.update()`):
-  když čeká nebo se instaluje nová verze (nebo kontrola nedoběhne do 5 s), worker odregistruje, aby se hra načetla ze
-  sítě v nové verzi, která si ho hned zaregistruje znovu. Pak přesměruje na `?sestava=<id>`. Aktuální, chybějící
-  nebo offline worker nechá být (hra jde z cache, odkaz funguje i offline).
-- `404.html` chytí i pokažené odkazy pod `sestava/` (`sestava/Nejsilnější!/`, `sestava/fotograf:/`) a id předá hře.
-- Hra hledá sestavu tolerantně: bez diakritiky, mezer a interpunkce, s jinými jmény (`photochad` = `fotograf`).
-- Precache ukládá každý `index.html` pod adresou adresáře, takže stránky odkazů fungují i offline; `404.html` ne.
+- Sdílí se odkaz `…/Karban/sestava/<id>/`. Plugin `karban-preset-pages` (scripts/preset-pages.ts) vydá pro každou
+  sestavu **kopii app shellu** (`index.html` s `<base>` na kořen hry, vlastním titulkem a náhledem odkazu), seznam
+  `sestava/` a na GitHub Pages i `404.html` (také kopii shellu). Hra si sestavu přečte z cesty nebo z `?sestava=`
+  (src/ui/linkRoute.ts), adresu přepíše na kořen hry a rozdá seedovaný run se sestavou (dotaz na přepsání rozehrané
+  hry zmíní sestavu).
+- Proč to obejde starý worker: všechny nasazené verze src/sw/sw.ts vracejí z cache jen navigaci na adresu hry
+  (`<base>` a `<base>index.html`). Adresu `sestava/<id>/` pustí na síť a soubory nové verze mají jiné otisky
+  v názvech, takže v jeho cache nejsou a jdou ze sítě taky. Načte se rovnou nová verze, bez odregistrování workeru
+  a bez čekání na instalaci nového. Oznámení „nová verze naskočí příště“ se na takové stránce nezobrazí.
+- `404.html` chytí i pokažené odkazy pod `sestava/` (`sestava/Nejsilnější!/`, `sestava/fotograf:/`); ostatní
+  neexistující adresy skončí v menu s hláškou. Hra hledá sestavu tolerantně: bez diakritiky, mezer a interpunkce,
+  s jinými jmény (`photochad` = `fotograf`).
+- Precache ukládá každý `index.html` pod adresou adresáře, takže stránky sestav fungují i offline; worker je u
+  ostatních navigací hledá bez ohledu na parametry (`?fbclid=…`). `404.html` se do precache nedává.
+- Run se sestavou má v uloženém stavu značku `flags.presetRun`: je vždy seedovaný a nedává žádné achievementy
+  (dřív udělil „Semínko zaseto“), ani když profil o jeho začátku neví.
+- TabGuard rozhoduje o ztrátě hry podle uloženého vlastníka, ne podle hodnoty z události — dvojklik na odkaz
+  (dvě karty naráz) už nezablokuje obě karty.
 
-**Proč ne jinak:** starý worker už u hráčů běží a jeho kód nezměníme, takže pomůže jen adresa, kterou nezachytí.
-`skipWaiting` pro všechny by porušil pravidlo, že rozehraná hra nikdy nedostane soubory jiné verze. Odregistrovat
-worker jen pro odkaz je bezpečné: ostatní karty se starou verzí zablokuje TabGuard a offline cache se po načtení nové
-verze obnoví na pozadí.
+**Proč ne jinak:** první verze opravy (stránka, která zastaralý worker odregistruje a přesměruje na `?sestava=`)
+v ověření neobstála. `unregister()` čeká ve frontě úloh workeru, až se dokončí instalace nové verze, takže na
+pomalé síti pojistka přesměrovala do staré verze. Ze specifikace a ze zdrojů enginů to platí pro Chromium, WebKit
+i Firefox; v Chromiu reprodukováno. `skipWaiting` pro všechny by porušil pravidlo, že rozehraná hra nikdy nedostane
+soubory jiné verze.
 
-**Ověření:** dva buildy (stará verze v cache, nová na serveru napodobujícím GitHub Pages) v Chromiu: starý worker
-s otevřenou starou kartou i bez ní, aktuální worker (zůstane), offline, záchrana přes 404, rozbité id, seznam sestav.
+**Omezení:**
+
+- Odkazy ve starém tvaru `?sestava=`, které už někde visí, otevřou u hráče s workerem z doby před 2026-10-08 11:44 UTC
+  napoprvé starou verzi (menu); po zavření všech karet hry fungují. Starý worker změnit nejde. Sdílet tvar
+  `sestava/<id>/`.
+- Starý worker bez sítě stránku sestavy nemá, prohlížeč ukáže svou chybu (adresa hry offline funguje dál).
+- Obnovení karty po odkazu může pod starým workerem načíst starou verzi; ta run nové verze načte a hraje (ověřeno).
+  Až se změní formát uložení, je potřeba na tuhle kombinaci myslet.
+
+**Ověření:** dva buildy (stará verze 38648b3 v cache, nová na serveru napodobujícím GitHub Pages) v Chromiu, 15/15:
+starý worker s otevřenou starou kartou i bez ní, pomalá síť (každá odpověď +400 ms, `sw.js` +12 s: hra za 2 s),
+aktuální worker (z cache) a skutečný výpadek sítě, záchrana přes 404, rozbité id a parametry, seznam sestav,
+mobil, obnovení pod starým workerem, bez oznámení o aktualizaci a bez achievementů.

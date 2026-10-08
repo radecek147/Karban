@@ -459,6 +459,7 @@ function normCurrent(x: unknown): CurrentRunMeta | null {
     seeded,
     official,
     counted: bool(x.counted, !seeded && (mode !== 'daily' || official)),
+    ...(bool(x.preset) ? { preset: true } : {}),
     startedAt: str(x.startedAt),
     outcome: typeof x.outcome === 'string' ? oneOf(x.outcome, RUN_OUTCOMES, 'abandoned') : null,
     cause: strOrNull(x.cause),

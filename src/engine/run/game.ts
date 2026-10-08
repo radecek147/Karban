@@ -3,6 +3,7 @@
  * `dispatch(action)` → změna stavu + události. Neplatná akce stav nemění.
  */
 import type { BaseCtx, ConsumableCtx, ContentRegistry, NewRunOptions } from '../content-types';
+import { PRESET_RUN_FLAG } from '../content-types';
 import { compareCards } from '../cards/cards';
 import {
   BLIND_REWARDS,
@@ -137,9 +138,12 @@ export class Game {
       ch.onRunStart?.(ctx);
     }
     // Ukázková sestava z odkazu: žolíci jako z Večerky (`onAcquire` ano), bez nálepek, i nad limit slotů.
+    // Značka `presetRun` zůstane v uloženém runu — meta vrstva takový run nikdy nezapočítá (src/engine/meta/runs.ts),
+    // ani když profil o jeho začátku neví.
     for (const defId of opts.presetJokers ?? []) {
       if (!reg.jokers[defId]) continue;
       addJokerInstance(core, newJokerInstance(core, defId), { ignoreSlots: true, acquire: true });
+      s.flags[PRESET_RUN_FLAG] = true;
     }
     core.invalidate();
     s.stats.minMoney = Math.min(s.stats.minMoney, s.money);

@@ -143,33 +143,31 @@ export const newGame = {
   },
   failed: 'Hru se nepodařilo založit. Karty se rozsypaly pod stůl.',
   /**
-   * Ukázkové sestavy z odkazu (src/content/presets.ts): oznámení ve hře (src/main.ts) a stránky odkazů
-   * `sestava/<id>/`, `sestava/` a `404.html` (scripts/preset-pages.ts).
+   * Ukázkové sestavy z odkazu (src/content/presets.ts): oznámení a dotaz na přepsání ve hře (src/main.ts), náhled
+   * odkazu `sestava/<id>/` a seznam `sestava/` (scripts/preset-pages.ts).
    */
   preset: {
-    title: 'Ukázková sestava',
-    started: 'Ve slotech čeká {jokers}. Předváděčka, ne rekord: do statistik ani odemykání se nepočítá.',
-    unknown:
-      'Sestavu „{id}“ tady neznají. Hospodský krčí rameny: zkus „nejsilnejsi“, „fotograf“ nebo „bez-fotografa“.',
+    started:
+      'Sestava už sedí ve slotech. Předváděčka, ne rekord: do statistik, odemykání ani achievementů se nepočítá.',
+    unknown: 'Sestavu „{id}“ tady neznají. Hospodský krčí rameny a nabízí, co má: {ids}.',
     names: {
       nejsilnejsi: 'Nejsilnější pětice',
       fotograf: 'Fotograf a opakování figur',
       'bez-fotografa': 'Nejlepší bez Fotografa',
     },
+    overwrite: {
+      title: 'Rozdat ukázkovou sestavu?',
+      message:
+        'Odkaz chce rozdat sestavu „{name}“, jenže máš rozehraný run. Nová hra ho přepíše – a karty už se nevrátí.',
+      confirm: 'Rozdat sestavu',
+    },
     pageTitle: '{name} · Karban',
-    pageDescription: 'Rozehraný run na Desítce, ve slotech {jokers}.',
-    redirecting: 'Míchám karty a skládám sestavu…',
-    inSlots: 'Ve slotech: {jokers}.',
-    open: 'Otevřít hru se sestavou',
+    pageDescription: 'Hospodský roguelike se žolíky. Nový run na Desítce, ve slotech rovnou {jokers}.',
     listTitle: 'Ukázkové sestavy · Karban',
     listHeading: 'Ukázkové sestavy žolíků',
     listIntro:
-      'Každý odkaz otevře rozehraný run na Desítce se sestavou rovnou ve slotech. Do statistik ani odemykání se nepočítá.',
+      'Každý odkaz rozdá nový run na Desítce a sestava už sedí ve slotech. Takový run se do statistik, odemykání ani achievementů nepočítá.',
     backToGame: 'Do hry bez sestavy',
-    notFoundTitle: 'Nenalezeno · Karban',
-    notFoundHeading: 'Tady nic není',
-    notFound: 'Tuhle stránku nenašel ani hospodský, a ten najde i tácek pod stolem.',
-    notFoundBack: 'Zpátky do hospody',
   },
 };
 

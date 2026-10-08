@@ -9,8 +9,9 @@
  *  - install: stáhne celý build do cache `karban-<verze>` (obejde HTTP cache, ať se nesmíchají verze); soubory
  *    s otiskem v názvu (`assets/…-<hash>.js`), které už má starší cache, jen zkopíruje,
  *  - activate: smaže cache starších verzí a převezme otevřené stránky,
- *  - fetch: navigace na hru → uložený index.html (app shell, i s `?seed=…`), ostatní soubory buildu z cache,
- *    všechno ostatní (a cokoli, co v cache chybí) ze sítě,
+ *  - fetch: navigace na hru → uložený index.html (app shell, i s `?seed=…`), ostatní navigace (stránky odkazů
+ *    na sestavy) z cache bez ohledu na parametry, ostatní soubory buildu z cache, všechno ostatní (a cokoli,
+ *    co v cache chybí) ze sítě,
  *  - aktualizace: nový worker čeká, dokud běží stará verze (žádné `skipWaiting`) — rozehraná hra nikdy nedostane
  *    soubory jiné verze. Stránka hráči oznámí, že nová verze naskočí při příštím spuštění.
  *
@@ -95,7 +96,11 @@ function isAppNavigation(request: Request): boolean {
 
 async function respond(request: Request): Promise<Response> {
   const cache = await caches.open(CACHE_NAME);
-  const cached = isAppNavigation(request) ? await cache.match(SHELL_URL) : await cache.match(request);
+  // Ostatní navigace (stránky odkazů na sestavy `sestava/<id>/`) bez ohledu na parametry — chat a sociální sítě
+  // přidávají `?fbclid=…` a podobně; offline by jinak odkaz nenašel stránku v cache.
+  const cached = isAppNavigation(request)
+    ? await cache.match(SHELL_URL)
+    : await cache.match(request, { ignoreSearch: request.mode === 'navigate' });
   return cached ?? fetch(request);
 }
 
