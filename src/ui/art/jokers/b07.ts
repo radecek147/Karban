@@ -1,7 +1,7 @@
 /**
  * Obrázky žolíků — dávka 07 (docs/DECISIONS.md 2026-10-08 „Obrázky žolíků s detaily podle názvu“):
  *  - regular — Stálý host: portrét `fig-regular` (FIGURES['regular'])
- *  - beer_belly — Pivní břicho: portrét `fig-beer_belly` (FIGURES['beer_belly'])
+ *  - beer_belly — Pivní břicho: celý portrét `fig-beer_belly` (SCENES['fig-beer_belly'], zmenšená postava)
  *  - carousel — Kolotoč na pouti: scéna `kolotoc` (SCENES['kolotoc'])
  *  - echo — Ozvěna z propasti: scéna `ozvena` (SCENES['ozvena'])
  *  - lucky_seven — Šťastná sedmička: scéna `sedmicka` (SCENES['sedmicka'])
@@ -33,6 +33,101 @@ function place(d: string, ox: number, oy: number, s: number, deg = 0, flip = fal
     const y = Number(ys);
     return `${r1(ox + s * (cs * x - sn * y))},${r1(oy + s * (sn * x + cs * y))}`;
   });
+}
+
+/** Posun a zvětšení libovolné cesty (absolutní i relativní příkazy M L H V C S Q T A Z, i oblouky z `c()`). */
+function xf(d: string, ox: number, oy: number, s: number): string {
+  const tk = d.match(/[MLHVCSQTAZmlhvcsqtaz]|-?(?:\d+\.?\d*|\.\d+)/g) ?? [];
+  let out = '';
+  let cmd = '';
+  let i = 0;
+  const n = (): number => Number(tk[i++]);
+  const X = (): string => r1(ox + s * n());
+  const Y = (): string => r1(oy + s * n());
+  const S = (): string => r1(s * n());
+  while (i < tk.length) {
+    const t = tk[i] as string;
+    if (/[a-z]/i.test(t)) {
+      cmd = t;
+      i++;
+      out += cmd;
+      if (cmd === 'Z' || cmd === 'z') continue;
+    } else out += ' ';
+    switch (cmd) {
+      case 'M':
+      case 'L':
+      case 'T':
+        out += `${X()},${Y()}`;
+        break;
+      case 'm':
+      case 'l':
+      case 't':
+        out += `${S()},${S()}`;
+        break;
+      case 'H':
+        out += X();
+        break;
+      case 'V':
+        out += Y();
+        break;
+      case 'h':
+      case 'v':
+        out += S();
+        break;
+      case 'C':
+        out += `${X()},${Y()} ${X()},${Y()} ${X()},${Y()}`;
+        break;
+      case 'c':
+        out += `${S()},${S()} ${S()},${S()} ${S()},${S()}`;
+        break;
+      case 'S':
+      case 'Q':
+        out += `${X()},${Y()} ${X()},${Y()}`;
+        break;
+      case 's':
+      case 'q':
+        out += `${S()},${S()} ${S()},${S()}`;
+        break;
+      case 'A':
+        out += `${S()},${S()} ${n()} ${n()},${n()} ${X()},${Y()}`;
+        break;
+      case 'a':
+        out += `${S()},${S()} ${n()} ${n()},${n()} ${S()},${S()}`;
+        break;
+      default:
+        i++;
+    }
+  }
+  return out;
+}
+
+/** Celá kresba posunutá a zmenšená (např. menší postava, ať se vejde obří břicho). */
+function xfOps(ops: readonly SceneOp[], ox: number, oy: number, s: number): SceneOp[] {
+  return ops.map((op): SceneOp => {
+    if (op[0] === 'f') return ['f', op[1], xf(op[2], ox, oy, s), op[3]];
+    if (op[0] === 'l') return ['l', xf(op[1], ox, oy, s), op[2]];
+    if (op[0] === 's') return ['s', op[1], xf(op[2], ox, oy, s), op[3] * s];
+    if (op[0] === 'h') return ['h', xf(op[1], ox, oy, s), op[2]];
+    return ['i', op[1], ox + s * op[2], oy + s * op[3], op[4] * s, op[5]];
+  });
+}
+
+/** Trubice (paže, rukáv) podél lomené čáry, s kulatými konci. */
+function tube(pts: readonly (readonly [number, number])[], w: number): string {
+  const h = w / 2;
+  const left: string[] = [];
+  const right: string[] = [];
+  pts.forEach(([x, y], i) => {
+    const a = pts[Math.max(0, i - 1)] as readonly [number, number];
+    const b = pts[Math.min(pts.length - 1, i + 1)] as readonly [number, number];
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    const nx = -(b[1] - a[1]) / len;
+    const ny = (b[0] - a[0]) / len;
+    left.push(`${r1(x + nx * h)},${r1(y + ny * h)}`);
+    right.push(`${r1(x - nx * h)},${r1(y - ny * h)}`);
+  });
+  const back = [...right].reverse();
+  return `M${left.join(' L')} A${h},${h} 0 0,0 ${back[0]} L${back.join(' L')} A${h},${h} 0 0,0 ${left[0]} Z`;
 }
 
 /** Paprsky / štětiny po obvodu kruhu. */
@@ -184,55 +279,134 @@ function bellyBackdrop(): SceneOp[] {
   return ops;
 }
 
-const BELLY_OUTFIT: SceneOp[] = [
-  // Obří břicho přesahuje i ramena; tílko je vyhrnuté a zpod něj kouká pupík.
-  ['f', SKIN, 'M26,266 C20,238 50,220 92,218 L158,218 C200,220 230,238 224,266 Z', 2.2],
-  [
-    'f',
-    '#fffaf0',
-    'M98,211 L110,211 C114,222 136,222 140,211 L152,211 C152,220 156,225 164,227 C198,233 224,246 224,262 C182,248 68,248 26,262 C26,246 52,233 86,227 C94,225 98,220 98,211 Z',
-    2.2,
-  ],
-  [
-    'l',
-    'M50,240 C46,246 44,252 44,258 M68,232 C63,240 61,248 61,254 M86,228 C82,236 80,244 80,251 M164,228 C168,236 170,244 170,251 M182,232 C187,240 189,248 189,254 M200,240 C204,246 206,252 206,258',
-    0.8,
-  ],
-  ['h', 'M168,226 C200,234 226,248 224,264 L200,262 C202,248 190,236 168,226 Z', 45],
-  ['l', 'M120,258 C122,254 128,254 130,258', 1.8],
-  // Krejčovský metr přes nejširší místo.
-  ['s', '#f2cf4a', 'M30,250 C70,232 180,232 220,250', 7],
-  [
-    'l',
-    'M46,240 l1.5,6 M62,235 l1,6 M78,232 l0.5,6 M94,230 l0,6 M110,229 l0,6 M126,228.5 l0,6 M142,229 l0,6 M158,230 l0,6 M174,232 l-0.5,6 M190,235 l-1,6 M206,240 l-1.5,6',
-    1,
-  ],
-  ['s', '#f2cf4a', 'M214,248 C220,254 218,260 222,266', 6],
-];
+/** Menší postava (s = 0,78, hlava nahoře uprostřed), ať pod ní zbude místo na pořádné břicho. */
+const BELLY_S = 0.78;
+const BELLY_OX = 125 * (1 - BELLY_S);
+const BELLY_OY = 100 - 156 * BELLY_S;
 
-/** Ruka poplácávající břicho (s čárkami pohybu), pleška s pečlivě přehozenými vlasy. */
-const BELLY_EXTRA: SceneOp[] = [
-  [
-    'f',
-    '#5a3418',
-    'M100,160 C99,151 101,145 105,141 C106,148 107,154 108,160 Z M150,160 C151,151 149,145 145,141 C144,148 143,154 142,160 Z',
-    1.2,
-  ],
-  [
-    's',
-    '#5a3418',
-    'M104,142 C112,131 132,128 146,137 M105,137 C115,128 133,126 145,132 M108,133 C118,126 132,125 142,128',
-    1.6,
-  ],
-  [
-    'f',
-    SKIN,
-    'M52,232 C48,222 62,216 76,220 L86,226 C88,232 80,236 72,234 L60,238 C54,238 52,236 52,232 Z',
-    1.8,
-  ],
-  ['l', 'M62,222 l12,4 M60,228 l12,4', 1],
-  ['l', 'M44,216 C40,220 40,226 42,230 M36,212 C30,220 30,230 34,236', 1.3],
-];
+function pivniBricho(): SceneOp[] {
+  const man = figure({
+    bg: '#bcd6e6',
+    motif: 'none',
+    body: SKIN,
+    collar: 'plain',
+    hair: 'bald',
+    hairColor: '#5a3418',
+    beard: 'walrus',
+    beardColor: '#5a3418',
+    mood: 'grin',
+    redNose: true,
+    extra: [
+      // Pleška s pečlivě přehozenými pramínky.
+      [
+        's',
+        '#5a3418',
+        'M104,142 C112,131 132,128 146,137 M105,137 C115,128 133,126 145,132 M108,133 C118,126 132,125 142,128',
+        2,
+      ],
+    ],
+  }).slice(1);
+  const belly =
+    'M60,250 C32,240 22,214 30,192 C38,170 68,159 100,157 L150,157 C182,159 212,170 220,192 C228,214 218,240 190,250 C160,262 90,262 60,250 Z';
+  return [
+    ...bellyBackdrop(),
+    // Kalhoty a pásek — přezka se schovala pod převis.
+    ['f', '#22365c', rect(16, 246, 218, 22), 1.6],
+    ['f', '#5a3418', rect(16, 248, 218, 9), 1.2],
+    ['l', 'M30,252.5 h4 M40,252.5 h4 M206,252.5 h4 M216,252.5 h4', 1.2],
+    // Paže za břichem (nadloktí).
+    [
+      'f',
+      SKIN,
+      tube(
+        [
+          [68, 170],
+          [44, 192],
+          [30, 222],
+        ],
+        17,
+      ),
+      1.8,
+    ],
+    [
+      'f',
+      SKIN,
+      tube(
+        [
+          [182, 170],
+          [206, 190],
+          [222, 214],
+        ],
+        17,
+      ),
+      1.8,
+    ],
+    ...xfOps(man, BELLY_OX, BELLY_OY, BELLY_S),
+    // Obří břicho a tílko, které už nestačí: lem vyjel nahoru a kouká pupík.
+    ['f', SKIN, belly, 2.4],
+    ['h', 'M196,170 C214,180 226,206 220,226 C214,244 200,252 186,254 C204,236 210,206 196,170 Z', 45],
+    [
+      'f',
+      '#fffaf0',
+      'M100,142 L110,142 C113,156 137,156 140,142 L150,142 C152,151 160,157 174,161 C202,169 216,184 221,203 C186,215 64,215 29,203 C34,184 48,169 76,161 C90,157 98,151 100,142 Z',
+      2.2,
+    ],
+    [
+      'l',
+      'M48,190 C46,195 45,199 45,203 M66,176 C61,186 59,195 59,206 M184,176 C189,186 191,195 191,206 M202,190 C204,195 205,199 205,203',
+      0.8,
+    ],
+    // Flek od piva na tílku.
+    [
+      'f',
+      '#f2cf4a',
+      'M140,178 C138,172 146,170 148,175 C152,173 156,178 152,181 C154,186 146,187 144,183 C140,185 136,181 140,178 Z',
+      1,
+    ],
+    ['l', 'M118,244 C121,240 129,240 132,244 M120,247 C123,250 127,250 130,247', 1.6],
+    // Krejčovský metr přes nejširší místo — a pořád nestačí.
+    ['s', '#f2cf4a', 'M31,212 C70,230 180,230 219,212', 7],
+    [
+      'l',
+      'M44,216 l-0.5,6 M58,221 l-0.3,6 M72,224 l0,6 M86,226 l0,6 M100,227 l0,6 M114,228 l0,6 M128,228 l0,6 M142,228 l0,6 M156,227 l0,6 M170,226 l0,6 M184,224 l0,6 M198,221 l0.3,6',
+      1,
+    ],
+    ['s', '#f2cf4a', 'M216,214 C224,222 220,232 226,240', 6],
+    // Levá ruka poplácává břicho (předloktí přes bok), pravá drží lahváč.
+    [
+      'f',
+      SKIN,
+      tube(
+        [
+          [30, 222],
+          [52, 214],
+          [72, 206],
+        ],
+        15,
+      ),
+      1.8,
+    ],
+    ['f', SKIN, c(78, 204, 11, 9), 1.8],
+    ['l', 'M70,199 l14,-3 M71,205 l14,-3 M72,211 l13,-3', 1],
+    ['l', 'M84,184 C88,186 92,190 92,194 M90,176 C97,180 102,186 102,192', 1.3],
+    [
+      'f',
+      SKIN,
+      tube(
+        [
+          [222, 214],
+          [212, 190],
+          [203, 170],
+        ],
+        15,
+      ),
+      1.8,
+    ],
+    ['i', 'beer-bottle', 178, 126, 52, '#5d9a3e'],
+    ['f', SKIN, c(202, 162, 11, 9), 1.8],
+    ['l', 'M193,159 l18,0 M193,165 l18,0', 1.1],
+  ];
+}
 
 /* ------------------------------------------------------------------------------------------------------------ */
 /* Kolotoč na pouti: pruhovaná střecha se žárovkami a barvami karet, koníci na tyčích, perníkové srdce a praporky. */
@@ -318,9 +492,9 @@ function kolotoc(): SceneOp[] {
   for (let y = 136; y < 222; y += 16) stripes.push(`M113,${y + 8} L137,${y} L137,${y + 6} L113,${y + 14} Z`);
   ops.push(['f', '#d7442c', stripes.join(' '), 0.8]);
   // Tyče koníků (za koníky) a koníci — jeden nahoře, druhý dole.
-  ops.push(['s', '#e9b030', 'M68,130 L68,228 M180,130 L180,228', 4.5]);
-  ops.push(...horse(68, 174, 1.25, '#fffaf0', '#2f5fa8', '#e9b030'));
-  ops.push(...horse(180, 194, 1.25, '#c99a62', '#d7442c', '#5a3418'));
+  ops.push(['s', '#e9b030', 'M66,130 L66,228 M176,130 L176,228', 4.5]);
+  ops.push(...horse(66, 174, 1.18, '#fffaf0', '#2f5fa8', '#e9b030'));
+  ops.push(...horse(176, 194, 1.18, '#c99a62', '#d7442c', '#5a3418'));
   // Perníkové srdce s polevou na sloupu.
   ops.push(['l', 'M125,132 L125,156', 1]);
   ops.push(['f', '#8c5632', heart(125, 166, 10), 1.6], ['s', '#fffaf0', heart(125, 166, 7), 1.2]);
@@ -334,14 +508,68 @@ function kolotoc(): SceneOp[] {
       'M46,235 L52,242 L46,249 M86,231 L92,238 L86,245 M126,230 L132,237 L126,244 M166,231 L172,238 L166,245 M206,235 L212,242 L206,249',
       1,
     ],
-    ['l', 'M36,258 C80,266 170,266 214,258', 1.2],
-    ['f', '#1a1714', 'M210,254 L219,257 L211,262 Z', 0],
+    ['l', 'M36,255 C80,262 170,262 212,255', 1.2],
+    ['f', '#1a1714', 'M208,251 L218,254 L210,259 Z', 0],
   );
   return ops;
 }
 
 /* ------------------------------------------------------------------------------------------------------------ */
 /* Ozvěna z propasti: turista v klobouku s pérkem křičí z vyhlídky do propasti, ozvěna se vrací čím dál menší. */
+
+/** Turista z vyhlídky (čelem doleva, do propasti). */
+const TOURIST: SceneOp[] = [
+  [
+    'f',
+    '#5a3418',
+    'M182,189 L198,187 L198,196 L178,196 C176,193 178,190 182,189 Z M200,189 L216,187 L216,196 L196,196 C195,193 197,190 200,189 Z',
+    1.4,
+  ],
+  ['f', '#d7442c', 'M186,160 L197,160 L197,189 L186,189 Z M203,160 L214,160 L214,189 L203,189 Z', 1.4],
+  ['f', '#fffaf0', 'M185,160 L198,160 L198,166 L185,166 Z M202,160 L215,160 L215,166 L202,166 Z', 1.1],
+  ['f', '#8c5632', 'M184,134 L218,134 L216,162 L202,162 L201,148 L199,162 L185,162 Z', 1.6],
+  ['f', '#5d9a3e', 'M208,92 C226,90 232,100 232,112 L230,140 C224,144 214,144 210,140 Z', 1.6],
+  ['l', 'M212,108 L230,106', 1],
+  ['f', '#d9d2c2', 'M206,90 C206,84 232,84 232,90 C232,96 206,96 206,90 Z', 1.3],
+  ['f', '#d7442c', 'M182,94 C182,88 214,86 216,92 L219,138 L181,138 Z', 1.8],
+  [
+    'l',
+    'M190,92 L189,138 M199,90 L199,138 M208,90 L209,138 M182,104 L217,104 M181,118 L218,118 M181,130 L219,130',
+    0.8,
+  ],
+  ['f', SKIN, 'M190,80 L200,80 L200,92 L190,92 Z', 1.4],
+  ['f', SKIN, c(196, 70, 14), 2],
+  ['f', SKIN, 'M184,66 C178,68 178,76 184,77 Z', 1.4],
+  ['f', 'dark', c(190, 67, 1.8), 0],
+  ['f', 'dark', c(184, 79, 2.4, 3), 0],
+  ['f', 'blush', c(194, 76, 4), 0],
+  ['f', '#2f6b3a', 'M186,58 C186,44 208,42 210,58 Z', 1.6],
+  ['f', '#d7442c', 'M186,54 L210,54 L210,58 L186,58 Z', 0.8],
+  ['f', '#2f6b3a', 'M176,59 C188,54 210,54 218,59 C210,64 186,64 176,59 Z', 1.4],
+  ['f', '#fffaf0', 'M206,54 C210,42 216,34 224,30 C220,40 214,48 208,55 Z', 1],
+  // Paže zvednutá k puse a dlaně složené do trychtýře.
+  [
+    'f',
+    '#d7442c',
+    tube(
+      [
+        [198, 98],
+        [182, 112],
+        [176, 92],
+      ],
+      12,
+    ),
+    1.6,
+  ],
+  ['l', 'M188,104 l4,6 M180,100 l6,1', 0.8],
+  [
+    'f',
+    SKIN,
+    'M184,66 C172,62 164,70 164,79 C164,88 172,96 184,94 L183,88 C176,88 172,84 172,80 C172,75 176,71 183,72 Z',
+    1.6,
+  ],
+  ['l', 'M167,72 l6,3 M165,80 l7,0 M167,88 l6,-3', 0.9],
+];
 
 function ozvena(): SceneOp[] {
   return [
@@ -383,46 +611,18 @@ function ozvena(): SceneOp[] {
     ['s', '#c99a62', 'M150,196 L166,124', 3.2],
     ['f', '#d7442c', 'M156,166 L162,168 L161,175 L157,176 L154,172 Z', 0.8],
     ['f', '#fffaf0', 'M159,152 L165,154 L164,161 L160,162 L157,158 Z', 0.8],
-    // Turista: kanady, podkolenky, pumpky, kostkovaná košile, batoh s dekou, klobouk s pérkem.
-    [
-      'f',
-      '#5a3418',
-      'M182,189 L198,187 L198,196 L178,196 C176,193 178,190 182,189 Z M200,189 L216,187 L216,196 L196,196 C195,193 197,190 200,189 Z',
-      1.4,
-    ],
-    ['f', '#d7442c', 'M186,160 L197,160 L197,189 L186,189 Z M203,160 L214,160 L214,189 L203,189 Z', 1.4],
-    ['f', '#fffaf0', 'M185,160 L198,160 L198,166 L185,166 Z M202,160 L215,160 L215,166 L202,166 Z', 1.1],
-    ['f', '#8c5632', 'M184,134 L218,134 L216,162 L202,162 L201,148 L199,162 L185,162 Z', 1.6],
-    ['f', '#5d9a3e', 'M208,92 C226,90 232,100 232,112 L230,140 C224,144 214,144 210,140 Z', 1.6],
-    ['l', 'M212,108 L230,106', 1],
-    ['f', '#d9d2c2', 'M206,90 C206,84 232,84 232,90 C232,96 206,96 206,90 Z', 1.3],
-    ['f', '#d7442c', 'M182,94 C182,88 214,86 216,92 L219,138 L181,138 Z', 1.8],
-    [
-      'l',
-      'M190,92 L189,138 M199,90 L199,138 M208,90 L209,138 M182,104 L217,104 M181,118 L218,118 M181,130 L219,130',
-      0.8,
-    ],
-    ['f', SKIN, 'M190,80 L200,80 L200,92 L190,92 Z', 1.4],
-    ['f', SKIN, c(196, 70, 14), 2],
-    ['f', SKIN, 'M184,66 C178,68 178,76 184,77 Z', 1.4],
-    ['f', 'dark', c(190, 67, 1.8), 0],
-    ['f', 'dark', c(184, 79, 2.4, 3), 0],
-    ['f', 'blush', c(194, 76, 4), 0],
-    // Paže a dlaně u pusy.
-    ['f', '#d7442c', 'M186,98 C176,104 172,96 176,88 L182,90 C182,94 184,96 190,94 Z', 1.4],
-    ['f', SKIN, 'M181,74 L169,68 C165,74 165,86 169,92 L181,86 Z', 1.4],
-    ['l', 'M170,74 l10,3 M169,86 l10,-2', 0.9],
-    ['f', '#2f6b3a', 'M186,58 C186,44 208,42 210,58 Z', 1.6],
-    ['f', '#d7442c', 'M186,54 L210,54 L210,58 L186,58 Z', 0.8],
-    ['f', '#2f6b3a', 'M176,59 C188,54 210,54 218,59 C210,64 186,64 176,59 Z', 1.4],
-    ['f', '#fffaf0', 'M206,54 C210,42 216,34 224,30 C220,40 214,48 208,55 Z', 1],
+    // Turista (posunutý o kus doleva, ať se batoh vejde): kanady, podkolenky, pumpky, kostkovaná košile, batoh
+    // s dekou, klobouk s pérkem; paže zvednutá a dlaně u pusy jako trychtýř.
+    ...xfOps(TOURIST, -10, 0, 1),
     // Zábradlí vyhlídky (před nohama).
     ['l', 'M132,178 L234,178 M136,178 L136,196 M168,178 L168,196 M226,178 L226,196', 1.8],
     // Výkřik do propasti a ozvěna, která se vrací čím dál slabší.
-    ['l', 'M161,70 C156,76 156,86 161,92 M153,64 C146,72 146,90 153,98 M145,58 C136,70 136,94 145,104', 1.8],
-    ['s', '#fffaf0', 'M118,132 C124,138 124,148 118,154 M126,126 C134,136 134,150 126,160', 2],
-    ['s', '#fffaf0', 'M110,184 C114,188 114,194 110,198 M116,180 C122,186 122,196 116,202', 1.5],
-    ['s', '#fffaf0', 'M112,222 C114,224 114,228 112,230 M116,219 C120,223 120,229 116,233', 1],
+    ['l', 'M148,68 C143,74 143,86 148,92 M140,62 C133,70 133,88 140,96 M132,56 C123,68 123,92 132,102', 2],
+    // Ozvěna se vrací z hloubky čím dál menší a slabší (haló …aló …ló …ó).
+    ['s', '#fffaf0', 'M116,128 C124,136 124,150 116,158 M126,122 C136,134 136,152 126,164', 3.4],
+    ['s', '#fffaf0', 'M110,180 C116,186 116,196 110,202 M118,176 C125,184 125,198 118,206', 2.6],
+    ['s', '#fffaf0', 'M110,220 C113,223 113,229 110,232 M115,217 C119,221 119,231 115,235', 1.8],
+    ['s', '#fffaf0', 'M112,248 C114,250 114,253 112,255', 1.2],
   ];
 }
 
@@ -516,16 +716,21 @@ function sedmicka(): SceneOp[] {
 /* ------------------------------------------------------------------------------------------------------------ */
 /* Sekera: pivní tácek plný čárek a křížků, sekyrka zaseknutá do pultu, prázdná peněženka, ze které letí mol. */
 
-/** Sekyrka: oko u počátku, topůrko po +x, ostří dolů (spodek ostří je zaseknutý pod povrchem). */
-const AXE_HANDLE = 'M4,-4 L130,-6 L130,6 L4,4 Z';
-const AXE_HEAD = 'M-10,-11 L10,-11 L10,1 C13,7 17,13 21,19 L-23,19 C-18,13 -13,7 -10,1 Z';
+/** Sekera: oko u počátku, topůrko po +x, ostří k +y; spodek ostří (y > 26) je zaseknutý pod povrchem. */
+const AXE_HANDLE =
+  'M-6,-6 C20,-6.5 42,-5.5 58,-5.5 C63,-8 69,-6 69,0 C69,6 63,8 58,5.5 C42,5.5 20,6.5 -6,6 Z';
+const AXE_HEAD =
+  'M-11,-15 C-11,-19 11,-19 11,-15 L11,2 C9,8 9,12 14,17 C18,21 23,24 28,26 L-28,26 C-23,24 -18,21 -14,17 C-9,12 -9,8 -11,2 Z';
+const AXE_EDGE = 'M-21,22 C-12,21.5 12,21.5 21,22 L28,26 L-28,26 Z';
 
 function sekera(): SceneOp[] {
   const tally = (x: number, y: number): string =>
     `M${x},${y} l1,18 M${x + 6},${y - 0.5} l1,18 M${x + 12},${y - 1} l1,18 M${x + 18},${y - 1.5} l1,18 M${x - 3},${y + 13} l26,-9`;
-  const ax = 190;
-  const ay = 170;
-  const deg = -34;
+  const ax = 148;
+  const ay = 178;
+  const sc = 1.3;
+  const deg = -27;
+  const at = (d: string): string => place(d, ax, ay, sc, deg);
   return [
     ['f', '#e9b030', rect(16, 16, 218, 268), 0],
     ['f', '#8c5632', rect(16, 104, 218, 40), 1.2],
@@ -546,34 +751,35 @@ function sekera(): SceneOp[] {
       0.7,
     ],
     // Tácek s čárkami: čím míň v kapse, tím víc na tácku.
-    ['f', '#fffaf0', c(104, 188, 72, 46), 1.8],
-    ['s', '#d7442c', c(104, 188, 64, 39), 2.6],
-    ['l', `${tally(54, 164)} ${tally(88, 162)} ${tally(122, 160)} ${tally(58, 194)} ${tally(92, 192)}`, 2],
-    ['l', 'M128,194 l12,14 M140,194 l-12,14 M146,193 l12,14 M158,193 l-12,14', 2],
+    ['f', '#fffaf0', c(88, 196, 68, 44), 1.8],
+    ['s', '#d7442c', c(88, 196, 60, 37), 2.6],
+    ['l', `${tally(38, 172)} ${tally(68, 170)} ${tally(98, 168)} ${tally(42, 202)} ${tally(72, 200)}`, 2],
+    ['l', 'M100,204 l11,13 M111,204 l-11,13', 2],
+    // Sekera zaseknutá do okraje tácku — „zapsat na sekeru“ doslova.
+    ['f', '#8c5632', at(AXE_HANDLE), 1.8],
+    ['l', at('M14,-1 C30,-1.5 44,-1.2 56,-1.2'), 0.8],
+    ['f', '#9a958a', at(AXE_HEAD), 2],
+    ['f', '#fffaf0', at(AXE_EDGE), 1],
+    ['l', at('M-33,26.6 L33,26.6'), 2.8],
+    ['l', at('M-33,27 L-40,31 M-36,27 L-40,21 M33,27 L41,30 M35,27 L40,21'), 1.1],
     // Tužka vrchního.
-    ['f', '#f2cf4a', 'M96,252 L158,232 L161,240 L99,260 Z', 1.4],
-    ['f', '#f2b38c', 'M158,232 L172,233 L161,240 Z', 1.2],
-    ['f', '#1a1714', 'M168,233 L172,233 L170,236 Z', 0],
-    ['f', '#e88a9a', 'M96,252 L90,254 L93,262 L99,260 Z', 1.2],
-    // Sekyrka zaseknutá do pultu, kolem prasklinky.
-    ['f', '#8c5632', place(AXE_HANDLE, ax, ay, 1, deg), 1.8],
-    ['l', place('M30,0 L120,-1', ax, ay, 1, deg), 0.8],
-    ['f', '#9a958a', place(AXE_HEAD, ax, ay, 1, deg), 2],
-    ['l', place('M-16,12 L14,12', ax, ay, 1, deg), 1],
-    ['l', place('M-26,19.5 L24,19.5', ax, ay, 1, deg), 2.6],
-    ['l', 'M196,200 l8,6 M188,206 l-2,9 M206,190 l9,1', 1.1],
-    // Prázdná peněženka, ze které vylétá mol.
-    ['f', '#8c5632', 'M18,232 L76,228 L80,258 L20,262 Z', 1.6],
-    ['f', '#5a3418', 'M24,234 L72,231 L74,244 L26,247 Z', 1.2],
-    ['l', 'M30,252 L72,249', 0.9],
+    ['f', '#f2cf4a', 'M34,258 L96,246 L98,254 L36,266 Z', 1.4],
+    ['f', '#f2b38c', 'M96,246 L110,248 L98,254 Z', 1.2],
+    ['f', '#1a1714', 'M106,247.3 L110,248 L107.5,250.5 Z', 0],
+    ['f', '#e88a9a', 'M34,258 L27,259.5 L29,267 L36,266 Z', 1.2],
+    // Otevřená prázdná peněženka, z ní vylétá mol.
+    ['f', '#5a3418', 'M160,236 L196,230 L200,262 L162,266 Z', 1.6],
+    ['f', '#8c5632', 'M196,230 L230,236 L228,266 L200,262 Z', 1.6],
+    ['f', '#1a1714', 'M168,240 L192,236 L194,252 L170,256 Z', 0],
+    ['l', 'M204,240 L224,243 M204,247 L224,250 M204,254 L223,257', 1],
     [
       'f',
       '#d9d2c2',
-      'M58,214 C50,204 42,208 46,216 C42,222 50,224 58,218 C64,224 72,222 68,216 C72,208 64,204 58,214 Z',
+      'M188,212 C180,202 172,206 176,214 C172,220 180,222 188,216 C194,222 202,220 198,214 C202,206 194,202 188,212 Z',
       1.2,
     ],
-    ['l', 'M58,214 L58,220 M56,212 l-3,-5 M60,212 l3,-5', 1],
-    ['l', 'M54,228 C50,226 52,224 56,222', 0.8],
+    ['l', 'M188,212 L188,218 M186,210 l-3,-5 M190,210 l3,-5', 1],
+    ['l', 'M182,232 C178,228 180,224 184,222', 0.8],
   ];
 }
 
@@ -583,36 +789,47 @@ function sekera(): SceneOp[] {
 
 const club = (x: number, y: number, s: number): string =>
   `${c(x, y - s * 0.55, s * 0.5)} ${c(x - s * 0.55, y + s * 0.15, s * 0.5)} ${c(x + s * 0.55, y + s * 0.15, s * 0.5)}`;
+/** Nožka křížového znaku pod obláčkem. */
+const clubStem = (x: number, y: number, s: number): string =>
+  `M${r1(x - s * 0.14)},${r1(y)} L${r1(x + s * 0.14)},${r1(y)} L${r1(x + s * 0.4)},${r1(y + s * 0.95)} L${r1(x - s * 0.4)},${r1(y + s * 0.95)} Z`;
 
 function kominik(): SceneOp[] {
+  const puffs = [
+    [43, 70, 16],
+    [199, 56, 14],
+    [216, 36, 9],
+  ] as const;
   return figure({
     bg: '#bcd6e6',
     motif: 'none',
-    body: '#2f3542',
+    body: '#1a1714',
     collar: 'plain',
     hair: 'short',
     hairColor: '#3b2a1a',
     hat: 'top',
-    hatColor: '#2f3542',
+    hatColor: '#1a1714',
     hatAccent: '#5b5850',
     mood: 'grin',
     backdrop: [
       // Kouř z komínů ve tvaru křížů (černé barvy, jako kominík).
-      ['f', '#d9d2c2', `${club(46, 72, 16)} ${club(200, 58, 14)} ${club(212, 32, 9)}`, 1.2],
+      ['f', '#d9d2c2', puffs.map(([x, y, k]) => clubStem(x, y, k)).join(' '), 1.2],
+      ['f', '#d9d2c2', puffs.map(([x, y, k]) => club(x, y, k)).join(' '), 1.2],
       ['f', '#b8302a', 'M16,190 L76,128 L134,190 L134,284 L16,284 Z', 1.8],
       ['f', '#b8302a', 'M146,200 L196,150 L234,186 L234,284 L146,284 Z', 1.8],
       ['l', 'M22,196 L80,138 M28,212 L92,150 M36,228 L104,162 M154,212 L198,166 M162,226 L210,178', 1],
-      ['f', '#8c5632', 'M38,140 L38,96 L56,96 L56,124 Z', 1.6],
-      ['f', '#1a1714', rect(35, 90, 24, 7), 1],
-      ['f', '#8c5632', 'M190,156 L190,80 L208,80 L208,172 Z', 1.6],
+      // Komíny sedí na střechách.
+      ['f', '#8c5632', 'M34,173 L34,96 L52,96 L52,155 Z', 1.6],
+      ['f', '#1a1714', rect(31, 90, 24, 7), 1],
+      ['f', '#8c5632', 'M190,157 L190,80 L208,80 L208,172 Z', 1.6],
       ['f', '#1a1714', rect(187, 74, 24, 7), 1],
+      ['l', 'M34,120 H52 M34,140 H52 M190,104 H208 M190,128 H208', 0.8],
       // Vlaštovky.
       ['l', 'M150,52 l6,4 l6,-4 M168,72 l5,3 l5,-3', 1.4],
     ],
     outfit: [
+      ['s', '#5b5850', 'M125,216 L125,284', 1.6],
       ['f', '#e9b030', [228, 244, 260].flatMap((y) => [c(111, y, 4.5), c(139, y, 4.5)]).join(' '), 1.2],
       ['l', [228, 244, 260].flatMap((y) => [`M109,${y} l4,0`, `M137,${y} l4,0`]).join(' '), 0.8],
-      ['l', 'M125,214 L125,284', 1],
     ],
     extra: [
       // Bílý šátek kolem krku.
@@ -620,17 +837,17 @@ function kominik(): SceneOp[] {
       ['f', '#fffaf0', 'M122,222 L114,240 L124,234 Z M128,222 L136,240 L126,234 Z', 1.2],
       // Saze na tváři.
       ['f', '#5b5850', `${c(108, 170, 6, 4)} ${c(146, 142, 5, 3)}`, 0],
-      // Lano stočené na rameni a ježek.
+      // Lano stočené na rameni, na konci ježek a koule.
       [
         's',
         '#c99a62',
         'M70,226 C56,234 62,256 80,252 C96,248 94,226 80,222 M66,232 C54,246 70,262 86,254 M84,222 C70,218 60,226 62,240',
         3,
       ],
-      ['s', '#c99a62', 'M64,252 C54,258 46,256 40,248', 2.4],
-      ['f', '#1a1714', c(34, 234, 11), 1.4],
-      ['l', ticks(34, 234, 10, 18, 16), 1.4],
-      ['f', '#9a958a', c(34, 250, 4), 1],
+      ['s', '#c99a62', 'M64,252 C58,254 54,252 50,247', 2.4],
+      ['f', '#1a1714', c(42, 236, 10), 1.4],
+      ['l', ticks(42, 236, 9, 16, 16), 1.4],
+      ['f', '#9a958a', c(42, 254, 4.5), 1],
       // Ruka kolemjdoucího chytá knoflík.
       ['f', '#d7442c', 'M234,228 L170,236 L172,256 L234,254 Z', 1.6],
       ['f', SKIN, 'M172,236 C160,230 148,232 144,240 C142,246 148,250 156,248 L172,254 Z', 1.6],
@@ -657,18 +874,6 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
     backdrop: regularBackdrop(),
     extra: REGULAR_EXTRA,
   },
-  // Pivní břicho: tílko přes obří břicho, krejčovský metr, přepravky a graf růstu „investice“.
-  beer_belly: {
-    bg: '#bcd6e6',
-    motif: 'none',
-    body: SKIN,
-    collar: 'plain',
-    hair: 'none',
-    backdrop: bellyBackdrop(),
-    outfit: BELLY_OUTFIT,
-    extra: BELLY_EXTRA,
-    prop: { icon: 'beer-bottle', color: '#5d9a3e', x: 172, y: 168, size: 58 },
-  },
   // Známý na úřadě: mrkne, obálka v kapse, za ním fronta u přepážky a švagrová vykukuje z podatelny.
   office_connection: {
     bg: '#fffaf0',
@@ -684,19 +889,24 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
       ['f', '#c99a62', rect(18, 150, 76, 8), 1.4],
       ['f', '#1a1714', rect(42, 52, 26, 12), 1],
       ['f', '#f2cf4a', `${c(49, 58, 2)} ${c(55, 58, 2)} ${c(61, 58, 2)}`, 0],
-      // Fronta šedých postav.
       // Fronta u přepážky (zezadu): babička v šátku a pán v buřince.
       ['f', '#9a958a', 'M10,266 C10,214 22,198 34,198 C46,198 58,214 58,266 Z', 1.6],
-      ['f', SKIN, c(34, 180, 11, 12), 1.4],
+      // Babička zezadu: šátek přes celou hlavu, uzel s cípy v týle, puntíky.
+      ['f', '#6b4a9e', 'M30,190 L24,206 L34,197 L44,206 L38,190 Z', 1.4],
+      ['f', '#6b4a9e', c(34, 179, 12, 13), 1.6],
       [
         'f',
-        '#6b4a9e',
-        'M22,184 C18,164 28,162 34,162 C40,162 50,164 46,184 C44,176 40,172 34,172 C28,172 24,176 22,184 Z M30,190 L24,204 L34,196 L44,204 L38,190 Z',
-        1.4,
+        '#fffaf0',
+        `${c(29, 172, 1.6)} ${c(38, 170, 1.6)} ${c(34, 180, 1.6)} ${c(27, 184, 1.6)} ${c(41, 183, 1.6)}`,
+        0,
       ],
+      ['f', '#6b4a9e', c(34, 192, 4, 3), 1.2],
       ['f', '#5b5850', 'M44,266 C44,224 54,210 66,210 C78,210 88,224 88,266 Z', 1.6],
-      ['f', SKIN, c(66, 196, 10, 11), 1.4],
-      ['f', '#5a3418', 'M56,198 C56,192 76,192 76,198 C72,204 60,204 56,198 Z', 0],
+      // Pán v buřince zezadu: týl, ucho, límec kabátu.
+      ['f', SKIN, rect(61, 202, 10, 9), 1.2],
+      ['f', SKIN, c(56, 197, 2.6, 3.6), 1],
+      ['f', '#5a3418', c(66, 196, 10, 11), 1.4],
+      ['l', 'M60,212 L66,218 L72,212', 1.2],
       [
         'f',
         '#2f3542',
@@ -791,7 +1001,7 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
       ['f', '#fffaf0', 'M125,232 C142,222 180,220 216,230 L218,270 L125,270 Z', 1.4],
       ['l', 'M125,232 L125,270', 1.2],
       ['f', '#d7442c', rect(42, 236, 15, 15), 1],
-      ['f', '#e9b030', 'M46,247 L49.5,239 L53,247 Z', 0.6],
+      ['s', '#e9b030', 'M45,247 C44,240 54,238 54,243 C54,247 48,247 49,243', 1.8],
       [
         'l',
         'M62,240 c4,-3 8,3 12,0 c4,-3 8,3 12,0 c4,-3 8,3 12,0 c4,-3 8,3 10,0 M62,248 c4,-3 8,3 12,0 c4,-3 8,3 12,0 c4,-3 8,3 12,0 c4,-3 8,3 10,0 M42,258 c4,-3 8,3 12,0 c4,-3 8,3 12,0 c4,-3 8,3 12,0 c4,-3 8,3 12,0 c4,-3 8,3 12,0 c4,-3 8,3 12,0',
@@ -828,6 +1038,8 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
 };
 
 export const SCENES: Readonly<Record<string, readonly SceneOp[]>> = {
+  // Pivní břicho: menší pán, obří břicho v tílku, metr, kterému nestačí, přepravky a graf „investice“.
+  'fig-beer_belly': pivniBricho(),
   // Kolotoč na pouti: točí se dokola (Postupka kolem dokola) — barvy karet na lambrekýnu, koníci nahoře a dole.
   kolotoc: kolotoc(),
   // Ozvěna z propasti: turista křičí z vyhlídky, ozvěna se vrací z hloubky (poslední karta skóruje znovu).

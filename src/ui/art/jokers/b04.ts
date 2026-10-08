@@ -121,6 +121,31 @@ function spruce(x: number, top: number, w: number, h: number, tiers = 4): string
   return poly([[x, top], ...right, ...left]);
 }
 
+/**
+ * Chlupaté předloktí: od lokte (x0,y0; zakulacený) k zápěstí (x1,y1), šířka w0 → w1, okraje s chomáčky.
+ */
+function furArm(x0: number, y0: number, x1: number, y1: number, w0: number, w1: number): string {
+  const len = Math.hypot(x1 - x0, y1 - y0);
+  const [ux, uy] = [(x1 - x0) / len, (y1 - y0) / len];
+  const [nx, ny] = [-uy, ux];
+  const n = 8;
+  const side = (sgn: number): [number, number][] =>
+    Array.from({ length: n + 1 }, (_, i) => {
+      const t = i / n;
+      const w = (w0 + (w1 - w0) * t) / 2 + (i % 2 === 1 && i < n ? 2.6 : 0);
+      return [x0 + ux * len * t + nx * w * sgn, y0 + uy * len * t + ny * w * sgn] as [number, number];
+    });
+  const elbow = Array.from({ length: 5 }, (_, i) => {
+    const a = Math.PI / 2 + (i + 1) * (Math.PI / 6);
+    const r = w0 / 2;
+    return [
+      x0 + (nx * Math.cos(a) + -ux * Math.sin(a)) * r * -1,
+      y0 + (ny * Math.cos(a) + -uy * Math.sin(a)) * r * -1,
+    ] as [number, number];
+  });
+  return poly([...side(1), ...side(-1).reverse(), ...elbow]);
+}
+
 // ─────────────────────────── Hejkal ───────────────────────────
 
 // Hejkal: mechový lesní skřet s hřívou, větvičkami a špičatýma ušima hejká do dlaní za úplňku;
@@ -174,7 +199,7 @@ const HEJKAL_OUTFIT: SceneOp[] = [
   // Plášť z listí.
   [
     'f',
-    '#2f6b3a',
+    HEJKAL_COAT,
     [
       [70, 238, 30],
       [92, 226, -20],
@@ -217,12 +242,57 @@ const HEJKAL_EXTRA: SceneOp[] = [
     ].join(' '),
     1,
   ],
-  // Lístek zapletený ve vousech.
-  ['f', '#e9b030', place('M-6,0 Q0,-5 6,0 Q0,5 -6,0 Z', 136, 200, 1, 40), 1],
-  // Ruce zdvižené k puse: předloktí a dlaně do trychtýře.
-  ['f', HEJKAL_COAT, 'M56,252 L94,178 L114,188 L80,262 Z', 1.8],
-  ['f', HEJKAL_COAT, 'M194,252 L156,178 L136,188 L170,262 Z', 1.8],
-  ['h', 'M194,252 L156,178 L146,183 L180,258 Z', 45],
+  // Mechový plnovous (celý, bez díry pod pusou) a lístek zapletený ve vousech.
+  [
+    'f',
+    '#8a8f2e',
+    poly([
+      [98, 166],
+      [101, 180],
+      [95, 190],
+      [104, 194],
+      [98, 205],
+      [109, 206],
+      [105, 216],
+      [115, 217],
+      [116, 227],
+      [125, 222],
+      [134, 227],
+      [135, 217],
+      [145, 216],
+      [141, 206],
+      [152, 205],
+      [146, 194],
+      [155, 190],
+      [149, 180],
+      [152, 166],
+      [138, 171],
+      [125, 172],
+      [112, 171],
+    ]),
+    1.8,
+  ],
+  ['f', '#e9b030', place('M-6,0 Q0,-5 6,0 Q0,5 -6,0 Z', 138, 204, 1, 40), 1],
+  // Ruce zdvižené k puse: chlupatá mechová předloktí s lokty dole, manžety z listí, dlaně do trychtýře.
+  ['f', HEJKAL_COAT, furArm(80, 268, 106, 192, 25, 17), 1.8],
+  ['f', HEJKAL_COAT, furArm(170, 268, 144, 192, 25, 17), 1.8],
+  ['h', furArm(176, 268, 150, 193, 12, 8), 45],
+  ['l', 'M86,254 C90,240 94,228 99,216 M164,254 C160,240 156,228 151,216', 1],
+  [
+    'f',
+    '#2f6b3a',
+    [
+      [99, 201, -60],
+      [113, 203, -15],
+      [151, 201, 60],
+      [137, 203, 15],
+      [84, 238, 70],
+      [166, 238, -70],
+    ]
+      .map(([x, y, d]) => place('M-8,0 Q0,-6 8,0 Q0,6 -8,0 Z', x!, y!, 1, d!))
+      .join(' '),
+    1,
+  ],
   ['f', HEJKAL_SKIN, 'M96,170 C98,160 110,158 117,165 L119,187 C111,194 99,191 96,183 Z', 1.8],
   ['f', HEJKAL_SKIN, 'M154,170 C152,160 140,158 133,165 L131,187 C139,194 151,191 154,183 Z', 1.8],
   ['l', 'M99,172 L111,170 M99,178 L112,177 M151,172 L139,170 M151,178 L138,177', 1],
@@ -244,7 +314,7 @@ const HEJKAL_EXTRA: SceneOp[] = [
 // ─────────────────────────── Tramvaják ───────────────────────────
 
 // Tramvaják: řidič za čelním sklem tramvaje — linka 12 v orientační tabuli, žluté tyče a poutka,
-// stěrač, světla, v ruce kontrolér.
+// označovač jízdenek, stěrač, světla, v ruce kontrolér.
 const TRAM_RED = '#d7442c';
 const TRAM_BACKDROP: SceneOp[] = [
   // Čelní okno (pohled dovnitř vozu).
@@ -254,6 +324,10 @@ const TRAM_BACKDROP: SceneOp[] = [
   ['l', 'M50,92 L50,106 M74,92 L74,106 M176,92 L176,106 M200,92 L200,106', 1.2],
   ['s', '#fffaf0', `${c(50, 112, 5.5)} ${c(74, 112, 5.5)} ${c(176, 112, 5.5)} ${c(200, 112, 5.5)}`, 2.4],
   ['s', '#f2cf4a', 'M60,92 V226 M190,92 V226', 5],
+  // Označovač jízdenek na tyči.
+  ['f', '#ef8a2e', rect(52, 132, 16, 22), 1.6],
+  ['f', 'dark', rect(55, 137, 10, 3), 0],
+  ['f', '#d7442c', c(60, 147, 2.4), 0.8],
   // Orientační tabule: linka 12 a „cíl“ (čárky).
   ['f', 'dark', rect(90, 24, 122, 34), 1.6],
   ['s', '#f2cf4a', 'M101,33 L106,29 L106,51 M112,34 C113,28 125,27 125,34 C125,41 112,44 112,51 L126,51', 3],
@@ -422,6 +496,8 @@ const GOSSIP_OUTFIT: SceneOp[] = [
 ];
 
 const GOSSIP_EXTRA: SceneOp[] = [
+  // Uzel šátku pod bradou.
+  ['f', '#d7442c', ell(125, 194, 6, 5), 1.4],
   // Natáčky vykukující zpod šátku.
   ['f', '#e88a9a', `${rect(108, 126, 10, 8)} ${rect(120, 125, 10, 8)} ${rect(132, 126, 10, 8)}`, 1.2],
   ['l', 'M113,126 V134 M125,125 V133 M137,126 V134', 0.8],
@@ -442,7 +518,7 @@ const GOSSIP_EXTRA: SceneOp[] = [
   [
     'f',
     '#fffaf0',
-    `${c(92, 232, 2.4)} ${c(112, 236, 2.4)} ${c(132, 232, 2.4)} ${c(152, 236, 2.4)} ${c(170, 231, 2.4)}`,
+    `${c(92, 239, 2.2)} ${c(112, 240, 2.2)} ${c(132, 240, 2.2)} ${c(158, 239, 2.2)} ${c(174, 232, 2.2)}`,
     0.6,
   ],
   [
@@ -515,7 +591,20 @@ const RUNDU: SceneOp[] = [
   ['f', '#fffaf0', ell(88, 246, 21, 10), 1.6],
   ['s', '#d7442c', ell(88, 246, 17, 7.5), 2],
   ['l', 'M78,241 L77,251 M83,241 L82,251 M88,241 L87,251 M93,241 L92,251 M74,250 L97,242', 1.3],
+  // Prázdná rozevřená peněženka na stole — platí ten, kdo to řekl nahlas.
+  ['f', '#5a3418', 'M17,247 L40,242 L42,259 L19,263 Z', 1.4],
+  ['f', '#8c5632', 'M20,249 L38,245.5 L39,252 L21,255.5 Z', 1],
+  ['l', 'M28.5,245 L30.5,261', 1],
   ...RUNDU_MUGS,
+  // Z peněženky vylétá mol.
+  ['l', 'M30,244 C22,240 36,236 28,230', 0.8],
+  [
+    'f',
+    '#d9d2c2',
+    `${place(ell(-4.5, 0, 5, 3), 28, 224, 1, -35)} ${place(ell(4.5, 0, 5, 3), 28, 224, 1, 35)}`,
+    1,
+  ],
+  ['f', 'dark', ell(28, 225, 1.5, 4), 0],
   // Ťuk: pěna stříká, kapky a čárky pohybu.
   ['f', '#fffaf0', shag(125, 46, 22, 15, 9, 0.38, 0.2), 1.8],
   [
@@ -598,6 +687,16 @@ const HERMELIN: SceneOp[] = [
   // Hermelíny rozpůlené a proložené paprikovou náplní.
   ['f', '#fffaf0', CHEESES.map(([x, y, d]) => place(CHEESE, x, y, 1, d)).join(' '), 1.8],
   ['f', '#ef8a2e', CHEESES.map(([x, y, d]) => place(CHEESE_FILL, x, y, 1, d)).join(' '), 1],
+  // Horní kůrka (kolečko sýra shora) s plísňovými skvrnkami.
+  ['f', '#fffaf0', CHEESES.map(([x, y, d]) => place(ell(0, -11, 31, 5), x, y, 1, d)).join(' '), 1.4],
+  [
+    'f',
+    '#d9d2c2',
+    CHEESES.map(([x, y, d]) =>
+      place(`${ell(-14, -11, 3.2, 1.5)} ${ell(4, -12.5, 2.6, 1.2)} ${ell(17, -10, 2.2, 1.1)}`, x, y, 1, d),
+    ).join(' '),
+    0,
+  ],
   [
     'l',
     CHEESES.map(([x, y, d]) =>
@@ -650,8 +749,8 @@ const HERMELIN: SceneOp[] = [
 // ─────────────────────────── Třináctý plat ───────────────────────────
 
 // Třináctý plat: kancelář s olejovým soklem — trhací kalendář na „13“, vlaječka vzorného pracovníka,
-// graf plánu, kde poslední sloupec prorazil čáru i rám; na stole výplatní sáček přetékající bankovkami,
-// karafiát ve sklenici a štos mincí.
+// graf plánu, kde poslední sloupec prorazil čáru i rám; na stole hnědý výplatní sáček s razítkem přetékající
+// bankovkami, karafiát ve sklenici a štos mincí.
 const BANKNOTE = 'M-14,-22 L14,-22 L14,22 L-14,22 Z';
 
 const THIRTEENTH: SceneOp[] = [
@@ -685,12 +784,12 @@ const THIRTEENTH: SceneOp[] = [
   ['f', '#5a3418', 'M16,204 H234 V212 H16 Z', 1.2],
   // Karafiát ve sklenici.
   ['f', '#bcd6e6', 'M30,174 L52,174 L50,206 L32,206 Z', 1.4],
-  ['s', '#2f6b3a', 'M41,206 C40,180 46,150 44,126', 2.6],
-  ['f', '#5d9a3e', place('M-10,0 Q0,-4 10,0 Q0,4 -10,0 Z', 50, 160, 1, -40), 1],
-  ['f', '#d7442c', shag(44, 118, 14, 11, 9, 0.3), 1.6],
-  ['f', '#b8302a', shag(44, 120, 7, 5, 6, 0.3, 0.3), 0.8],
+  ['s', '#2f6b3a', 'M41,206 C40,184 46,164 44,148', 2.6],
+  ['f', '#5d9a3e', place('M-10,0 Q0,-4 10,0 Q0,4 -10,0 Z', 50, 166, 1, -40), 1],
+  ['f', '#d7442c', shag(44, 144, 14, 11, 9, 0.3), 1.6],
+  ['f', '#b8302a', shag(44, 146, 7, 5, 6, 0.3, 0.3), 0.8],
   // Odklopená chlopeň sáčku a bankovky z něj.
-  ['f', '#e9d38a', place('M-45,-28 L0,-58 L45,-28 Z', 128, 210, 1, -3), 1.8],
+  ['f', '#c99a62', place('M-45,-28 L0,-58 L45,-28 Z', 128, 210, 1, -3), 1.8],
   ['f', '#9fd0c4', place(BANKNOTE, 104, 150, 1, -24), 1.6],
   ['f', '#c6dcae', place(BANKNOTE, 128, 140, 1, -4), 1.6],
   ['f', '#9fd0c4', place(BANKNOTE, 152, 148, 1, 18), 1.6],
@@ -704,11 +803,23 @@ const THIRTEENTH: SceneOp[] = [
     `${place('M-10,-18 H10 M-10,10 H10', 104, 150, 1, -24)} ${place('M-10,-18 H10 M-10,10 H10', 128, 140, 1, -4)} ${place('M-10,-18 H10 M-10,10 H10', 152, 148, 1, 18)}`,
     0.8,
   ],
-  // Výplatní sáček s okénkem a rozpisem.
-  ['f', '#f6e3a1', place('M-46,-30 L46,-30 L44,44 L-44,44 Z', 128, 210, 1, -3), 2.2],
-  ['f', '#fffaf0', place(rect(-34, -16, 46, 30), 128, 210, 1, -3), 1.3],
-  ['l', place('M-30,-8 H8 M-30,0 H8 M-30,8 H0 M18,-16 V36 M-40,24 H40 M-40,32 H40', 128, 210, 1, -3), 0.9],
-  ['h', place('M20,-30 L46,-30 L44,44 L20,44 Z', 128, 210, 1, -3), 45],
+  // Výplatní sáček z hnědého papíru (zadní strana se slepenými chlopněmi) a kulaté razítko s hvězdou.
+  ['f', '#c99a62', place('M-46,-30 L46,-30 L44,44 L-44,44 Z', 128, 210, 1, -3), 2.2],
+  ['h', place('M-44,44 L-4,10 L4,10 L44,44 Z', 128, 210, 1, -3), 45],
+  ['l', place('M-46,-30 L-4,10 L4,10 L46,-30 M-44,44 L-4,10 M44,44 L4,10', 128, 210, 1, -3), 1.3],
+  ['s', '#b8302a', place(`${ell(16, -12, 11)} ${ell(16, -12, 7.5)}`, 128, 210, 1, -3), 1.6],
+  [
+    'f',
+    '#b8302a',
+    place(
+      'M16,-18 L17.6,-14 L21.6,-14 L18.4,-11.4 L19.6,-7.4 L16,-9.8 L12.4,-7.4 L13.6,-11.4 L10.4,-14 L14.4,-14 Z',
+      128,
+      210,
+      1,
+      -3,
+    ),
+    0,
+  ],
   // Štos mincí.
   [
     'f',
@@ -800,6 +911,16 @@ const TEMP_BACKDROP: SceneOp[] = [
     ).join(' '),
     1,
   ],
+  [
+    'l',
+    BINES.flatMap((b, i) =>
+      [0.18, 0.46, 0.8].map((t, k) => {
+        const [x, y] = alongBine(b, t, (k + i) % 2 ? -13 : 13);
+        return place('M-3,0 L0,2 L3,0 M-2.5,4 L0,6 L2.5,4', x, y + 2, 1);
+      }),
+    ).join(' '),
+    0.7,
+  ],
   // Pole s hlínou.
   ['f', '#c99a62', 'M16,226 C70,220 180,222 234,218 L234,284 L16,284 Z', 1.4],
   ['l', 'M24,244 h20 M200,240 h22 M30,258 h14', 1],
@@ -817,7 +938,9 @@ const TEMP_OUTFIT: SceneOp[] = [
 ];
 
 const TEMP_EXTRA: SceneOp[] = [
-  // Koš na chmel: ucho, proutí, kopec šištic, list a ponožka.
+  // Kšilt šiltovky.
+  ['f', '#b8302a', 'M90,132 C96,151 154,151 160,132 C148,140 102,140 90,132 Z', 1.8],
+  // Koš na chmel před ním: ucho, proutí, kopec šištic, list a ponožka.
   ['s', '#8c5632', 'M160,226 C160,182 214,182 214,226', 4],
   ['f', '#c6dcae', shag(187, 222, 28, 12, 9, 0.25), 1.4],
   [
@@ -835,11 +958,11 @@ const TEMP_EXTRA: SceneOp[] = [
     0.8,
   ],
   ['f', '#5d9a3e', place('M-12,0 Q0,-7 12,0 Q0,7 -12,0 Z', 206, 212, 1, -30), 1.1],
-  ['f', '#fffaf0', 'M168,214 L176,212 L177,222 L184,224 L182,230 L170,228 Z', 1.1],
+  ['f', '#fffaf0', 'M167,203 L176,202 L177,214 L187,217 C191,219 190,225 186,225 L170,222 Z', 1.2],
+  ['f', '#d7442c', 'M167,203 L176,202 L176.3,207 L167.4,208 Z', 0.9],
   ['f', '#c99a62', 'M156,226 L218,226 L210,264 L164,264 Z', 1.8],
   ['l', 'M158,238 H215 M161,250 H212 M174,226 L177,264 M187,226 L187,264 M200,226 L197,264', 0.9],
   ['f', '#8c5632', 'M154,224 L220,224 L219,230 L155,230 Z', 1.3],
-  ...hand(187, 188, 0),
   // Padající šištice a kapka potu.
   ['f', '#c6dcae', `${place(HOP, 226, 244, 1, 30)} ${place(HOP, 150, 256, 1, -20)}`, 1],
   ['f', '#bcd6e6', 'M88,128 C83,136 83,141 88,141 C93,141 93,136 88,128 Z', 1],
@@ -933,11 +1056,10 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
     bg: '#22365c',
     motif: 'none',
     skin: HEJKAL_SKIN,
-    body: HEJKAL_COAT,
+    body: '#2f6b3a',
     collar: 'plain',
     hair: 'none',
-    beard: 'beard',
-    beardColor: '#5d9a3e',
+    beard: undefined,
     mood: 'o',
     prop: undefined,
     backdrop: HEJKAL_BACKDROP,

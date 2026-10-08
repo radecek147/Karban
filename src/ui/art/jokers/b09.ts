@@ -368,12 +368,11 @@ const TRODDEN_PATH: SceneOp[] = [
   ['f', GREEN, 'M16,148 C80,144 170,146 234,148 L234,284 L16,284 Z', 1.4],
   ['f', CREAM, DAISIES.map(([x, y]) => c(x, y, 2.6)).join(' '), 0.9],
   ['f', '#f2cf4a', DAISIES.map(([x, y]) => c(x, y, 1)).join(' '), 0],
-  // Úřední chodník oklikou: podél spodního okraje a pak nahoru k vchodu.
-  ['f', GREY, 'M16,250 L234,250 L234,284 L16,284 Z', 1.6],
-  ['f', GREY, 'M156,151 L168,151 L234,236 L234,250 L198,250 Z', 1.6],
+  // Úřední chodník oklikou do L: podél spodního okraje, nahoru při pravém kraji a podél domu k vchodu.
+  ['f', GREY, 'M16,250 L196,250 L210,162 L150,162 L152,152 L226,152 L234,156 L234,284 L16,284 Z', 1.6],
   [
     'l',
-    'M40,250 L36,284 M80,250 L78,284 M120,250 L120,284 M160,250 L162,284 M200,250 L204,284 M176,180 L190,177 M188,206 L208,202 M202,232 L226,227',
+    'M40,250 L36,284 M80,250 L78,284 M120,250 L120,284 M160,250 L162,284 M200,250 L204,284 M207,180 L234,180 M203,206 L234,206 M199,230 L234,230 M176,152 L176,162 M200,152 L200,162',
     0.9,
   ],
   // Vyšlapaná pěšina napříč trávníkem.
@@ -455,9 +454,22 @@ const WAR_LOOT: SceneOp[] = [
   ['s', CREAM, 'M28,92 L45,89', 2.4],
   ['f', GOLD, 'M36,180 C46,150 80,138 110,142 C140,134 172,140 200,180 Z', 1.6],
   [
-    'l',
-    'M60,160 c4,-3 8,-3 10,0 M92,150 c4,-3 8,-3 10,0 M150,154 c4,-3 8,-3 10,0 M170,166 c4,-3 8,-3 10,0 M120,160 c4,-3 8,-3 10,0',
-    1,
+    'f',
+    '#f2cf4a',
+    (
+      [
+        [126, 156],
+        [146, 148],
+        [152, 163],
+        [134, 166],
+        [114, 166],
+        [40, 169],
+        [199, 168],
+      ] as const
+    )
+      .map(([x, y]) => ell(x, y, 6.5, 3.4))
+      .join(' '),
+    1.1,
   ],
   ['f', '#d9d2c2', place(SWORD_BLADE, 116, 148, 1, -18), 1.4],
   ['f', GOLD, place(SWORD_GUARD, 116, 148, 1, -18), 1.4],
@@ -638,9 +650,9 @@ function jester(x: number, y: number, deg: number, copy: boolean): SceneOp[] {
   ];
 }
 
-/** List papíru vycházející z válce (místně: dolní střed v 0,0). */
+/** List papíru vycházející z válce (místně: dolní střed v 0,0); řádky textu pod obrázkem šaška. */
 const SHEET = 'M-40,-118 L40,-118 L40,0 L-40,0 Z';
-const TYPED = 'M-30,-106 L18,-106 M-30,-98 L26,-98 M-30,-90 L6,-90';
+const TYPED = 'M-30,-38 L18,-38 M-30,-30 L26,-30 M-30,-22 L6,-22';
 
 // Kopírák: zelený psací stroj na úředním stole, z válce vychází originál se šaškem (žolík), mezi listy černý
 // kopírák a za ním vyjíždí modrý průklep téhož šaška („skoro jako originál, jen modřejší“); na polici šanony.
@@ -773,11 +785,8 @@ const DEFENESTRACE: SceneOp[] = [
   // Hromada hnoje s vidlemi, smradem a mouchou.
   ['f', OCHRE, 'M204,256 L212,204 L216,205 L209,257 Z', 1.2],
   ['f', BROWN, 'M118,284 C122,256 150,238 180,238 C208,236 232,252 234,262 L234,284 Z', 1.8],
-  [
-    'l',
-    'M140,262 c5,-6 12,-6 15,0 M176,252 c5,-6 12,-6 15,0 M196,268 c5,-6 12,-6 15,0 M158,274 c5,-6 12,-6 15,0',
-    1.2,
-  ],
+  ['h', 'M180,238 C208,236 232,252 234,262 L234,284 L196,284 C200,266 194,250 180,238 Z', 30],
+  ['f', '#5a3418', `${ell(146, 266, 7, 3.4)} ${ell(186, 252, 5, 2.6)} ${ell(172, 276, 8, 3.6)}`, 0],
   ['s', '#f2cf4a', 'M150,250 l8,-4 M190,246 l6,4 M214,256 l7,-2 M132,272 l7,-3', 1.6],
   ['s', GREEN, 'M156,234 c-4,-6 4,-10 0,-16 M226,240 c-4,-6 4,-10 0,-16', 1.8],
   ['f', 'dark', c(170, 222, 1.8), 0],

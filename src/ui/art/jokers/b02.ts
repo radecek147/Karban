@@ -344,11 +344,19 @@ const GARDEN_BACK: SceneOp[] = [
 
 const GARDENER_SCENE: SceneOp[] = [
   ...GARDEN_BACK,
-  ...GARDENER.slice(17),
-  // Beruška na cuketě.
-  ['f', '#d7442c', c(186, 226, 4.4), 1.2],
-  ['l', 'M186,222 L186,230', 0.9],
-  ['f', 'dark', `${c(184, 225, 0.9)} ${c(188, 227, 0.9)} ${c(186, 221.6, 1.6)}`, 0],
+  ...GARDENER.slice(17, 38),
+  // Cuketa a ruce o kus výš, ať spodní ruku neuřízne rám se jménem.
+  ...moveOps(
+    [
+      ...GARDENER.slice(38),
+      // Beruška na cuketě.
+      ['f', '#d7442c', c(186, 226, 4.4), 1.2],
+      ['l', 'M186,222 L186,230', 0.9],
+      ['f', 'dark', `${c(184, 225, 0.9)} ${c(188, 227, 0.9)} ${c(186, 221.6, 1.6)}`, 0],
+    ],
+    0,
+    -12,
+  ),
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -363,9 +371,6 @@ const SVEJK_SCENE: SceneOp[] = figure({
   hair: 'short',
   hairColor: '#8a5a34',
   mood: 'smile',
-  hat: 'cap',
-  hatColor: '#8aa0b8',
-  hatAccent: '#e6b347',
   backdrop: [
     // Hospodské obložení a polička s půllitry.
     ['f', '#c99a62', rect(16, 176, 218, 108), 1.4],
@@ -403,9 +408,15 @@ const SVEJK_SCENE: SceneOp[] = figure({
     ['s', '#8c5632', 'M160,214 L104,284', 8],
   ],
   extra: [
-    // Přehnutá záložka polní čepice s knoflíky (v barvě sukna) a růžice.
-    ['f', '#8aa0b8', 'M96,124 L154,124 L154,133 L96,133 Z', 1.4],
-    ['f', '#e6b347', `${c(111, 129, 2.2)} ${c(139, 129, 2.2)}`, 0.9],
+    // Polní čepice c. a k.: rovné temeno, přehnutá záložka se dvěma knoflíky, růžice a krátký kšilt.
+    ['f', '#8aa0b8', 'M97,134 L100,104 C112,99 138,99 150,104 L153,134 Z', 2.2],
+    ['h', 'M138,101 C144,101 148,102 150,104 L153,134 L142,134 C144,122 142,110 138,101 Z', 45],
+    ['f', '#6f8aa8', 'M95,121 L155,121 L155,134 L95,134 Z', 1.6],
+    ['l', 'M125,121 L125,134', 1],
+    ['f', '#e6b347', `${c(116, 127.5, 2.4)} ${c(134, 127.5, 2.4)}`, 0.9],
+    ['f', '#e6b347', c(125, 111, 5), 1.4],
+    ['f', '#d7442c', c(125, 111, 2), 0],
+    ['f', '#2f3542', 'M94,134 C106,146 144,146 156,134 C148,140 102,140 94,134 Z', 1.6],
     // Dýmka v koutku a kouř.
     ['s', '#5a3418', 'M134,176 C142,182 148,188 152,192', 3.2],
     ['f', '#8c5632', 'M148,186 L166,186 L164,204 C161,209 153,209 151,204 Z', 1.6],
@@ -528,8 +539,7 @@ const FLEA: Partial<FigureSpec> = {
   hairColor: '#5e3a20',
   beard: 'walrus',
   beardColor: '#5e3a20',
-  hat: 'flatcap',
-  hatColor: '#5b5850',
+  hat: undefined,
   mood: 'sly',
   backdrop: [
     // Modrá plachta s provazy.
@@ -552,6 +562,12 @@ const FLEA: Partial<FigureSpec> = {
     ['l', 'M84,240 L108,252 M80,258 L110,270 M166,240 L142,252 M170,258 L140,270', 0.9],
   ],
   extra: [
+    // Placatá čepice (bekovka): široká, splácnutá, přetažená doprava, kšilt dopředu, knoflík a šev nahoře.
+    ['f', '#9a958a', 'M90,134 C82,120 94,102 124,100 C156,99 172,110 166,128 C150,124 104,126 90,134 Z', 2.2],
+    ['h', 'M138,102 C158,102 170,112 166,128 C160,126 150,125 142,125 C146,116 144,108 138,102 Z', 45],
+    ['l', 'M126,101 C122,110 120,118 122,127 M100,118 C110,110 124,108 140,110', 1.1],
+    ['f', '#5b5850', 'M94,134 C104,124 152,122 164,128 C162,140 104,146 94,134 Z', 2],
+    ['f', '#5b5850', c(126, 101, 3.2), 1.2],
     // Tužka za uchem.
     ['f', '#f2cf4a', place('M0,-3 L22,-3 L22,3 L0,3 Z', 150, 176, 140), 1.2],
     ['f', '#2f3542', place('M22,-3 L29,0 L22,3 Z', 150, 176, 140), 1],
@@ -597,7 +613,12 @@ function sawGable(x0: number, x1: number, base: number, ax: number, ay: number, 
   return d + `L${x1},${base + 80} Z`;
 }
 
-const GOLEM_SCENE: SceneOp[] = [
+/** Hlína z Vltavy: role `clay`/`clay2` by se v tisku přitáhly k šedé, tak je přebarví na okrovou a hnědou. */
+const CLAY: Record<string, string> = { clay: '#c99a62', clay2: '#8c5632' };
+const clayed = (ops: readonly SceneOp[]): SceneOp[] =>
+  ops.map((op): SceneOp => (op[0] === 'f' && CLAY[op[1]] ? ['f', CLAY[op[1]]!, op[2], op[3]] : op));
+
+const GOLEM_SCENE: SceneOp[] = clayed([
   ...GOLEM.slice(0, 1),
   ...GOLEM.slice(3, 5),
   ...GOLEM.slice(6, 8),
@@ -612,7 +633,13 @@ const GOLEM_SCENE: SceneOp[] = [
   ['l', 'M62,138 v-3 h7 v3 M62,150 v-3 h7 v3 M62,162 v-3 h7 v3 M62,174 v-3 h7 v3 M62,186 v-3 h7 v3', 1.2],
   ...GOLEM.slice(9, 10),
   ...GOLEM.slice(14, 18),
-  ...GOLEM.slice(18),
+  ...GOLEM.slice(18, 27),
+  // Obočí: jedno zvednuté — nechápe, co po něm kdo chce.
+  ['f', 'clay2', 'M94,142 L123,145 L123,151 L95,148 Z', 2],
+  ['f', 'clay2', 'M127,142 C136,134 146,131 156,133 L156,139 C147,138 137,141 128,148 Z', 2],
+  ...GOLEM.slice(29, 38),
+  ['l', 'M108,182 C114,177 119,185 125,181 C131,177 136,185 142,180', 2.6],
+  ...GOLEM.slice(39),
   // Kamenná karta v hliněné dlani.
   ['f', '#d9d2c2', place('M-21,-30 L21,-30 L21,30 L-21,30 Z', -12, 196, 214), 2],
   ['l', place('M-16,-25 L16,-25 L16,25 L-16,25 Z', -12, 196, 214), 0.9],
@@ -646,7 +673,7 @@ const GOLEM_SCENE: SceneOp[] = [
   ['s', '#f2cf4a', 'M180,118 C180,106 198,106 198,118 C198,126 189,128 189,136', 5],
   ['l', 'M180,118 C180,106 198,106 198,118 C198,126 189,128 189,136', 1],
   ['f', '#f2cf4a', c(189, 145, 3.2), 1.2],
-];
+]);
 
 // ---------------------------------------------------------------------------------------------------------------
 // Teta z poradny — sluchátko u ucha, zvednutý ukazováček, bublina s vykřičníkem a na poličce med a česnek.
@@ -737,6 +764,14 @@ function findTop(x: number): number {
   return 284;
 }
 
+/** Ikona „bez signálu“: čtyři čárky, svítí jen první, a červené škrtnutí. */
+const NO_SIGNAL: SceneOp[] = [
+  ['f', '#bcd6e6', `${rect(116, 50, 7, 16)} ${rect(126, 42, 7, 24)} ${rect(136, 34, 7, 32)}`, 1.4],
+  ['f', 'dark', rect(106, 58, 7, 8), 1.4],
+  ['l', 'M100,30 L114,44 M114,30 L100,44', 5],
+  ['s', '#d7442c', 'M100,30 L114,44 M114,30 L100,44', 2.6],
+];
+
 const COTTAGER: Partial<FigureSpec> = {
   prop: undefined,
   bg: '#bcd6e6',
@@ -762,13 +797,17 @@ const COTTAGER: Partial<FigureSpec> = {
     // Chata: roubení, střecha, komín s kouřem, okenice se srdíčky.
     ['f', '#8c5632', 'M156,206 L156,146 L234,146 L234,206 Z', 1.8],
     ['l', 'M156,158 H234 M156,170 H234 M156,182 H234 M156,194 H234', 1],
-    ['f', '#b8302a', 'M146,150 L196,104 L244,150 Z', 1.8],
+    // Eternitová střecha (šedá — ať na ní červený buřt nezmizí).
+    ['f', '#5b5850', 'M146,150 L196,104 L244,150 Z', 1.8],
+    ['l', 'M164,134 H227 M179,120 H212', 1],
     ['f', '#9a958a', 'M170,128 L170,108 L180,108 L180,119 Z', 1.4],
     ['f', 'cloud', `${c(176, 100, 4)} ${c(170, 89, 5)} ${c(177, 76, 6)}`, 1.1],
     ['f', '#fffaf0', rect(196, 160, 20, 20), 1.4],
     ['l', 'M206,160 V180 M196,170 H216', 1],
     ['f', '#5d9a3e', `${rect(184, 158, 11, 24)} ${rect(217, 158, 11, 24)}`, 1.4],
     ['f', 'dark', `${heart(189.5, 168, 2.6)} ${heart(222.5, 168, 2.6)}`, 0],
+    // Na chatě není signál.
+    ...NO_SIGNAL,
   ],
   outfit: flannel(),
   extra: [
@@ -823,15 +862,16 @@ const rifle = (d: string): string => place(d, RIFLE_ANG, ...RIFLE_AT);
 const DUCK =
   'M0,0 C0,-8 10,-10 16,-6 L18,-14 C18,-20 26,-20 27,-15 L32,-14 L27,-11 L24,-4 C24,2 18,4 10,4 C4,4 0,2 0,0 Z';
 
-/** Růže z krepového papíru visící na provázku. */
+/** Růže z krepového papíru visící na provázku: zvlněné okvětí a spirála uprostřed. */
 function rose(x: number, y: number): SceneOp[] {
   return [
-    ['l', `M${x},${y - 7} L${x},46`, 1],
-    ['f', '#5d9a3e', place('M0,0 C4,-5 10,-4 12,0 C9,4 4,4 0,0 Z', -30, x + 2, y - 8), 1],
-    ['f', '#d7442c', c(x, y, 7.5), 1.4],
+    ['l', `M${x},${y - 9} L${x},46`, 1],
+    ['f', '#5d9a3e', place('M0,0 C4,-5 10,-4 12,0 C9,4 4,4 0,0 Z', -30, x + 3, y - 9), 1],
+    ['f', '#d7442c', petals(x, y, 5.6, 7, 3.6), 1.2],
+    ['f', '#d7442c', c(x, y, 5.4), 0],
     [
       'l',
-      `M${x - 3},${y} C${x - 3},${y - 4} ${x + 3},${y - 4} ${x + 3},${y} C${x + 3},${y + 3} ${x - 1},${y + 3} ${x - 1},${y} M${x - 6},${y + 2} C${x - 3},${y + 6} ${x + 4},${y + 6} ${x + 6},${y + 1}`,
+      `M${x},${y} C${x},${y - 2.4} ${x + 3},${y - 2.4} ${x + 3},${y} C${x + 3},${y + 3.4} ${x - 3.4},${y + 3.4} ${x - 3.4},${y} C${x - 3.4},${y - 4.6} ${x + 4.6},${y - 4.8} ${x + 5},${y - 0.6}`,
       0.9,
     ],
   ];
@@ -863,8 +903,18 @@ const SHOOTER: Partial<FigureSpec> = {
     // Papírové růže z krepáku na provázcích.
     ...rose(150, 66),
     ...rose(166, 78),
-    // Obří plyšový medvěd.
+    // Obří plyšový medvěd: tlapky, bříško, packa — sedí na liště a je větší než střelec.
+    ['f', '#c99a62', `${c(190, 206, 11, 8)} ${c(224, 208, 11, 8)}`, 1.8],
+    ['f', '#f6e3a1', `${c(190, 207, 6, 4.4)} ${c(224, 209, 6, 4.4)}`, 1],
     ['f', '#c99a62', c(206, 170, 30, 40), 2],
+    ['f', '#f6e3a1', c(208, 178, 16, 22), 1.4],
+    [
+      'f',
+      '#c99a62',
+      'M184,140 C172,146 166,166 172,180 C176,188 186,186 188,178 C190,164 192,150 184,140 Z',
+      1.8,
+    ],
+    ['f', '#f6e3a1', c(177, 179, 5, 4), 1],
     ['f', '#c99a62', `${c(186, 76, 9)} ${c(226, 76, 9)}`, 1.8],
     ['f', '#e88a9a', `${c(186, 76, 4.5)} ${c(226, 76, 4.5)}`, 0],
     ['f', '#c99a62', c(206, 100, 25, 23), 2],

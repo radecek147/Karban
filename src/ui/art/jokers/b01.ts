@@ -261,6 +261,13 @@ const onShovel = (ly: number): [number, number] => {
 };
 const [GRIP_X, GRIP_Y] = onShovel(150);
 
+// ─────────────────────────── Klenotník ───────────────────────────
+
+/** Kulaté prošedivělé chomáčky vlasů nad ušima (levý a jeho zrcadlo kolem x 125). */
+const JEWELER_TUFTS =
+  'M101,152 C95,150 94,143 98,140 C97,135 102,132 106,135 C109,136 109,140 107,142 C109,145 108,150 104,152 Z ' +
+  'M149,152 C155,150 156,143 152,140 C153,135 148,132 144,135 C141,136 141,140 143,142 C141,145 142,150 146,152 Z';
+
 // ─────────────────────────── Křižák ───────────────────────────
 
 /** Kroužková košile: drobné obloučky v kápi (mezi obrysem hlavy a otvorem pro obličej). */
@@ -317,45 +324,68 @@ function sunRays(cx: number, cy: number, n: number): string {
 
 // ─────────────────────────── Meteorolog ───────────────────────────
 
-/** Obrys republiky na mapě počasí (zjednodušený, u/v 0–1 → okno karty). */
+/** Zeměpisná délka a šířka → bod mapy počasí (šířkové stupně jsou na našem území ~1,55× delší). */
+const geo = (lon: number, lat: number): readonly [number, number] => [
+  20 + (lon - 12.09) * 30.5,
+  72 + (51.06 - lat) * 47.3,
+];
+
+/** Obrys republiky na mapě počasí (zjednodušený podle zeměpisných souřadnic: délka, šířka → okno karty). */
 const CZ: readonly (readonly [number, number])[] = (
   [
-    [0.0, 0.3],
-    [0.07, 0.24],
-    [0.15, 0.19],
-    [0.23, 0.12],
-    [0.3, 0.08],
-    [0.33, 0.0],
-    [0.37, 0.06],
-    [0.42, 0.02],
-    [0.46, 0.09],
-    [0.52, 0.12],
-    [0.58, 0.1],
-    [0.62, 0.17],
-    [0.64, 0.27],
-    [0.69, 0.21],
-    [0.73, 0.15],
-    [0.78, 0.23],
-    [0.85, 0.29],
-    [0.91, 0.31],
-    [0.96, 0.37],
-    [1.0, 0.46],
-    [0.95, 0.55],
-    [0.88, 0.66],
-    [0.8, 0.76],
-    [0.72, 0.86],
-    [0.66, 0.92],
-    [0.58, 0.86],
-    [0.5, 0.82],
-    [0.43, 0.88],
-    [0.37, 0.98],
-    [0.3, 0.94],
-    [0.22, 0.8],
-    [0.13, 0.68],
-    [0.07, 0.56],
-    [0.03, 0.42],
+    [12.09, 50.25],
+    [12.2, 50.32],
+    [12.33, 50.24],
+    [12.5, 50.4],
+    [12.9, 50.43],
+    [13.2, 50.5],
+    [13.5, 50.63],
+    [13.9, 50.75],
+    [14.2, 50.86],
+    [14.35, 51.04],
+    [14.6, 50.95],
+    [14.85, 50.87],
+    [15.0, 51.0],
+    [15.25, 50.95],
+    [15.5, 50.78],
+    [16.0, 50.66],
+    [16.25, 50.66],
+    [16.2, 50.42],
+    [16.45, 50.32],
+    [16.75, 50.2],
+    [16.95, 50.25],
+    [17.0, 50.42],
+    [17.3, 50.32],
+    [17.75, 50.3],
+    [17.7, 50.15],
+    [18.05, 50.05],
+    [18.4, 49.95],
+    [18.6, 49.88],
+    [18.85, 49.53],
+    [18.45, 49.33],
+    [18.15, 49.1],
+    [17.9, 48.92],
+    [17.5, 48.82],
+    [17.15, 48.85],
+    [16.95, 48.62],
+    [16.6, 48.78],
+    [16.1, 48.75],
+    [15.6, 48.88],
+    [15.15, 48.98],
+    [14.95, 48.78],
+    [14.7, 48.6],
+    [14.35, 48.56],
+    [14.05, 48.68],
+    [13.8, 48.77],
+    [13.5, 48.97],
+    [13.2, 49.12],
+    [12.95, 49.35],
+    [12.65, 49.43],
+    [12.5, 49.7],
+    [12.42, 49.95],
+    [12.2, 50.1],
   ] as const
-).map(([u, v]) => [20 + 210 * u, 64 + 128 * v] as const);
+).map(([lon, lat]) => geo(lon, lat));
 
 /** Mráček (šířka ~44 při s = 1, střed dole uprostřed). */
 const CLOUD = 'M-20,0 C-28,0 -28,-12 -18,-12 C-18,-22 -4,-24 0,-16 C4,-26 20,-24 20,-12 C28,-12 28,0 20,0 Z';
@@ -371,6 +401,24 @@ const pluses = (pts: readonly (readonly [number, number])[]): string =>
       ),
     )
     .join(' ');
+
+/** Studená fronta přes západní Čechy: čára a zuby (trojúhelníky kolmo na čáru, k jihovýchodu). */
+const FRONT_X = [38, 52, 68, 86];
+const FRONT_Y = [134, 143, 148, 151];
+const FRONT_LINE = `M${FRONT_X[0]},${FRONT_Y[0]} C${[1, 2, 3].map((i) => `${FRONT_X[i]},${FRONT_Y[i]}`).join(' ')}`;
+const FRONT_TEETH = [0.2, 0.5, 0.8]
+  .map((t) => {
+    const dx = bez(FRONT_X, t + 0.01) - bez(FRONT_X, t - 0.01);
+    const dy = bez(FRONT_Y, t + 0.01) - bez(FRONT_Y, t - 0.01);
+    return place(
+      'M-5,0 L5,0 L0,8 Z',
+      bez(FRONT_X, t),
+      bez(FRONT_Y, t),
+      1,
+      (Math.atan2(dy, dx) * 180) / Math.PI,
+    );
+  })
+  .join(' ');
 
 // ─────────────────────────── Tělocvikář ───────────────────────────
 
@@ -553,6 +601,7 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
     body: '#2f3542',
     collar: 'shirt',
     glasses: false,
+    hair: 'none',
     prop: undefined,
     backdrop: [
       [
@@ -604,6 +653,9 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
       BUST_SHADOW,
     ],
     extra: [
+      // Pleš s odleskem a prošedivělé chomáčky nad ušima (kulaté, ať nevypadají jako rohy).
+      ['s', '#fffaf0', 'M110,136 C114,131 120,129 126,129', 2.6],
+      ['f', '#d9d2c2', JEWELER_TUFTS, 1.3],
       // Hodinářská lupa se zvětšeným okem.
       ['f', 'dark', c(114, 152, 11.5), 0],
       ['f', '#bcd6e6', c(114, 152, 8), 1.2],
@@ -811,10 +863,12 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
       ['f', '#8c5632', c(188, 216, 12, 3), 1],
       ['l', 'M177,224 L199,224 M178,238 L198,238', 0.9],
       ...hand(188, 250),
-      // Termoska na stole.
+      // Termoska s kostkovaným pruhem (víčko drží v ruce).
       ['f', '#9a958a', 'M24,222 L44,222 L44,212 C44,207 24,207 24,212 Z', 1.6],
       ['f', '#d7442c', 'M22,230 C22,224 26,222 34,222 C42,222 46,224 46,230 L46,284 L22,284 Z', 1.8],
       ['f', '#fffaf0', rect(22, 240, 24, 14), 1.2],
+      ['s', '#d7442c', 'M22,247 H46 M28,240 V254 M40,240 V254', 1.6],
+      ['l', 'M22,244 H46 M22,250 H46 M34,240 V254', 0.6],
     ],
   },
 
@@ -825,9 +879,13 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
     body: '#22365c',
     prop: undefined,
     backdrop: [
-      ['f', '#5d9a3e', smooth(CZ), 1.8],
-      ['f', '#d7442c', c(89, 111, 3), 1],
-      ['l', c(89, 111, 6), 0.8],
+      ['f', '#5d9a3e', smooth(CZ), 2],
+      // Praha.
+      ['f', '#d7442c', c(91, 118, 3.2), 1],
+      ['l', c(91, 118, 6.4), 0.8],
+      // Studená fronta přes západní Čechy (modrá čára se zuby).
+      ['s', '#2f5fa8', FRONT_LINE, 2.6],
+      ['f', '#2f5fa8', FRONT_TEETH, 0.8],
       // Polojasno.
       ['l', 'M52,86 L52,80 M66,92 L71,88 M72,106 L78,106 M38,92 L33,88 M32,106 L26,106 M38,120 L33,124', 1.4],
       ['f', '#f2cf4a', c(52, 106, 13), 1.6],

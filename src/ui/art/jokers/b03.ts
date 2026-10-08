@@ -386,8 +386,8 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
     ],
     extra: [
       // Cigareta za uchem.
-      ['s', '#fffaf0', 'M104,138 L88,132.6', 4],
-      ['s', '#ef8a2e', 'M88,132.6 L83.5,131', 4],
+      ['s', '#fffaf0', 'M101,146 L89,142', 4],
+      ['s', '#ef8a2e', 'M89,142 L84.5,140.5', 4],
       ...counter(240, '#c99a62', '#8c5632'),
       // Štos novin a miska na drobné.
       ['f', '#fffaf0', 'M22,232 L84,232 L86,241 L22,241 Z', 1.2],
@@ -413,7 +413,7 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
     ],
   },
 
-  // Revizor: v civilu (kožená bunda, knír, potutelný úsměv) ukazuje odznak na řetízku; tramvaj s madly,
+  // Revizor: v civilu (kožená bunda, knír, potutelný úsměv) svírá v pěsti odznak na řetízku; tramvaj s madly,
   // tyčí a označovačem, za oknem vystupují král, dáma a kluk; v kapse proštípnutá jízdenka.
   ticket_inspector: {
     bg: '#f3e8cf',
@@ -465,17 +465,20 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
     ],
     extra: [
       // Ruka zvednutá s odznakem na řetízku.
-      ['f', '#5a3418', 'M168,284 L174,228 L198,226 L204,284 Z', 2],
-      ['f', '#fffaf0', 'M174,228 L198,226 L198.6,234 L174,236 Z', 1.3],
-      ['l', chain([180, 210], [156, 226], [150, 262], 9), 0.9],
-      ['f', '#e9b030', c(186, 190, 16, 19), 2.2],
-      ['l', c(186, 190, 12.5, 15.5), 1.1],
-      ['l', 'M186,177 L182,172 L190,172', 1],
-      ['f', '#d7442c', 'M178,186 C178,178 194,178 194,186 L194,201 L178,201 Z', 1.2],
-      ['f', '#fffaf0', rect(180.5, 183, 11, 6), 0.8],
-      ['f', '#f2cf4a', `${c(181.5, 196, 1.6)} ${c(190.5, 196, 1.6)}`, 0.5],
-      ['s', '#fffaf0', 'M174,182 C175,177 178,174 182,173', 1.6],
-      ...hand(186, 216),
+      // Rukáv, zlatý řetízek k náprsní kapse, odznak s tramvají a pěst, která ho svírá za spodní okraj.
+      ['f', '#5a3418', 'M168,284 L174,214 L198,212 L204,284 Z', 2],
+      ['f', '#fffaf0', 'M174,214 L198,212 L198.6,220 L174,222 Z', 1.3],
+      ['l', 'M173,190 C156,202 148,230 150,262', 3.4],
+      ['s', '#e9b030', 'M173,190 C156,202 148,230 150,262', 1.8],
+      ['l', chain([168, 196], [153, 222], [150, 258], 6), 0.7],
+      ['f', '#e9b030', c(186, 182, 16, 19), 2.2],
+      ['l', c(186, 182, 12.5, 15.5), 1.1],
+      ['l', 'M186,169 L182,164 L190,164', 1],
+      ['f', '#d7442c', 'M178,178 C178,170 194,170 194,178 L194,193 L178,193 Z', 1.2],
+      ['f', '#fffaf0', rect(180.5, 175, 11, 6), 0.8],
+      ['f', '#f2cf4a', `${c(181.5, 188, 1.6)} ${c(190.5, 188, 1.6)}`, 0.5],
+      ['s', '#fffaf0', 'M174,174 C175,169 178,166 182,165', 1.6],
+      ...hand(186, 205),
     ],
   },
 
@@ -649,17 +652,26 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
     ],
   },
 
-  // Dlaždič: kladivo a pražská mozaika s vlnkou, hromada žulových kostek, zábrana — a nad čerstvou dlažbou
+  // Dlaždič: oranžová reflexní vesta, kladivo a pražská mozaika s vlnkou, hromada kostek, zábrana — a nad dlažbou
   // už čeká lžíce bagru, ať to můžou zase rozkopat.
   paver: {
     bg: '#bcd6e6',
     motif: 'street',
+    collar: 'plain',
     prop: undefined,
-    outfit: [['s', '#d9d2c2', 'M76,254 L174,254 M74,268 L176,268', 3.6]],
+    outfit: [
+      // Rozepnutá oranžová reflexní vesta (ať se neslévá se žlutou přilbou) se stříbrnými pruhy.
+      [
+        'f',
+        '#ef8a2e',
+        'M70,284 L74,236 C80,222 90,214 100,212 L111,212 L119,284 Z M180,284 L176,236 C170,222 160,214 150,212 L139,212 L131,284 Z',
+        1.8,
+      ],
+      ['l', 'M76,238 L113,238 M137,238 L174,238 M74,252 L115,252 M135,252 L176,252', 5.4],
+      ['s', '#d9d2c2', 'M76,238 L113,238 M137,238 L174,238 M74,252 L115,252 M135,252 L176,252', 3.4],
+    ],
     backdrop: [
       ...mosaic(),
-      ['f', '#f6e3a1', 'M172,284 C176,262 198,250 234,248 L234,284 Z', 1.2],
-      ['f', '#d9d2c2', `${rect(214, 262, 7, 7)} ${rect(224, 272, 7, 7)} ${rect(204, 274, 7, 7)}`, 0.6],
       // Zábrana.
       ['l', 'M26,182 L24,200 M74,182 L76,200', 1.6],
       ['f', '#fffaf0', rect(20, 172, 60, 10), 1.3],
@@ -880,11 +892,12 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
     ],
   },
 
-  // Táta u grilu: za grilem s buřty a steakem, obracečkou právě jednou otáčí maso ve vzduchu; zástěra
-  // s buřtem, brýle na čele, pot na pleši, kouř nad chatou a pivo po ruce.
+  // Táta u grilu: za grilem s buřty a steakem, obracečkou právě jednou otáčí maso vysoko ve vzduchu; zástěra
+  // se srdíčkem, brýle na čele, pot na pleši, kouř nad chatou a půllitr na poličce grilu.
   grill_dad: {
     bg: '#bcd6e6',
     motif: 'cabin',
+    collar: 'apron',
     prop: undefined,
     backdrop: [
       [
@@ -926,47 +939,47 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
       ],
     ],
     outfit: [
+      // Zástěra „nejlepší táta“ se srdíčkem.
       ['f', 'cloud', 'M106,214 L144,214 L148,248 L102,248 Z', 1.6],
-      ['f', '#b8302a', place(SAUSAGE, 125, 234, 0.9, -15), 1.2],
-      ['l', place(SAUSAGE_CUTS, 125, 234, 0.9, -15), 0.9],
+      ['f', '#d7442c', place(HEART, 125, 229, 0.36), 1],
     ],
     extra: [
       // Brýle na čele a kapka potu.
       ['f', '#2f3542', `${c(113, 131, 8, 5)} ${c(137, 131, 8, 5)}`, 1.2],
       ['l', 'M121,130 L129,130 M105,131 L99,140 M145,131 L151,140', 1.2],
       ['f', '#6fa0c8', 'M150,124 C146,130 147,134 150,134 C153,134 154,130 150,124 Z', 1],
-      // Pivo.
-      [
-        'f',
-        '#8c5632',
-        'M18,262 L18,226 C18,220 21,218 21,214 L21,206 L25,206 L25,214 C25,218 28,220 28,226 L28,262 Z',
-        1.4,
-      ],
-      ['f', '#f6e3a1', rect(18, 236, 10, 10), 0.8],
+      // Půllitr na odkládací poličce grilu.
+      ['f', '#8c5632', rect(16, 238, 36, 6), 1.4],
+      ['l', 'M38,222 C47,222 47,234 38,234', 2.6],
+      ['f', '#f2cf4a', 'M21,214 L39,214 L38,238 L22,238 Z', 1.6],
+      ['l', 'M26,219 L26,234 M30,219 L30,234 M34,219 L34,234', 0.8],
+      ['f', '#fffaf0', 'M19,217 C16,211 21,207 25,209 C27,205 34,205 36,209 C41,208 43,214 40,217 Z', 1.3],
       // Gril.
-      ['f', '#ef8a2e', 'M40,240 L210,240 L222,258 L28,258 Z', 1.8],
-      ['f', '#d7442c', [c(70, 252, 8, 3), c(120, 254, 10, 3), c(176, 251, 9, 3)].join(' '), 0],
+      ['f', '#ef8a2e', 'M56,240 L210,240 L222,258 L44,258 Z', 1.8],
+      ['f', '#d7442c', [c(76, 252, 8, 3), c(120, 254, 10, 3), c(176, 251, 9, 3)].join(' '), 0],
       [
         'l',
-        'M37,246 L213,246 M32,252 L218,252 M60,240 L54,258 M90,240 L86,258 M120,240 L118,258 M150,240 L150,258 M180,240 L182,258',
+        'M52,246 L213,246 M48,252 L218,252 M74,240 L68,258 M98,240 L94,258 M122,240 L120,258 M150,240 L150,258 M180,240 L182,258',
         1,
       ],
-      ['f', '#2f3542', 'M28,258 L222,258 L214,284 L36,284 Z', 2],
-      ['l', 'M48,268 h154', 0.8],
+      ['f', '#2f3542', 'M44,258 L222,258 L214,284 L52,284 Z', 2],
+      ['l', 'M60,268 h142', 0.8],
       // Buřty a steak.
       [
         'f',
         '#b8302a',
-        [place(SAUSAGE, 62, 245, 1, -6), place(SAUSAGE, 94, 250, 1, 5), place(SAUSAGE, 160, 247, 1, -3)].join(
-          ' ',
-        ),
+        [
+          place(SAUSAGE, 70, 245, 1, -6),
+          place(SAUSAGE, 100, 251, 1, 5),
+          place(SAUSAGE, 160, 247, 1, -3),
+        ].join(' '),
         1.3,
       ],
       [
         'l',
         [
-          place(SAUSAGE_CUTS, 62, 245, 1, -6),
-          place(SAUSAGE_CUTS, 94, 250, 1, 5),
+          place(SAUSAGE_CUTS, 70, 245, 1, -6),
+          place(SAUSAGE_CUTS, 100, 251, 1, 5),
           place(SAUSAGE_CUTS, 160, 247, 1, -3),
         ].join(' '),
         0.9,
@@ -975,7 +988,7 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
       ['l', 'M122,240 L118,250 M130,238 L126,251 M137,240 L134,249', 0.9],
       [
         'l',
-        'M58,232 C54,228 62,224 58,220 M100,234 C96,230 104,226 100,222 M164,232 C160,228 168,224 164,220',
+        'M70,232 C66,228 74,224 70,220 M100,234 C96,230 104,226 100,222 M164,232 C160,228 168,224 164,220',
         1,
       ],
       // Ruka s obracečkou a steak ve vzduchu.
@@ -985,10 +998,10 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
       ['f', '#d9d2c2', spat('M-9,-34 L9,-34 L11,-56 L-11,-56 Z'), 1.6],
       ['l', spat('M-4,-40 L-4,-51 M0,-40 L0,-51 M4,-40 L4,-51'), 1],
       ...hand(SPAT.x, SPAT.y, SPAT.deg),
-      ['f', '#f3e8cf', place(STEAK, 202, 132, 1.18, 28), 1.6],
-      ['f', '#8c5632', place(STEAK, 203, 133, 1, 28), 1],
-      ['l', place('M-8,-8 L-12,6 M0,-10 L-4,8 M8,-9 L4,7', 203, 133, 1, 28), 1.1],
-      ['l', 'M226,164 C234,150 232,136 222,124 M216,160 C222,150 222,142 216,134', 1.2],
+      ['f', '#f3e8cf', place(STEAK, 207, 70, 1.18, 28), 1.6],
+      ['f', '#8c5632', place(STEAK, 208, 71, 1, 28), 1],
+      ['l', place('M-8,-8 L-12,6 M0,-10 L-4,8 M8,-9 L4,7', 208, 71, 1, 28), 1.1],
+      ['l', 'M222,158 C231,136 229,112 220,96 M212,154 C219,138 219,122 213,108', 1.3],
     ],
   },
 
@@ -999,17 +1012,27 @@ export const FIGURES: Readonly<Record<string, Partial<FigureSpec>>> = {
     motif: 'none',
     body: '#6b4a9e',
     collar: 'shirt',
-    mood: 'sly',
+    mood: 'smile',
     prop: undefined,
     backdrop: [
       ['f', '#8c5632', rect(22, 54, 206, 122), 1.8],
       ['f', '#2f6b3a', rect(28, 60, 194, 110), 1.2],
-      ['s', '#fffaf0', chalk('24', 38, 72, 2), 3],
-      ['s', '#fffaf0', chalk('68', 38, 108, 2), 3],
-      ['s', '#fffaf0', chalk('10', 168, 72, 2), 3],
-      ['s', '#fffaf0', chalk('7', 182, 108, 2), 3],
-      ['s', '#e88a9a', 'M174,128 L204,108', 2.6],
-      ['s', '#fffaf0', 'M38,150 L46,158 L64,138', 2.4],
+      // Řada sudých čísel přes celou tabuli nad hlavou, pod ní fajfka a vpravo přeškrtnutá lichá sedmička.
+      [
+        's',
+        '#fffaf0',
+        [
+          chalk('2', 38, 66, 2),
+          chalk('4', 72, 66, 2),
+          chalk('6', 106, 66, 2),
+          chalk('8', 140, 66, 2),
+          chalk('10', 172, 66, 2, 1.25),
+        ].join(' '),
+        3,
+      ],
+      ['s', '#fffaf0', chalk('7', 198, 112, 2), 3],
+      ['s', '#e88a9a', 'M192,134 L218,110', 2.6],
+      ['s', '#fffaf0', 'M40,124 L52,138 L76,108', 3],
       ['f', '#c99a62', rect(20, 174, 210, 6), 1.2],
       ['f', '#fffaf0', `${rect(42, 170, 10, 4)} ${rect(58, 170, 7, 4)}`, 0.6],
       ['f', '#f2cf4a', rect(196, 166, 18, 8), 1],

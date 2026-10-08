@@ -1,6 +1,7 @@
 /**
  * npx tsx scripts/joker-art-preview.ts --ids beer_mat,svejk [--out .qa-art] [--size 520]
  * npx tsx scripts/joker-art-preview.ts --batch b03 [--out .qa-art/b03]
+ * npx tsx scripts/joker-art-preview.ts --all --grid 10 [--out .qa-art/all]   (přehled všech žolíků v mřížce)
  *
  * Náhled obrázků žolíků přesně tak, jak je kreslí hra (src/ui/art/art.ts — rám, odznak vzácnosti, scéna, štítek se
  * jménem), bez buildu a bez serveru: SVG se poskládá v Node a vyfotí v Chromiu (Playwright). Pro každého žolíka
@@ -38,15 +39,19 @@ async function main(): Promise<void> {
       batch: { type: 'string' },
       out: { type: 'string', default: '.qa-art' },
       size: { type: 'string', default: '520' },
+      all: { type: 'boolean', default: false },
+      grid: { type: 'string' },
     },
   });
   const reg = registry();
-  const ids = values.batch
-    ? batchIds(values.batch, reg)
-    : (values.ids ?? '')
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
+  const ids = values.all
+    ? Object.keys(reg.jokers)
+    : values.batch
+      ? batchIds(values.batch, reg)
+      : (values.ids ?? '')
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
   if (ids.length === 0) throw new Error('Zadej --ids a,b nebo --batch bNN');
   for (const id of ids) if (!reg.jokers[id]) throw new Error(`Neznámý žolík ${id}`);
   await loadIcons();
@@ -78,10 +83,25 @@ body{margin:0;background:#efe4cc;font:14px system-ui,sans-serif;color:#1a1714}
     )
     .join('')}</div>
 </body></html>`;
-  const file = path.join(out, 'preview.html');
-  writeFileSync(file, html);
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1600, height: 1200 } });
+  if (values.grid) {
+    // Přehled: jen karty v mřížce `--grid` sloupců (šířka karty 150 px), bez popisků — `grid.png`.
+    const cols = Number(values.grid);
+    const grid = `<!doctype html><html lang="cs"><head><meta charset="utf-8"><link rel="stylesheet" href="${FONTS}">
+<style>body{margin:0;background:#efe4cc}#grid{display:grid;grid-template-columns:repeat(${cols},150px);gap:10px;padding:12px;width:max-content}
+#grid svg{width:150px;height:auto;display:block}</style></head><body><div id="grid">${cards.map((c) => c.svg).join('')}</div></body></html>`;
+    const gridFile = path.join(out, 'grid.html');
+    writeFileSync(gridFile, grid);
+    await page.goto(pathToFileURL(gridFile).href);
+    await page.evaluate(() => document.fonts.ready);
+    await page.locator('#grid').screenshot({ path: path.join(out, 'grid.png') });
+    await browser.close();
+    process.stdout.write(`${cards.length} karet v ${path.relative(ROOT, out) || '.'}/grid.png\n`);
+    return;
+  }
+  const file = path.join(out, 'preview.html');
+  writeFileSync(file, html);
   await page.goto(pathToFileURL(file).href);
   await page.evaluate(() => document.fonts.ready);
   for (const c of cards)

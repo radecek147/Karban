@@ -358,10 +358,15 @@ flavor a že texty dodržují typografii.
   - `art.ts` — obrázky obsahu z `ArtSpec`: plné pozadí `bg`, přetisk vzoru `pattern`, ikona jako plná silueta
     s rastrovým stínem a linkou, rekvizita v kroužku, rámečky podle druhu. Žolík má okno s obrázkem a pod ním
     štítek se jménem v barvě vzácnosti (`ArtOptions.title`, písmo Big Shoulders, `textLength` u dlouhých jmen).
-    Žolík se `scene` dostane ručně kreslenou scénu (`scenes.ts` + `scenes2.ts`; tahy `f` plocha / `l` linka /
-    `h` stín / `s` barevná linka / `i` ikona-rekvizita). `figures.ts` skládá portréty žolíků-lidí z dílů (pozadí,
-    oblečení, obličej, účes, vousy, brýle, čepice, rekvizita) do stejných tahů — scény `fig-<id>`. `stamgast.ts` —
-    Štamgast.
+    Každý žolík má ručně kreslenou scénu (`ArtSpec.scene`; tahy `SceneOp` ze `sceneKit.ts`: `f` plocha /
+    `l` linka / `h` stín / `s` barevná linka / `i` ikona-rekvizita, pomocné cesty `c`, `rect`, `shade`). Scény
+    skládá `scenes.ts` z dat `scenes1.ts` a `scenes2.ts`, portrétů a úprav po dávkách. `figureKit.ts` je stavebnice
+    portrétů (pozadí s motivem, oblečení s límcem, obličej, účes, vousy, brýle, čepice, rekvizita a vlastní vrstvy
+    `backdrop` / `outfit` / `extra`), `figures.ts` základní portréty žolíků-lidí (scény `fig-<id>`). Obrázky jsou
+    vyladěné po dávkách v `jokers/b01–b12.ts` (`FIGURES` = úpravy portrétů slučované přes základ, `SCENES` = nové
+    nebo přepsané scény; žolíci bez postavy mají scény `j-<id>`) — dávka je samostatný soubor, ať se dají kreslit
+    nezávisle; klíče hlídá tests/unit/joker-art.test.ts. Náhled bez buildu: `npx tsx scripts/joker-art-preview.ts
+--batch b03` (karty jako ve hře, velké i malé) nebo `--all --grid 11` (přehled). `stamgast.ts` — Štamgast.
 - Herní obrazovka (Sirkárna): nahoře kartonová lišta (`sidebar.ts`: útrata, skóre s ukazatelem, cíl, žetony, tlačítka),
   pod ní řada žolíků se jménem a obrysy volných slotů, spotřebky a balíček (`topRow.ts`, balíček přesune `index.ts`),
   uprostřed stolu velký náhled čipy × mult (`sidebar.handInfoEl` v `.game-scoreboard`) a pod ním zahrané karty,

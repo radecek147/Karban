@@ -420,6 +420,13 @@ const WITCH: Partial<FigureSpec> = {
 
 /* ---------------------------------------------------------------- Vodník */
 
+/** Hrníček dnem vzhůru (otočený o 8°, levý okraj nadzvednutý). */
+const MUG = local(184, 190, 8);
+const MUG_XY = (x: number, y: number): [number, number] => {
+  const [px, py] = MUG(x, y).split(',').map(Number);
+  return [px!, py!];
+};
+
 const VODNIK_SCENE: readonly SceneOp[] = [
   ['f', '#bcd6e6', rect(16, 16, 218, 268), 0],
   // Protější břeh a rybník.
@@ -441,7 +448,7 @@ const VODNIK_SCENE: readonly SceneOp[] = [
   ],
   // Rákosí s orobincem vpravo.
   ['f', 'reed', 'M226,284 C224,224 220,180 214,130 C210,180 212,236 214,284 Z', 1.4],
-  ['f', 'reed', 'M206,284 C204,240 196,200 186,168 C194,210 196,246 196,284 Z', 1.4],
+  ['f', 'reed', 'M206,284 C206,240 206,200 203,172 C211,206 214,246 214,284 Z', 1.4],
   ['l', 'M214,134 L214,102', 1.4],
   ['f', 'wood2', 'M210,134 C206,120 208,106 214,102 C220,106 222,120 218,134 Z', 1.4],
   // Leknín s žábou na hladině.
@@ -453,17 +460,26 @@ const VODNIK_SCENE: readonly SceneOp[] = [
   ...VODNIK.slice(10, 17),
   ...VODNIK.slice(19, 36),
   // Fajfka v koutku.
-  ['s', BROWN, 'M112,181 L98,189', 3],
-  ['f', BROWN, 'M90,181 L100,181 L99,195 C98,198 92,198 91,195 Z', 1.3],
-  ['l', 'M95,175 c-3,-4 3,-6 0,-10', 1],
-  // Hrníček na dušičky v ruce, z něj bublinky.
-  ['f', 'cloud', 'M166,196 C170,184 194,184 198,196 Z', 1.6],
-  ['f', 'cloud', c(182, 182, 3.5), 1.4],
-  ['f', 'cloud', 'M166,196 L198,196 L193,226 C191,232 173,232 171,226 Z', 1.8],
-  ['f', 'blue', `${c(176, 208, 3)} ${c(188, 212, 3)} ${c(182, 220, 2.5)}`, 0],
-  ['f', 'vskin', 'M162,230 C168,222 196,222 202,230 C200,242 166,242 162,230 Z', 1.6],
-  ['l', 'M168,232 l28,0', 1],
-  ['f', '#bcd6e6', `${c(172, 172, 3)} ${c(164, 160, 2.4)} ${c(172, 150, 1.8)}`, 1],
+  ['s', BROWN, 'M110,179 L97,188', 3],
+  ['f', BROWN, 'M89,180 L99,180 L98,194 C97,197 91,197 90,194 Z', 1.3],
+  ['l', 'M94,174 c-3,-4 3,-6 0,-10 M88,162 c-3,-4 3,-6 0,-10', 1],
+  // Hrníček dnem vzhůru na dlani: pod nadzvednutým okrajem vykukuje schovaná dušička-srdce, unikají bublinky.
+  ['f', 'vskin', 'M156,219 C162,210 204,210 210,219 C208,231 158,231 156,219 Z', 1.6],
+  ['l', 'M163,221 l38,0', 1],
+  ['f', 'dark', 'M160,215 L166.4,207.7 L194,212 Z', 0],
+  ['f', RED, heart(161, 205, 6.5), 1.4],
+  ['s', INK, `M${MUG(13, -12)} C${MUG(28, -13)} ${MUG(28, 9)} ${MUG(13, 8)}`, 6.5],
+  ['s', PAPER, `M${MUG(13, -12)} C${MUG(28, -13)} ${MUG(28, 9)} ${MUG(13, 8)}`, 3],
+  ['f', PAPER, quad(184, 190, 30, 40, 8), 1.8],
+  ['f', PAPER, `M${MUG(-15, -20)} A15,4 8 1,0 ${MUG(15, -20)} A15,4 8 1,0 ${MUG(-15, -20)} Z`, 1.4],
+  ['l', `M${MUG(-10, -20)} A10,2.6 8 1,0 ${MUG(10, -20)} A10,2.6 8 1,0 ${MUG(-10, -20)} Z`, 1],
+  [
+    'f',
+    '#2f5fa8',
+    `${c(...MUG_XY(-6, -7), 3)} ${c(...MUG_XY(7, -2), 3)} ${c(...MUG_XY(-3, 9), 2.6)} ${c(...MUG_XY(8, 12), 2.2)}`,
+    0,
+  ],
+  ['f', '#bcd6e6', `${c(152, 192, 2.8)} ${c(158, 181, 2.2)} ${c(152, 170, 1.7)} ${c(157, 160, 1.3)}`, 1],
   // Voda až po pás a v ní zahozené srdcové karty.
   [
     'f',
@@ -491,8 +507,9 @@ const WISP: Partial<FigureSpec> = {
   skin: PAPER,
   prop: undefined,
   backdrop: [
-    // Záře kolem bludičky.
-    ['f', '#2f8077', c(125, 158, 70, 74), 0],
+    // Záře kolem bludičky ve dvou kruzích.
+    ['f', '#2a5f68', c(125, 158, 84, 88), 0],
+    ['f', '#2f8077', c(125, 158, 66, 70), 0],
     [
       'l',
       stars([
@@ -525,16 +542,20 @@ const WISP: Partial<FigureSpec> = {
       'M16,190 C50,184 80,194 110,190 L110,196 C80,200 50,192 16,198 Z M160,194 C190,188 210,196 234,192 L234,198 C210,202 190,196 160,200 Z',
       0,
     ],
-    // Bludné světýlka.
-    ['f', '#f6e3a1', `${c(62, 146, 9)} ${c(178, 92, 8)} ${c(40, 176, 6)} ${c(194, 196, 7)}`, 0],
-    ['f', YELLOW, `${c(62, 146, 4)} ${c(178, 92, 3.5)} ${c(40, 176, 3)} ${c(194, 196, 3)}`, 1],
-    // Bota, která v bažině zůstala.
-    // Klobouk poutníka, který šel za světýlkem.
+    // Bludná světýlka s ocásky, jak poletují sem a tam.
+    ['s', '#f6e3a1', 'M70,152 c8,6 14,2 20,8 M168,96 c-8,6 -14,0 -22,6 M46,182 c6,4 10,0 16,6', 1.4],
+    ['f', '#f6e3a1', `${c(62, 146, 9)} ${c(178, 92, 8)} ${c(40, 176, 6)}`, 0],
+    ['f', YELLOW, `${c(62, 146, 4)} ${c(178, 92, 3.5)} ${c(40, 176, 3)}`, 1],
+    // Klobouk poutníka, který šel za světýlkem, plave v tůni mezi orobinci; bublinky.
     ['f', '#2f8077', 'M16,230 C30,226 56,228 66,234 C56,242 30,244 16,242 Z', 1.2],
-    ['f', BROWN, c(38, 235, 16, 4), 1.3],
-    ['f', BROWN, 'M28,235 C28,224 48,224 48,235 Z', 1.3],
-    ['f', RED, 'M28.5,231 L47.5,231 L48,234 L28,234 Z', 0.8],
-    ['l', 'M18,244 c6,-2 10,2 16,0 M44,244 c6,-2 10,2 16,0', 1],
+    ['f', '#5d9a3e', 'M58,238 C60,220 62,206 66,196 C66,210 64,224 64,238 Z', 1.2],
+    ['l', 'M66,198 L66,186', 1.2],
+    ['f', BROWN, 'M63,198 C61,190 62,184 66,182 C70,184 71,190 69,198 Z', 1.2],
+    ['f', BROWN, c(36, 235, 16, 4), 1.3],
+    ['f', BROWN, 'M26,235 C26,224 46,224 46,235 Z', 1.3],
+    ['f', RED, 'M26.5,231 L45.5,231 L46,234 L26,234 Z', 0.8],
+    ['f', '#bcd6e6', `${c(54, 226, 2.2)} ${c(58, 218, 1.6)}`, 0.8],
+    ['l', 'M18,244 c6,-2 10,2 16,0 M40,244 c6,-2 10,2 16,0', 1],
   ],
   outfit: [
     // Lehké šaty s vlnkami.
@@ -554,7 +575,8 @@ const WISP: Partial<FigureSpec> = {
       `${c(104, 128, 1.8)} ${c(114, 120, 1.8)} ${c(125, 117, 1.8)} ${c(136, 120, 1.8)} ${c(146, 128, 1.8)}`,
       0,
     ],
-    // Lucernička se září.
+    // Vznášející se lucernička se září: pojď za mnou.
+    ['f', '#f6e3a1', c(188, 226, 24, 28), 0],
     [
       's',
       YELLOW,
@@ -567,7 +589,7 @@ const WISP: Partial<FigureSpec> = {
     ['l', 'M188,212 L188,242 M179,226 L197,226', 1],
     ['f', PAPER, 'M188,218 C185,224 186,230 188,232 C190,230 191,224 188,218 Z', 0],
     ['f', INK, 'M176,242 L200,242 L198,248 L178,248 Z', 1.2],
-    ['s', INK, c(188, 194, 3), 1.4],
+    ['s', INK, c(188, 196, 3.5), 1.6],
   ],
 };
 
@@ -595,11 +617,26 @@ function rays(cx: number, cy: number, r1: number, r2: number, n: number): string
   return d.trim();
 }
 
+/** Kytičky na šátku (přes bílé puntíky ze stavebnice). */
+const FLOWER_AT: readonly (readonly [number, number])[] = [
+  [110, 114],
+  [125, 110],
+  [140, 114],
+  [100, 140],
+  [150, 140],
+];
+const FLOWERS = {
+  petals: FLOWER_AT.map(([x, y]) =>
+    [c(x - 2.4, y, 2.2), c(x + 2.4, y, 2.2), c(x, y - 2.4, 2.2), c(x, y + 2.4, 2.2)].join(' '),
+  ).join(' '),
+  hearts: FLOWER_AT.map(([x, y]) => c(x, y, 1.4)).join(' '),
+};
+
 const NOON_WITCH: Partial<FigureSpec> = {
   bg: '#f6e3a1',
   motif: 'none',
   body: BROWN,
-  hatColor: '#5b5850',
+  hatColor: '#4a4540',
   skin: WOOD,
   mood: 'sly',
   prop: undefined,
@@ -637,7 +674,11 @@ const NOON_WITCH: Partial<FigureSpec> = {
     ['l', 'M206,196 L208,186 M214,196 L212,186 M210,170 L210,178', 0.9],
   ],
   extra: [
-    ...knot('#5b5850'),
+    // Šátek s lemem a vybledlými kytičkami místo nýtků — ať nevypadá jako přilba.
+    ['s', '#6e6860', 'M107,180 C104,150 110,131 125,131 C140,131 146,150 143,180', 3],
+    ['f', '#b8302a', FLOWERS.petals, 0.7],
+    ['f', GOLD, FLOWERS.hearts, 0],
+    ...knot('#4a4540'),
     // Vrásky kolem očí.
     ['l', 'M104,150 l-4,-2 M104,155 l-4,1 M146,150 l4,-2 M146,155 l4,1 M114,184 c4,3 18,3 22,0', 1],
     // Křivá berla.
@@ -647,11 +688,13 @@ const NOON_WITCH: Partial<FigureSpec> = {
     ['f', PAPER, rect(16, 236, 218, 48), 1.6],
     ['f', RED, checks(236, 12), 0],
     ['l', 'M16,236 H234', 1.6],
+    ['s', '#9a958a', 'M62,224 L40,204', 3.5],
+    ['f', '#9a958a', c(38, 202, 4, 3), 1],
     ['f', PAPER, 'M48,224 C48,244 62,252 80,252 C98,252 112,244 112,224 Z', 1.6],
     ['s', '#2f5fa8', 'M52,234 C64,240 96,240 108,234', 2],
     ['f', GOLD, c(80, 224, 32, 6), 1.4],
     ['f', '#f6e3a1', `${c(70, 223, 3, 1.6)} ${c(84, 225, 3, 1.6)} ${c(92, 222, 2.4, 1.4)}`, 0.7],
-    ['s', '#9a958a', 'M96,222 L110,198', 3],
+    ['s', '#9a958a', 'M62,224 L52,215', 3.5],
     ['l', 'M66,212 c-4,-6 4,-10 0,-16 M80,210 c-4,-6 4,-10 0,-16', 1.1],
     ['f', PAPER, c(176, 248, 38, 10), 1.6],
     ['f', '#ef8a2e', 'M148,250 C160,244 192,244 204,250 C194,256 158,256 148,250 Z', 1],
@@ -663,8 +706,8 @@ const NOON_WITCH: Partial<FigureSpec> = {
 /* ---------------------------------------------------------------- Klekánice */
 
 /** Korunka v okně (doma jsou všichni králové). */
-const crown = (x: number, y: number): string =>
-  `M${x - 4},${y + 3} L${x - 4},${y - 2} L${x - 2},${y} L${x},${y - 3} L${x + 2},${y} L${x + 4},${y - 2} L${x + 4},${y + 3} Z`;
+const crown = (x: number, y: number, s = 1): string =>
+  `M${x - 4 * s},${y + 3 * s} L${x - 4 * s},${y - 2 * s} L${x - 2 * s},${y} L${x},${y - 3 * s} L${x + 2 * s},${y} L${x + 4 * s},${y - 2 * s} L${x + 4 * s},${y + 3 * s} Z`;
 
 const KLEKANICE: Partial<FigureSpec> = {
   bg: '#6b4a9e',
@@ -698,8 +741,8 @@ const KLEKANICE: Partial<FigureSpec> = {
     // Vesnice: v rozsvícených oknech už jsou doma i králové.
     ['f', NAVY, 'M160,206 L160,172 L184,152 L208,172 L208,206 Z', 1.5],
     ['f', NAVY, 'M200,206 L200,180 L218,164 L236,180 L236,206 Z', 1.5],
-    ['f', YELLOW, `${rect(168, 178, 14, 12)} ${rect(188, 178, 14, 12)} ${rect(212, 184, 12, 11)}`, 1.2],
-    ['f', INK, `${crown(175, 185)} ${crown(195, 185)} ${crown(218, 190)}`, 0],
+    ['f', YELLOW, `${rect(165, 175, 18, 16)} ${rect(186, 175, 18, 16)} ${rect(210, 183, 17, 15)}`, 1.3],
+    ['f', RED, `${crown(174, 184, 1.5)} ${crown(195, 184, 1.5)} ${crown(218.5, 191.5, 1.4)}`, 1],
     ['f', '#2f6b3a', 'M16,206 C70,198 180,204 234,200 L234,284 L16,284 Z', 1.4],
   ],
   extra: [
@@ -803,6 +846,9 @@ const PRIEST: Partial<FigureSpec> = {
     ],
   ],
   extra: [
+    // Kolárek: černý stojáček s bílou destičkou pod bradou.
+    ['f', INK, 'M108,203 C114,212 136,212 142,203 L142,213 C136,222 114,222 108,213 Z', 1.4],
+    ['f', PAPER, rect(119.5, 209, 11, 9), 1.2],
     // Pastýřská hůl.
     ['s', WOOD, 'M212,262 L213,132 C213,112 192,110 190,124 C189,132 196,134 198,130', 5],
     ...hand(213, 204),

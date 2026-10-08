@@ -4083,3 +4083,24 @@ skutečná značka (CLAUDE.md kap. 5). Červený megafon sedí na bílé polovin
 přidala správně, ale nic to neukázalo a padala jen občas. Teď je objev odměněný a vidět. Runy z odkazu jsou
 seedované, takže objevy z nich se do sbírky nezapisují (pravidlo proti farmení), proto odkaz odemyká přímo.
 Odemčení přes odkaz si hráč výslovně přál.
+
+## 2026-10-08 — Obrázky žolíků s detaily podle názvu
+
+**Co:** všech 107 žolíků má nový obrázek po vzoru Fotbalového fanouška: prostředí, oblečení, rekvizity a pár vtipných
+detailů, které na první pohled říkají, kdo nebo co žolík je (jméno, pak mechanika nebo hláška). Příklady: Pivní tácek
+— ruka vrchního dělá tužkou další čárku vedle přetékajícího půllitru; Hrobník — lopata s listem ve tvaru piky na
+hřbitově za soumraku; Meteorolog — mapa republiky se studenou frontou a mrakem, ze kterého prší body; Sekera — sekera
+zaseknutá v tácku plném čárek a peněženka, ze které vylétá mol; Orloj — ciferník s apoštoly v okénkách a kostlivcem.
+Deset žolíků, kteří měli jen ikonu (Švejk, Třináctý plat, Sběrna surovin, Stavební spoření, Vyšlapaná pěšina, Válečná
+kořist, Kopírák, Sociální bublina, Kupónová privatizace, Směnárna), dostalo celou scénu (`j-<id>`).
+
+**Jak:** kreslicí sada se rozdělila (`sceneKit.ts`, `figureKit.ts` s vrstvami `backdrop` a `outfit`, `figures.ts`,
+`scenes1.ts`) a obrázky se ladily ve dvanácti samostatných dávkách `src/ui/art/jokers/b01–b12.ts`, každou kreslil jeden
+agent a po něm ji kontroloval a opravoval druhý (hodnocení: souvislost se jménem, detaily, kompozice, čitelnost v malé
+velikosti v ruce, styl Sirkárny, žádné značky, skutečné osoby ani nápisy). Náhledy bez buildu dělá
+scripts/joker-art-preview.ts. Velikost kresby jedné scény je nejvýš ~84 kB SVG (Spartakiáda), medián ~21 kB; strop
+400 kB hlídá tests/unit/joker-art.test.ts.
+
+**Proč:** přání hráče („podívej se na každého žolíka zvlášť a uprav ho podobně jako fotbalového fanouška, ať to souvisí
+s jeho názvem a jsou tam hezké detaily“). Dávky v samostatných souborech umožnily kreslit souběžně bez konfliktů
+a nechávají základní portréty čitelné.

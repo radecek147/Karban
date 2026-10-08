@@ -561,6 +561,10 @@ Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba h
       je kopie app shellu (scripts/preset-pages.ts, src/ui/linkRoute.ts), 404.html chytí pokažené odkazy;
       tolerantní id (diakritika, interpunkce z chatu, alias photochad); run se sestavou bez achievementů;
       TabGuard bez souběhu dvou karet; ověřeno dvěma buildy v Chromiu (15/15, i pomalá síť)
+- [x] Fotbalový fanoušek v sešívaném dresu se šálou a stadionem; pak všech 107 žolíků s detaily podle názvu
+      (dávky src/ui/art/jokers/b01–b12.ts, náhledy scripts/joker-art-preview.ts, DECISIONS 2026-10-08)
+- [x] Objev tajné kombinace nabídne její pranostiku v příští Večerce; „Odemknout vše“ i s legendárními žolíky;
+      odkaz na sestavu odemkne vše
 
 ---
 
