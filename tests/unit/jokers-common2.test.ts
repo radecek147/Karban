@@ -211,7 +211,7 @@ describe('běžní žolíci fáze 7 – definice', () => {
       tobacconist: { chance: 1, odds: 2 },
       ticket_inspector: { chips: 50 },
       doorman: { mult: 4 },
-      goldsmith: {},
+      goldsmith: { chance: 1, odds: 2 },
       paver: { mult: 5 },
       postman: { money: 3 },
       grocer: { mult: 2 },
@@ -316,7 +316,7 @@ describe('běžní žolíci fáze 7 – texty', () => {
       tobacconist: 'Při vstupu do Večerky 1 ze 2, že ti dá náhodnou pranostiku (potřebuje volný slot).',
       ticket_inspector: '+50 čipů, pokud mezi zahranými kartami není žádná figura.',
       doorman: 'Každá figura držená v ruce dá +4 mult.',
-      goldsmith: 'Na konci kola promění náhodnou kartu bez vylepšení drženou v ruce na zlatou.',
+      goldsmith: 'Na konci kola 1 ze 2, že promění náhodnou kartu bez vylepšení drženou v ruce na zlatou.',
       paver:
         'Každé zahození promění první zahozenou kartu bez vylepšení na kamennou; každá skórující kamenná karta dá +5 mult.',
       postman: 'Za každou otevřenou obálku dostaneš 3 Kč.',
@@ -527,8 +527,9 @@ describe('Vrátný (doorman)', () => {
 });
 
 describe('Pozlacovač (goldsmith)', () => {
-  it('na konci kola pozlatí náhodnou kartu bez vylepšení v ruce — zlatá vydělá už v tomto kole', () => {
+  it('na konci kola 1 ze 2 pozlatí náhodnou kartu bez vylepšení v ruce — zlatá vydělá už v tomto kole', () => {
     const game = makeGame({ registry: reg, jokers: ['goldsmith'] });
+    setChance(game, true);
     const { rewards, events, cards } = winWith(game, 'KS 2H 3D 4C');
     const held = cards.slice(1).map((c) => game._core.card(c.id)!);
     expect(held.filter((c) => c.enhancement === 'gold')).toHaveLength(1);
@@ -536,6 +537,7 @@ describe('Pozlacovač (goldsmith)', () => {
     expect(messages(events)).toContain('jokers.goldsmith.gilded');
     // Stejný seed → stejná karta (náhoda jen přes RNG streamy).
     const again = makeGame({ registry: reg, jokers: ['goldsmith'] });
+    setChance(again, true);
     const second = winWith(again, 'KS 2H 3D 4C');
     expect(second.cards.map((c) => again._core.card(c.id)!.enhancement)).toEqual(
       cards.map((c) => game._core.card(c.id)!.enhancement),
@@ -544,13 +546,32 @@ describe('Pozlacovač (goldsmith)', () => {
 
   it('karty s vylepšením nechá být (bez obyčejné karty nic); kopie pozlatí další kartu', () => {
     const game = makeGame({ registry: reg, jokers: ['goldsmith'] });
+    setChance(game, true);
     const { rewards, cards } = winWith(game, 'KS 2H:bonus 3D:steel');
     expect(cards.map((c) => game._core.card(c.id)!.enhancement)).toEqual([null, 'bonus', 'steel']);
     expect(heldReward(rewards)).toBe(0);
     const copied = makeGame({ registry: reg, jokers: ['copier', 'goldsmith'] });
+    setChance(copied, true);
     const two = winWith(copied, 'KS 2H 3D 4C');
     expect(two.cards.filter((c) => copied._core.card(c.id)!.enhancement === 'gold')).toHaveLength(2);
     expect(heldReward(two.rewards)).toBe(8);
+  });
+});
+
+describe('Pozlacovač – šance', () => {
+  it('bez štěstí nepozlatí nic; přes mnoho kol zhruba polovina kol', () => {
+    const unlucky = makeGame({ registry: reg, jokers: ['goldsmith'] });
+    setChance(unlucky, false);
+    const { cards } = winWith(unlucky, 'KS 2H 3D 4C');
+    expect(cards.filter((c) => unlucky._core.card(c.id)!.enhancement === 'gold')).toHaveLength(0);
+    let gilded = 0;
+    for (let i = 0; i < 40; i++) {
+      const g = makeGame({ registry: reg, jokers: ['goldsmith'], seed: `GILD-${i}` });
+      const res = winWith(g, 'KS 2H 3D 4C');
+      gilded += res.cards.filter((c) => g._core.card(c.id)!.enhancement === 'gold').length;
+    }
+    expect(gilded).toBeGreaterThan(10);
+    expect(gilded).toBeLessThan(30);
   });
 });
 

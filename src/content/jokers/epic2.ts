@@ -158,7 +158,10 @@ const fairMagician: JokerDef = {
 // ─────────────────────────── Turistický průvodce ───────────────────────────
 
 const GUIDE_CHIPS = 40;
-/** 1.0.1: spropitné průvodci za každou zahranou ruku ze 4 karet, která obsahuje Postupku nebo Barvu. */
+/**
+ * 1.0.1: spropitné průvodci za každou ruku, ve které je Postupka nebo Barva jen ze 4 karet. 1.0.2: počítají se skórující
+ * karty, ne zahrané — dřív stačilo přihodit pátou kartu navíc a spropitné odpadlo (DECISIONS 2026-10-08).
+ */
 const GUIDE_TIP = 1;
 const GUIDE_TIP_CARDS = 4;
 const MSG_GUIDE_TIP = 'jokers.tour_guide.tip';
@@ -184,7 +187,7 @@ const tourGuide: JokerDef = {
         ? { chips: GUIDE_CHIPS }
         : null,
     afterHandScored: (ctx) => {
-      if (ctx.isCopy || ctx.played.length !== GUIDE_TIP_CARDS) return;
+      if (ctx.isCopy || ctx.scoring.length !== GUIDE_TIP_CARDS) return;
       if (!ctx.hand.contains.includes('straight') && !ctx.hand.contains.includes('flush')) return;
       ctx.api.addMoney(-GUIDE_TIP, 'joker');
       ctx.api.message(MSG_GUIDE_TIP);

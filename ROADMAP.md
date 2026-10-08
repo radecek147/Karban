@@ -5,7 +5,7 @@
 
 ## Aktuální stav
 
-_Aktualizováno: 2026-10-07 (1.0.2: patch „Pouť a volby“ — sekce níže; hra běží na https://radecek147.github.io/Karban/)_
+_Aktualizováno: 2026-10-08 (1.0.2: patch „Pouť a volby“ + test synergií žolíků — sekce níže; hra běží na https://radecek147.github.io/Karban/)_
 
 **Verze 1.0.1 je hotová** (`package.json` 1.0.1): opravy UI, čitelnosti a logiky z testu 1.0, odlišení od Balatra a designové opravy (DECISIONS 2026-10-03 „Oprava UI po testu 1.0“, „Oprava logických chyb po testu 1.0“, „Odlišení od Balatra a designové opravy po testu 1.0“); všechny položky sekce „Opravy po testu 1.0 (1.0.1)“ jsou odškrtnuté. **Kalibrace obtížnosti je hotová** (DECISIONS 2026-10-03 „Kalibrace 1.0.1 (obtížnost po odlišení od
 Balatra)“, DESIGN 2.3, 4.3, 4.10, 8, 9, 10, 12.2): boti oceňují kupóny a štítky 1.0.1 (splátka Půjčky, tombola,
@@ -543,6 +543,17 @@ Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba h
 - [x] Víc peněz z karet: Zlatá 4 Kč, Šťastná 1 z 5, váhy zlaté/šťastné/zlaté pečeti 2 na náhodných kartách
 - [x] Balanc: cíle pater 5–8 ×1,15 (Desítka ~33 %, Imperial ~2–3 %), DESIGN 2.3, 2.7, 4.10, 5.2
 - [ ] Dál: přeměřit `scripts/joker-value.ts` pro nové žolíky (hodnota podle DESIGN 4.3) a balíčky s plnou sadou A–C
+
+## Synergie žolíků (2026-10-08) — `docs/SYNERGIE.md`, DECISIONS 2026-10-08
+
+- [x] Laboratoř kombinací `scripts/joker-synergy.ts`: všech 5 671 dvojic v obou pořadích na 9 stavech, paprskové
+      hledání 3–5 žolíků, 0 chyb v ~1,2 mil. vyhodnocení
+- [x] Celé runy se sestavami (`scripts/joker-synergy-runs.ts`): Imperial, nekonečný režim, peníze za kolo
+- [x] Workflow: 6 analytiků + 6 ověřovatelů + skeptici (54 kombinací změřených ve skutečném enginu)
+- [x] Opravy: Fotograf nejde kopírovat (exponent přes kopie), Sklář (klonování skla), Turistický průvodce
+      (spropitné), Barvoslepý strýc (popisek)
+- [x] Balanc: Pozlacovač 1 ze 2, Defenestrace 2 figury / 4 Kč
+- [ ] Dál: sledovat Bazarníka, Kupónovou privatizaci, Meteorologa a Tramvajáka v dalších simulacích
 
 ---
 

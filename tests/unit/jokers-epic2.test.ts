@@ -241,7 +241,7 @@ describe('epičtí žolíci fáze 7 – texty', () => {
       fair_magician:
         'Skórují všechny zahrané karty a každá skórující karta dá ×1,15 mult; 1 z 5, že po ruce jedna zahraná karta zmizí v klobouku (zničí se).',
       tour_guide:
-        'Postupka i Barva stačí ze čtyř karet a ruka, která obsahuje Postupku nebo Barvu, dá +40 čipů; když má jen 4 karty, chce průvodce spropitné 1 Kč.',
+        'Postupka i Barva stačí ze čtyř karet a ruka, která obsahuje Postupku nebo Barvu, dá +40 čipů; když je Postupka nebo Barva jen ze 4 karet, chce průvodce spropitné 1 Kč.',
       spartakiada: 'V první ruce kola skóruje každá skórující karta ještě 2×.',
       voucher_privatization:
         'Na konci kola +1 Kč za každých 5 % cíle, o které skóre kola cíl překročilo (nejvýš 8 Kč).',
@@ -441,7 +441,7 @@ describe('Turistický průvodce (tour_guide)', () => {
     expect(jokerSteps(r, 'tour_guide')).toEqual([]);
   });
 
-  it('spropitné: za ruku ze 4 karet s Barvou nebo Postupkou −1 Kč, z 5 karet a bez Barvy nic; kopie nic', () => {
+  it('spropitné: Barva nebo Postupka ze 4 karet −1 Kč (i s pátou kartou navíc), z 5 karet a bez Barvy nic; kopie nic', () => {
     const g = roundGame(['copier', 'tour_guide']);
     g._core.state.money = 10;
     const cards = setupRound(g, 'AH 9H 6H 2H');
@@ -452,6 +452,11 @@ describe('Turistický průvodce (tour_guide)', () => {
     expect(g.state.money).toBe(9);
     playHand(g, 'KS KH 5C 5D');
     expect(g.state.money).toBe(9);
+    // Pátá karta navíc (neskóruje) spropitné neobejde.
+    playHand(g, 'AH 9H 6H 2H 3S');
+    expect(g.state.money).toBe(8);
+    playHand(g, '5S 6H 7D 8C KD');
+    expect(g.state.money).toBe(7);
   });
 });
 

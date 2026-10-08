@@ -46,7 +46,13 @@ const COMMENTER_MULT = 7;
 /** Virální video: čipy první ruky kola; každá další ruka kola polovinu předchozí (dolů). */
 const VIRAL_CHIPS = 64;
 /** Defenestrace: Kč za zahození, ve kterém je aspoň jedna figura. */
-const DEFENESTRATION_MONEY = 5;
+/**
+ * Defenestrace: Kč za zahození s aspoň DEFENESTRATION_FACES figurami. 1.0.2 (synergie, DECISIONS 2026-10-08): dřív
+ * 5 Kč za zahození s jedinou figurou — hráč, který do každého zahození přihodí figuru, bral 13 Kč/kolo (3–4× pásmo
+ * vzácného). Dvě figury (jako v roce 1618 dva místodržící) a 4 Kč: ~6–7 Kč/kolo a figury, které by se hrály, to stojí.
+ */
+const DEFENESTRATION_MONEY = 4;
+const DEFENESTRATION_FACES = 2;
 /** Brňák: ×mult, když stojí v řadě žolíků úplně vlevo. */
 const BRNO_XMULT = 1.5;
 /**
@@ -62,6 +68,8 @@ const MSG_NOTARY = 'jokers.notary_public.certified';
 const MSG_WITCH = 'jokers.witch.brewed';
 const MSG_SEER = 'jokers.seer.foreseen';
 const MSG_DEFENESTRATION = 'jokers.defenestration.thrown';
+/** Důvod zničení karty při skórování (`game.ts`: `destroyCard(id, 'score')`) — Sklář vyfoukne jen takové sklo. */
+const SCORED_DESTROY = 'score';
 const MSG_PORTRAIT = 'jokers.court_painter.painted';
 
 /** Dvorní malíř: hodnoty figur, které maluje (kluk, dáma, král). */
@@ -200,6 +208,8 @@ export const RARE2_JOKERS: JokerDef[] = [
     // Skleněné karty z `onAcquire` mají náhodnou hodnotu a barvu (stream `joker`). „Vyfouknout znovu“ = do balíčku
     // (v kole na náhodné místo dobíracího balíčku) přibude stejná karta (hodnota, barva, pečeť, edice, bonusové čipy).
     // Jen první Sklář v řadě a ne kopie: dva by každou prasklou kartu zdvojily (smyčka) — `copyable: false`.
+    // Jen karta zničená při skórování (prasklé sklo, důvod `score`): razítka a rady, které kartu ničí záměrně (Sloučit
+    // spisy, Kopřivový čaj, Výkup…), by jinak sklo klonovaly i s pečetí a edicí (DECISIONS 2026-10-08).
     id: 'glassblower',
     rarity: 'rare',
     cost: 7,
@@ -216,7 +226,7 @@ export const RARE2_JOKERS: JokerDef[] = [
         }
       },
       onCardDestroyed: (ctx) => {
-        if (ctx.isCopy || ctx.card.enhancement !== GLASS) return;
+        if (ctx.isCopy || ctx.card.enhancement !== GLASS || ctx.reason !== SCORED_DESTROY) return;
         const first = ctx.state.jokers.find((j) => j.defId === ctx.def.id && !j.debuffed);
         if (first?.uid !== ctx.self.uid) return;
         const c = ctx.card;
@@ -631,11 +641,11 @@ export const RARE2_JOKERS: JokerDef[] = [
     cost: 6,
     unlock: { type: 'stat', stat: 'cardsDiscarded', atLeast: 150 },
     tags: ['economy', 'discard', 'face'],
-    params: { money: DEFENESTRATION_MONEY },
+    params: { money: DEFENESTRATION_MONEY, faces: DEFENESTRATION_FACES },
     noRental: true,
     hooks: {
       onDiscard: (ctx) =>
-        ctx.discarded.some((c) => ctx.api.isFace(c))
+        ctx.discarded.filter((c) => ctx.api.isFace(c)).length >= DEFENESTRATION_FACES
           ? { money: DEFENESTRATION_MONEY, message: MSG_DEFENESTRATION }
           : null,
     },

@@ -12,6 +12,8 @@ export default tseslint.config(
       'playwright-report/**',
       'test-results/**',
       '.claude/worktrees/**',
+      // Místní pracovní složky QA (v gitu vyloučené přes .git/info/exclude).
+      '.qa-*/**',
       'src-tauri/target/**',
       'src-tauri/gen/**',
     ],

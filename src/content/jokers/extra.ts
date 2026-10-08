@@ -4,7 +4,7 @@
  *
  * Kombo na figury (přání hráče): Fotograf z pouti násobí první figuru při každé aktivaci (`uncappedXmult`), takže
  * s Volební komisí (první karta skóruje ještě 2×) nebo Fotbalovým fanouškem (figury skórují ještě 1×) roste
- * exponenciálně. Ekonomika: Zlatník (koruna za figuru), Žebrák (šance na korunu za nefiguru) a Stavební spoření
+ * exponenciálně — nejvýš ×1024 (strop 10 aktivací na kartu); kopírovat nejde. Ekonomika: Zlatník (koruna za figuru), Žebrák (šance na korunu za nefiguru) a Stavební spoření
  * (vyšší strop úroku). Čísla mechanik jsou
  * jen v konstantách níže — stejné hodnoty čte hook i popisek (`params`).
  */
@@ -51,11 +51,14 @@ function isPlainRank(ctx: JokerCardCtx, card: Card): boolean {
 export const EXTRA_JOKERS: JokerDef[] = [
   {
     // ×mult při každé aktivaci první figury (i opakované) — výjimka ze stropu ×mult opakování (`uncappedXmult`).
+    // Nejde kopírovat: každá kopie by přidala další ×2 za aktivaci, tedy 2^(instance × aktivace) místo nejvýš ×1024
+    // (skeptici testu synergií, DECISIONS 2026-10-08).
     id: 'fair_photographer',
     rarity: 'common',
     cost: 5,
     tags: ['xmult', 'face'],
     params: { xmult: PHOTO_XMULT },
+    copyable: false,
     hooks: {
       onCardScored: (ctx) => (isFirstFace(ctx) ? { xmult: PHOTO_XMULT, uncappedXmult: true } : null),
     },

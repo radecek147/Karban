@@ -10,3 +10,4 @@ docs/PROMPTS.md
 .claude/worktrees
 src-tauri/target
 src-tauri/gen
+.qa-*

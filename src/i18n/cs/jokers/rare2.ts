@@ -25,7 +25,7 @@ export const jokersRare2 = {
   },
   glassblower: {
     name: 'Sklář',
-    desc: 'Při získání přidá do balíčku {cards|plural:skleněnou kartu,skleněné karty,skleněných karet}; každou zničenou skleněnou kartu hned vyfoukne do balíčku znovu.',
+    desc: 'Při získání přidá do balíčku {cards|plural:skleněnou kartu,skleněné karty,skleněných karet}; každou skleněnou kartu, která praskne při skórování, hned vyfoukne do balíčku znovu.',
     flavor: 'Střepy přinášejí štěstí. Hlavně sklářům.',
     blown: 'Vyfouknuto znovu!',
   },
@@ -80,7 +80,7 @@ export const jokersRare2 = {
   },
   colorblind_uncle: {
     name: 'Barvoslepý strýc',
-    desc: 'Srdcové a kárové karty se počítají jako jedna barva, pikové a křížové taky.',
+    desc: 'Srdcové a kárové karty se počítají jako jedna barva, pikové a křížové taky (i pro pravidla šéfů).',
     flavor: 'Na semaforu jezdí podle pořadí, ne podle barvy.',
   },
   trodden_path: {
@@ -112,7 +112,7 @@ export const jokersRare2 = {
   },
   defenestration: {
     name: 'Defenestrace',
-    desc: 'Každé zahození, ve kterém je aspoň jedna figura, dá {money|money}.',
+    desc: 'Každé zahození, ve kterém {faces|word:je,jsou,je} aspoň {faces|plural:figura,figury,figur}, dá {money|money}.',
     flavor: 'Námitky se v Praze tradičně vyřizují oknem.',
     thrown: 'Z okna!',
   },

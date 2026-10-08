@@ -344,7 +344,8 @@ export interface JokerHooks {
   /** Volá se všem žolíkům, když se prodává žolík (včetně sebe: `isSelf`). */
   onSell?(ctx: JokerCtx & { readonly sold: JokerInstance; readonly isSelf: boolean }): void;
   onCardAdded?(ctx: JokerCtx & { readonly card: Card }): void;
-  onCardDestroyed?(ctx: JokerCtx & { readonly card: Card }): void;
+  /** Hrací karta zmizela z balíčku; `reason` = důvod z `destroyCard` (`score` = zničená při skórování, např. prasklé sklo). */
+  onCardDestroyed?(ctx: JokerCtx & { readonly card: Card; readonly reason: string }): void;
   onConsumableUsed?(ctx: JokerCtx & { readonly defId: string; readonly kind: ConsumableKind }): void;
   onBossDefeated?(ctx: JokerCtx & { readonly bossId: string }): void;
   onSkipBlind?(ctx: JokerCtx): void;

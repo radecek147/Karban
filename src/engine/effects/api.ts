@@ -352,7 +352,7 @@ export function createApi(core: GameCore): EngineApi {
       s.deck = s.deck.filter((c) => c.id !== cardId);
       removeFromPiles(core, cardId);
       core.emit({ type: 'cardDestroyed', cardId, reason });
-      core.eachJoker('onCardDestroyed', { card });
+      core.eachJoker('onCardDestroyed', { card, reason });
     },
 
     modifyCard(cardId, patch) {

@@ -217,7 +217,7 @@ describe('vzácní žolíci fáze 7 – definice', () => {
       anonymous_commenter: { mult: 7 },
       viral_video: { chips: 64 },
       carbon_paper: {},
-      defenestration: { money: 5 },
+      defenestration: { money: 4, faces: 2 },
       brno_native: { xmult: 1.5 },
       social_bubble: { chips: 30 },
     });
@@ -315,7 +315,7 @@ describe('vzácní žolíci fáze 7 – texty', () => {
       chronicler: 'Za každou kombinaci, kterou od jeho koupě zahraješ poprvé, trvale +2 mult (teď +0 mult).',
       chimney_sweep: 'Každá skórující piková, křížová nebo šťastná karta: 1 ze 2, že dá +6 mult.',
       glassblower:
-        'Při získání přidá do balíčku 1 skleněnou kartu; každou zničenou skleněnou kartu hned vyfoukne do balíčku znovu.',
+        'Při získání přidá do balíčku 1 skleněnou kartu; každou skleněnou kartu, která praskne při skórování, hned vyfoukne do balíčku znovu.',
       notary_public:
         'První ruka Malé a Velké útraty dá ještě před skórováním první skórující kartě bez pečeti zlatou pečeť.',
       witch: 'Po porážce šéfa vytvoří náhodné úřední razítko (potřebuje volný slot).',
@@ -327,14 +327,15 @@ describe('vzácní žolíci fáze 7 – texty', () => {
       seer: 'Když jediná ruka dosáhne celého cíle Malé útraty, vytvoří pranostiku její kombinace (potřebuje volný slot).',
       court_painter:
         'Po první ruce kola namaluje první skórující kartu, která není figura, natrvalo jako náhodnou figuru stejné barvy.',
-      colorblind_uncle: 'Srdcové a kárové karty se počítají jako jedna barva, pikové a křížové taky.',
+      colorblind_uncle:
+        'Srdcové a kárové karty se počítají jako jedna barva, pikové a křížové taky (i pro pravidla šéfů).',
       trodden_path:
         'V celé Postupce smí jedna hodnota chybět (třeba trojka, čtyřka, šestka, sedmička a osmička).',
       war_loot: 'Na konci kola +2 Kč za každého šéfa poraženého od jeho koupě (teď +0 Kč).',
       anonymous_commenter: 'Každá zahraná karta, která neskóruje, dá +7 mult.',
       viral_video: 'První ruka kola dá +64 čipů, každá další ruka v kole polovinu předchozí.',
       carbon_paper: 'Kopíruje schopnost nejpravějšího běžného nebo vzácného žolíka, kterého jde kopírovat.',
-      defenestration: 'Každé zahození, ve kterém je aspoň jedna figura, dá 5 Kč.',
+      defenestration: 'Každé zahození, ve kterém jsou aspoň 2 figury, dá 4 Kč.',
       brno_native: '×1,5 mult, pokud stojí v řadě žolíků úplně vlevo.',
       social_bubble:
         'Když mají všechny skórující karty stejnou barvu nebo stejnou hodnotu, každá dá +30 čipů.',
@@ -498,6 +499,18 @@ describe('Sklář (glassblower)', () => {
     const before = other.state.deck.length;
     other._core.api.destroyCard(victim.id, 'test');
     expect(other.state.deck.length).toBe(before - 1);
+
+    // Sklo zničené záměrně (razítko, rada, šéf) se nevrací — jinak by šlo klonovat i s pečetí a edicí.
+    const glassDeck = roundGame(['glassblower']);
+    const [g0] = setupRound(glassDeck, 'KS:glass@red~polychrome');
+    const before0 = glassDeck.state.deck.length;
+    for (const reason of ['merge_files', 'rada', 'buyback', 'boss']) {
+      const [extra] = setupRound(glassDeck, 'QS:glass@red~polychrome');
+      glassDeck._core.api.destroyCard(extra!.id, reason);
+    }
+    glassDeck._core.api.destroyCard(g0!.id, 'merge_files');
+    expect(glassDeck.state.deck.filter((c) => c.enhancement === 'glass')).toHaveLength(0);
+    expect(glassDeck.state.deck.length).toBe(before0 - 1);
 
     const twice = roundGame(['glassblower', 'glassblower']);
     setChance(twice, true);
@@ -907,17 +920,19 @@ describe('Kopírák (carbon_paper)', () => {
 });
 
 describe('Defenestrace (defenestration)', () => {
-  it('zahození s aspoň jednou figurou dá 5 Kč (jednou za zahození)', () => {
+  it('zahození s aspoň dvěma figurami dá 4 Kč (jednou za zahození); jedna figura nestačí', () => {
     const game = roundGame(['defenestration']);
     const money = game.state.money;
-    const cards = setupRound(game, 'KS QH 2C 5D 7S 8H 9C 3D');
+    const cards = setupRound(game, 'KS QH 2C 5D 7S 8H JC 3D');
     const events = ok(
       game.dispatch({ type: 'discard', cardIds: [cards[0]!.id, cards[1]!.id, cards[2]!.id] }),
     );
-    expect(game.state.money).toBe(money + 5);
+    expect(game.state.money).toBe(money + 4);
     expect(triggered(events)).toContain('jokers.defenestration.thrown');
     ok(game.dispatch({ type: 'discard', cardIds: [cards[3]!.id, cards[4]!.id] }));
-    expect(game.state.money).toBe(money + 5);
+    expect(game.state.money).toBe(money + 4);
+    ok(game.dispatch({ type: 'discard', cardIds: [cards[6]!.id, cards[7]!.id] }));
+    expect(game.state.money).toBe(money + 4);
   });
 
   it('kamenná karta figurou není; „všechny karty jsou figury“ zaplatí i za dvojku; kopie dá znovu', () => {
@@ -925,12 +940,12 @@ describe('Defenestrace (defenestration)', () => {
       const game = roundGame(jokers);
       const money = game.state.money;
       const cards = setupRound(game, hand);
-      ok(game.dispatch({ type: 'discard', cardIds: [cards[0]!.id] }));
+      ok(game.dispatch({ type: 'discard', cardIds: [cards[0]!.id, cards[1]!.id] }));
       return game.state.money - money;
     };
-    expect(discard(['defenestration'], '2C:stone 3D')).toBe(0);
-    expect(discard(['all_faces', 'defenestration'], '2C 3D')).toBe(5);
-    expect(discard(['copier', 'defenestration'], 'JC 3D')).toBe(10);
+    expect(discard(['defenestration'], '2C:stone KD 3D')).toBe(0);
+    expect(discard(['all_faces', 'defenestration'], '2C 3D')).toBe(4);
+    expect(discard(['copier', 'defenestration'], 'JC QD 3D')).toBe(8);
   });
 });
 

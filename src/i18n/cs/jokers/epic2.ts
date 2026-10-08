@@ -25,7 +25,7 @@ export const jokersEpic2 = {
   },
   tour_guide: {
     name: 'Turistický průvodce',
-    desc: 'Postupka i Barva stačí ze čtyř karet a ruka, která obsahuje Postupku nebo Barvu, dá +{chips|plural:čip,čipy,čipů}; když má jen {cards|plural:kartu,karty,karet}, chce průvodce spropitné {tip|money}.',
+    desc: 'Postupka i Barva stačí ze čtyř karet a ruka, která obsahuje Postupku nebo Barvu, dá +{chips|plural:čip,čipy,čipů}; když je Postupka nebo Barva jen {cards|z} karet, chce průvodce spropitné {tip|money}.',
     flavor: 'Značky mají čtyři barvy a jemu to stačí. Pátá cesta stejně vede do hospody.',
     tip: 'Spropitné pro průvodce. Dobrovolné, ale povinné.',
   },

@@ -3927,3 +3927,50 @@ Smyčka bez možnosti dobré variace nudí rychleji než ticho a efekty hře zvu
 **Proč:** hráč chtěl silnější kombinace z běžných žolíků, rychlý přístup ke všemu obsahu, pranostiky na
 kombinace, které hraje, a víc peněz z karet a žolíků. Pravidla mění jen data a dva malé háčky v enginu
 (`uncappedXmult`, `consumableWeight`). Cílové pásmo obtížnosti z CLAUDE.md zůstává díky vyšším cílům pozdních pater.
+
+## 2026-10-08 — Synergie žolíků: velký test kombinací, opravy a balanc
+
+**Co:** Hráč chtěl projet všechny kombinace žolíků, sepsat nejsilnější synergie (skóre, peníze, škálování) a mít hru
+vyváženou, ale s pár záměrně rozbitými věcmi jako v Balatru. Výsledky jsou v `docs/SYNERGIE.md`. Nástroje:
+`scripts/joker-synergy.ts` (laboratoř: snapshoty z runů, zralé stavy, všech 5 671 dvojic v obou pořadích, paprskové
+hledání 3–5 žolíků, žebříčky) a `scripts/joker-synergy-runs.ts` (celé runy se zadanou sestavou: peníze za kolo,
+Imperial a nekonečný režim). Analýzu a ověření navíc dělalo 6 analytiků, 6 ověřovatelů a skeptici (workflow, scénáře
+mimo repozitář).
+
+**Nálezy:**
+
+- Fotograf z pouti je jediný exponenciální žolík. Každé opakování první figury (Komise, Automat, Ozvěna, Sedmička,
+  Spartakiáda, Dechovka, Fanoušek, červená pečeť) přidá ×2 za aktivaci; strop je 10 aktivací na kartu, tedy ×1024.
+  Strop ×32 ze záznamu 2026-10-07 počítal jen Komisi, Fanouška a pečeť. Dvojice ×5–17, nejlepší pětice ×943. Celé runy
+  na Imperialu: s nejlepšími sestavami 3–5/20 výher (bez zásahu 0/20). **Nechávám jako záměrně rozbité** (hráč
+  o „Photochad“ výslovně stál). Kopie Fotografa ale obcházely strop taky: každá přidala další ×2 za aktivaci, tedy
+  2^(instance × aktivace) — až ×10⁹ na kartě, nejlepší pětice ×169 000, ruka 7,8·10¹⁰. Oba skeptici to hodnotili jako
+  chybu, kterou nikdo nenavrhl; **Fotograf je proto `copyable: false`** (jako Sklář).
+- Bez Fotografa je nejlepší pětice ×37 (Karlův most, Archivář, Silvestr, Dálnice D1, Směnárna), běžní žolíci mezi
+  sebou nemají výraznou synergii (×1,8–2,1).
+- Karetní jackpoty bez žolíků (sklo s opakováním a duhovou edicí ×81 000, ocel s červenou pečetí 2,25ⁿ) a peněžní stroj
+  Dechovka + zlaté pečeti (30–57 Kč za kolo) zůstávají jako rozbité stavby, které stojí rady a razítka.
+- Stabilita: ~1,2 milionu přesných vyhodnocení skóre bez výjimky, NaN a nekonečna; fuzz ověřovatele chyb ~150 000 akcí
+  s ukládáním a načítáním bez nálezu.
+
+**Opravy a úpravy:**
+
+| Co                  | Změna                                                                             | Proč                                                                                                              |
+| ------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Fotograf z pouti    | nejde kopírovat (`copyable: false`)                                               | kopie zdvojovaly exponent: ×10⁹ na kartě, nejlepší pětice ×169 000 → ×943                                         |
+| Sklář               | vyfoukne znovu jen sklo prasklé při skórování; `onCardDestroyed` dostává `reason` | razítkem Sloučit spisy šlo klonovat glass@red~poly, Kopřivový čaj tiskl čipy, Výkup a Úklid dávaly zničení zdarma |
+| Pozlacovač          | pozlatí jen s šancí 1 ze 2                                                        | +9,1 Kč za kolo (3× nad pásmem běžného) → +4,0                                                                    |
+| Defenestrace        | 4 Kč za zahození s aspoň 2 figurami (dřív 5 Kč za 1)                              | ~13 Kč za kolo při běžném hraní (3–4× pásmo vzácného) → ~6–7                                                      |
+| Turistický průvodce | spropitné podle skórujících karet                                                 | pátou kartou navíc šlo spropitné obejít                                                                           |
+| Barvoslepý strýc    | popisek „(i pro pravidla šéfů)“                                                   | Pověrčivá babka pak bere dvě barvy; pravidlo je správně, jen nebylo vidět                                         |
+
+**Nechávám:** prodej Sekery v dluhu (dluh zůstane pod novým limitem — stejné jako kreditka v Balatru, uložení to
+nevadí); zisk z prodeje Archiváře/Napodobitele s duhovým kostýmem (jen s kupónem Výkupna, se kterým jde se slevou
+přeprodávat se ziskem i jiné žolíky); Klenotník a peněžní žolíci s kopiemi platí znovu (kopie = druhá instance).
+Ke sledování: Bazarník, Kupónová privatizace, Meteorolog, Tramvaják (horní hrana pásma).
+
+**Obtížnost po všech úpravách** (300 runů na bota): Desítka 34,3 / 34,7 / 31,7 % (pásmo 25–35 %), Imperial 0,8 / 2,1 /
+1,7 % (pásmo pod 3 %).
+
+**Proč:** opravy berou zneužití, která nikdo nezamýšlel (klonování, obcházení ceny, exponent přes kopie), a dva
+peněžní žolíky stahují do rozumného pásma. Vrchol hry ale zůstává výbušný — tak, jak ho hráč chtěl.

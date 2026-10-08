@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest';
 import { isIconName } from '../../src/assets/icons/index';
 import { buildRegistry } from '../../src/content/index';
 import { EXTRA_JOKERS } from '../../src/content/jokers/extra';
+import { EPIC2_JOKERS } from '../../src/content/jokers/epic2';
+import { RARE2_JOKERS } from '../../src/content/jokers/rare2';
 import type { ContentRegistry, JokerDef } from '../../src/engine/content-types';
 import type { Game } from '../../src/engine/run/game';
 import type { ScoreResult } from '../../src/engine/types';
@@ -30,6 +32,10 @@ const ALL_FACES = testJoker('all_faces', { hooks: { passive: () => ({ allFaces: 
 const PLAIN_X2 = testJoker('plain_x2', { hooks: { onCardScored: () => ({ xmult: 2 }) } });
 
 const reg: ContentRegistry = makeRegistry({ jokers: [...EXTRA_JOKERS, ALL_FACES, PLAIN_X2] });
+/** Skuteční kopírující žolíci (Archivář, Kopírák). */
+const COPIERS = [...EPIC2_JOKERS, ...RARE2_JOKERS].filter(
+  (j) => j.id === 'archivist' || j.id === 'carbon_paper',
+);
 
 const IDS = [
   'fair_photographer',
@@ -271,5 +277,25 @@ describe('Stavební spoření (building_savings)', () => {
     expect(game.modifiers().interestCap).toBe(10);
     game._core.api.destroyJoker(game.state.jokers[0]!.uid, 'test');
     expect(game.modifiers().interestCap).toBe(5);
+  });
+});
+
+describe('Fotograf z pouti – strop', () => {
+  it('nejde kopírovat: Archivář ani Kopírák vedle něj nepřidají další ×2 za aktivaci', () => {
+    const full = makeRegistry({ jokers: [...EXTRA_JOKERS, ...COPIERS] });
+    const game = (jokers: string[]) => {
+      const g = makeGame({ registry: full, jokers, round: true });
+      g._core.state.round!.target = 1e12;
+      return g;
+    };
+    const alone = playHand(game(['fair_photographer']), 'KS@red KH');
+    expect(def('fair_photographer').copyable).toBe(false);
+    // Bez jiného cíle kopie nic nepřidají (Archivář kopíruje souseda vlevo, Kopírák posledního běžného/vzácného).
+    expect(playHand(game(['fair_photographer', 'archivist']), 'KS@red KH').mult).toBe(alone.mult);
+    expect(playHand(game(['fair_photographer', 'carbon_paper']), 'KS@red KH').mult).toBe(alone.mult);
+  });
+
+  it('nejvýš ×1024 na jedné figuře (10 aktivací): s Komisí, Fanouškem a červenou pečetí ×32', () => {
+    expect(score(['fair_photographer', 'recount_committee', 'football_fan'], 'KS@red')[1]).toBe(32);
   });
 });

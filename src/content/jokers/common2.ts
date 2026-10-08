@@ -80,6 +80,12 @@ const SLAUGHTER_MONEY = 2;
 const DERBY_MULT = 7;
 /** Hospodský kvíz: +čipy za každou různou hodnotu mezi skórujícími kartami. */
 const QUIZ_CHIPS = 10;
+/**
+ * Pozlacovač: na konci kola „1 z 2“, že pozlatí kartu. 1.0.2 (synergie, DECISIONS 2026-10-08): dřív jistě — se zlatou
+ * kartou za 4 Kč dával +9 Kč/kolo (3× nad pásmem běžného žolíka), s šancí 1 ze 2 +4 Kč/kolo.
+ */
+const GOLDSMITH_CHANCE = 1;
+const GOLDSMITH_ODDS = 2;
 /** Sběrna surovin: trvalý mult za každou zničenou hrací kartu, nejvýš SCRAP_MAX (strop kvůli Zabijačce). */
 const SCRAP_MULT = 3;
 /** 1.0.1: strop 21 → 18 (R2 33 % nad pásmem běžného). */
@@ -281,15 +287,17 @@ export const COMMON2_JOKERS: JokerDef[] = [
   },
   {
     // `onRoundEnd` běží před rozpisem odměn — pozlacená karta vydělá zlatou odměnu hned v tomto kole.
-    // Kopie (druhá instance) pozlatí další kartu; stav žolík nemá.
+    // Kopie (druhá instance) hází sama za sebe a pozlatí další kartu; stav žolík nemá.
     id: 'goldsmith',
     rarity: 'common',
     cost: 5,
     tags: ['deck', 'economy'],
+    params: { chance: GOLDSMITH_CHANCE, odds: GOLDSMITH_ODDS },
     hooks: {
       onRoundEnd: (ctx) => {
         const plain = handCards(ctx).filter((c) => !c.enhancement);
-        if (plain.length === 0) return;
+        // Bez karty k pozlacení se nehází (RNG se neposune).
+        if (plain.length === 0 || !ctx.chance(GOLDSMITH_CHANCE, GOLDSMITH_ODDS)) return;
         ctx.api.modifyCard(ctx.rng.pick(plain).id, { enhancement: GOLD });
         ctx.api.message(MSG_GOLDSMITH);
       },

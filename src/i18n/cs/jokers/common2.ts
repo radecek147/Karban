@@ -41,7 +41,7 @@ export const jokersCommon2 = {
   },
   goldsmith: {
     name: 'Pozlacovač',
-    desc: 'Na konci kola promění náhodnou kartu bez vylepšení drženou v ruce na zlatou.',
+    desc: 'Na konci kola {chance} {odds|z}, že promění náhodnou kartu bez vylepšení drženou v ruce na zlatou.',
     flavor: 'Pozlatí ti cokoli. Nejvíc účet.',
     gilded: 'Pozlaceno!',
   },

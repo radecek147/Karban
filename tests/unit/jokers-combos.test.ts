@@ -169,7 +169,8 @@ const SCENARIOS: Record<string, Scenario> = {
   goldsmith: {
     hand: 'KS 2H 3D',
     pick: [0],
-    // Vyhrát kolo další rukou a spočítat pozlacené karty.
+    // Jistá šance; vyhrát kolo další rukou a spočítat pozlacené karty.
+    setup: (g) => g._core.api.addPermanentModifier({ probabilityMult: 2 }),
     measure: (g) => {
       const round = g._core.state.round!;
       round.target = 1;
@@ -305,8 +306,8 @@ const SCENARIOS: Record<string, Scenario> = {
     // Před rukou zahození s figurou; měří se peníze z tohoto zahození (prodej žolíka peníze taky mění).
     setup: (g) => {
       const before = g.state.money;
-      const [face] = setupRound(g, 'KS 2C');
-      ok(g.dispatch({ type: 'discard', cardIds: [face!.id] }));
+      const [k, q] = setupRound(g, 'KS QD 2C');
+      ok(g.dispatch({ type: 'discard', cardIds: [k!.id, q!.id] }));
       DISCARD_GAIN.set(g, g.state.money - before);
     },
     measure: (g) => DISCARD_GAIN.get(g) ?? 0,
@@ -439,7 +440,7 @@ describe('žolíci – vyrenderované popisky (params + počáteční stav)', ()
       tobacconist: 'Při vstupu do Večerky 1 ze 2, že ti dá náhodnou pranostiku (potřebuje volný slot).',
       ticket_inspector: '+50 čipů, pokud mezi zahranými kartami není žádná figura.',
       doorman: 'Každá figura držená v ruce dá +4 mult.',
-      goldsmith: 'Na konci kola promění náhodnou kartu bez vylepšení drženou v ruce na zlatou.',
+      goldsmith: 'Na konci kola 1 ze 2, že promění náhodnou kartu bez vylepšení drženou v ruce na zlatou.',
       paver:
         'Každé zahození promění první zahozenou kartu bez vylepšení na kamennou; každá skórující kamenná karta dá +5 mult.',
       postman: 'Za každou otevřenou obálku dostaneš 3 Kč.',
@@ -485,7 +486,7 @@ describe('žolíci – vyrenderované popisky (params + počáteční stav)', ()
       chronicler: 'Za každou kombinaci, kterou od jeho koupě zahraješ poprvé, trvale +2 mult (teď +0 mult).',
       chimney_sweep: 'Každá skórující piková, křížová nebo šťastná karta: 1 ze 2, že dá +6 mult.',
       glassblower:
-        'Při získání přidá do balíčku 1 skleněnou kartu; každou zničenou skleněnou kartu hned vyfoukne do balíčku znovu.',
+        'Při získání přidá do balíčku 1 skleněnou kartu; každou skleněnou kartu, která praskne při skórování, hned vyfoukne do balíčku znovu.',
       notary_public:
         'První ruka Malé a Velké útraty dá ještě před skórováním první skórující kartě bez pečeti zlatou pečeť.',
       witch: 'Po porážce šéfa vytvoří náhodné úřední razítko (potřebuje volný slot).',
@@ -497,14 +498,15 @@ describe('žolíci – vyrenderované popisky (params + počáteční stav)', ()
       seer: 'Když jediná ruka dosáhne celého cíle Malé útraty, vytvoří pranostiku její kombinace (potřebuje volný slot).',
       court_painter:
         'Po první ruce kola namaluje první skórující kartu, která není figura, natrvalo jako náhodnou figuru stejné barvy.',
-      colorblind_uncle: 'Srdcové a kárové karty se počítají jako jedna barva, pikové a křížové taky.',
+      colorblind_uncle:
+        'Srdcové a kárové karty se počítají jako jedna barva, pikové a křížové taky (i pro pravidla šéfů).',
       trodden_path:
         'V celé Postupce smí jedna hodnota chybět (třeba trojka, čtyřka, šestka, sedmička a osmička).',
       war_loot: 'Na konci kola +2 Kč za každého šéfa poraženého od jeho koupě (teď +0 Kč).',
       anonymous_commenter: 'Každá zahraná karta, která neskóruje, dá +7 mult.',
       viral_video: 'První ruka kola dá +64 čipů, každá další ruka v kole polovinu předchozí.',
       carbon_paper: 'Kopíruje schopnost nejpravějšího běžného nebo vzácného žolíka, kterého jde kopírovat.',
-      defenestration: 'Každé zahození, ve kterém je aspoň jedna figura, dá 5 Kč.',
+      defenestration: 'Každé zahození, ve kterém jsou aspoň 2 figury, dá 4 Kč.',
       brno_native: '×1,5 mult, pokud stojí v řadě žolíků úplně vlevo.',
       social_bubble:
         'Když mají všechny skórující karty stejnou barvu nebo stejnou hodnotu, každá dá +30 čipů.',
@@ -520,7 +522,7 @@ describe('žolíci – vyrenderované popisky (params + počáteční stav)', ()
       fair_magician:
         'Skórují všechny zahrané karty a každá skórující karta dá ×1,15 mult; 1 z 5, že po ruce jedna zahraná karta zmizí v klobouku (zničí se).',
       tour_guide:
-        'Postupka i Barva stačí ze čtyř karet a ruka, která obsahuje Postupku nebo Barvu, dá +40 čipů; když má jen 4 karty, chce průvodce spropitné 1 Kč.',
+        'Postupka i Barva stačí ze čtyř karet a ruka, která obsahuje Postupku nebo Barvu, dá +40 čipů; když je Postupka nebo Barva jen ze 4 karet, chce průvodce spropitné 1 Kč.',
       spartakiada: 'V první ruce kola skóruje každá skórující karta ještě 2×.',
       voucher_privatization:
         'Na konci kola +1 Kč za každých 5 % cíle, o které skóre kola cíl překročilo (nejvýš 8 Kč).',
