@@ -1,6 +1,6 @@
 // Service worker Karbanu — vygenerováno při buildu (scripts/sw-plugin.ts ze src/sw/sw.ts), neupravuj.
-const __SW_VERSION__ = "2f06ce5d5e60";
-const __SW_PRECACHE__ = ["./","assets/art-C97OFNl1.js","assets/barlow-semi-condensed-latin-500-italic-nooauXyR.woff2","assets/barlow-semi-condensed-latin-500-normal-G0uxJNrM.woff2","assets/barlow-semi-condensed-latin-600-normal-BkLiAYu4.woff2","assets/barlow-semi-condensed-latin-700-normal-BpqDG8I9.woff2","assets/barlow-semi-condensed-latin-ext-500-italic-DOLt4dhK.woff2","assets/barlow-semi-condensed-latin-ext-500-normal-BXdp1BvY.woff2","assets/barlow-semi-condensed-latin-ext-600-normal-BkQ9hN72.woff2","assets/barlow-semi-condensed-latin-ext-700-normal-BhgEo64M.woff2","assets/big-shoulders-display-latin-700-normal-KM2fueoL.woff2","assets/big-shoulders-display-latin-800-normal-DDUD9Xuh.woff2","assets/big-shoulders-display-latin-ext-700-normal-C8xZtiKd.woff2","assets/big-shoulders-display-latin-ext-800-normal-fpv_pHPA.woff2","assets/challenges-CyJqj5MP.js","assets/collection-Ckz2rmKk.js","assets/consumableCard-p4bRfNiC.js","assets/content-Dl_DHwep.js","assets/credits-CtKqkBEL.js","assets/daily-BQRAFDm9.js","assets/engine-DU_OfObW.js","assets/gallery-Dw34xVMw.js","assets/game-C05D3YrM.js","assets/i18n-oOwLmR16.js","assets/icons-C1IBhyTE.js","assets/index-Cc6TtqBz.js","assets/index-khjOytyl.css","assets/jokerCard-CGHX9wfv.js","assets/newGame-7ZGJTw82.js","assets/rolldown-runtime-DK3Fl9T5.js","assets/settings-Cb8kXr_p.js","assets/stats-Db2NPOKG.js","assets/tabs-B824Z0Er.js"];
+const __SW_VERSION__ = "a094a6599556";
+const __SW_PRECACHE__ = ["./","404.html","assets/art-SMTqyDjq.js","assets/barlow-semi-condensed-latin-500-italic-nooauXyR.woff2","assets/barlow-semi-condensed-latin-500-normal-G0uxJNrM.woff2","assets/barlow-semi-condensed-latin-600-normal-BkLiAYu4.woff2","assets/barlow-semi-condensed-latin-700-normal-BpqDG8I9.woff2","assets/barlow-semi-condensed-latin-ext-500-italic-DOLt4dhK.woff2","assets/barlow-semi-condensed-latin-ext-500-normal-BXdp1BvY.woff2","assets/barlow-semi-condensed-latin-ext-600-normal-BkQ9hN72.woff2","assets/barlow-semi-condensed-latin-ext-700-normal-BhgEo64M.woff2","assets/big-shoulders-display-latin-700-normal-KM2fueoL.woff2","assets/big-shoulders-display-latin-800-normal-DDUD9Xuh.woff2","assets/big-shoulders-display-latin-ext-700-normal-C8xZtiKd.woff2","assets/big-shoulders-display-latin-ext-800-normal-fpv_pHPA.woff2","assets/challenges-eKqXaMYl.js","assets/collection-PpyhF08P.js","assets/consumableCard-GnE_ykiW.js","assets/content-8n4i06Af.js","assets/credits-Dv4pYm_5.js","assets/daily-CVojARKL.js","assets/engine-BTJ4-EEQ.js","assets/gallery-DhF0kaDL.js","assets/game-C4AtUn2c.js","assets/i18n-C4o0q3XR.js","assets/icons-C1IBhyTE.js","assets/index-Iv7SX9tQ.js","assets/index-khjOytyl.css","assets/jokerCard-BnNe-Tam.js","assets/newGame-CfBIWHgP.js","assets/rolldown-runtime-DK3Fl9T5.js","assets/settings-CJ43tmBe.js","assets/stats-Dz2ahNt2.js","assets/tabs-CXtM__Bp.js","sestava/","sestava/bez-fotografa/","sestava/fotograf/","sestava/nejsilnejsi/"];
 const CACHE_PREFIX = "karban-";
 const CACHE_NAME = `${CACHE_PREFIX}${__SW_VERSION__}`;
 /** Rozsah workeru = adresář hry (`/` lokálně, `/FM/` na GitHub Pages). */
@@ -8,6 +8,8 @@ const SCOPE = self.registration.scope;
 /** Klíč app shellu (index.html) v cache. */
 const SHELL_URL = new URL("./", SCOPE).href;
 const INDEX_URL = new URL("index.html", SCOPE).href;
+/** Stránka 404 (kopie app shellu, jen GitHub Pages): offline náhrada za neznámou adresu pod hrou. */
+const NOT_FOUND_URL = new URL("404.html", SCOPE).href;
 const PRECACHE_URLS = __SW_PRECACHE__.map((path) => new URL(path, SCOPE).href);
 /** Soubory s otiskem obsahu v názvu se nikdy nemění — při aktualizaci je lze převzít ze staré cache. */
 const HASHED_ASSET = /\/assets\/[^/]+-[\w-]{8,}\.\w+$/;
@@ -53,8 +55,21 @@ function isAppNavigation(request) {
 }
 async function respond(request) {
 	const cache = await caches.open(CACHE_NAME);
-	const cached = isAppNavigation(request) ? await cache.match(SHELL_URL) : await cache.match(request);
-	return cached ?? fetch(request);
+	// Ostatní navigace (stránky odkazů na sestavy `sestava/<id>/`) bez ohledu na parametry — chat a sociální sítě
+	// přidávají `?fbclid=…` a podobně; offline by jinak odkaz nenašel stránku v cache.
+	const navigate = request.mode === "navigate";
+	const cached = isAppNavigation(request) ? await cache.match(SHELL_URL) : await cache.match(request, { ignoreSearch: navigate });
+	if (cached) return cached;
+	if (!navigate) return fetch(request);
+	// Offline navigace na adresu, kterou cache nezná (`sestava/fotograf` bez lomítka, jiná velikost písmen):
+	// kopie shellu z 404.html si sestavu najde sama; bez ní (relativní build) chyba prohlížeče jako dřív.
+	try {
+		return await fetch(request);
+	} catch (err) {
+		const fallback = await cache.match(NOT_FOUND_URL);
+		if (fallback) return fallback;
+		throw err;
+	}
 }
 self.addEventListener("install", (e) => e.waitUntil(install()));
 self.addEventListener("activate", (e) => e.waitUntil(activate()));
