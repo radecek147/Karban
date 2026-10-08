@@ -14,6 +14,7 @@ export default tseslint.config(
       '.claude/worktrees/**',
       // Místní pracovní složky QA (v gitu vyloučené přes .git/info/exclude).
       '.qa-*/**',
+      '.qa-*',
       'src-tauri/target/**',
       'src-tauri/gen/**',
     ],
