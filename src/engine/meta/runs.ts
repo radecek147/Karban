@@ -68,6 +68,14 @@ function inc(map: Record<string, number>, key: string, by = 1): void {
 
 /** Přenese do meta údajů průběh runu (patro, nejlepší ruka, žolíci…). */
 function syncCurrent(cur: CurrentRunMeta, run: Readonly<RunState>): void {
+  // Značka sestavy z odkazu platí podle runu: starší verze hry ji z profilu při uložení zahodí (neznámé pole), run
+  // ji ale nese dál (docs/DECISIONS.md 2026-10-08).
+  if (run.flags[PRESET_RUN_FLAG] === true && !cur.preset) {
+    cur.preset = true;
+    cur.seeded = true;
+    cur.counted = false;
+    cur.official = false;
+  }
   cur.maxAnte = Math.max(cur.maxAnte, run.ante);
   cur.endless = cur.endless || run.endless;
   if (run.stats.bestHandScore > cur.bestHand) {

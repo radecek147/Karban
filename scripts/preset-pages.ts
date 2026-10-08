@@ -16,6 +16,7 @@
  */
 import { fileURLToPath } from 'node:url';
 import { runnerImport, type Plugin } from 'vite';
+import { SW_FILE } from './sw-plugin.ts';
 
 const PRESETS_ENTRY = fileURLToPath(new URL('../src/content/presets.ts', import.meta.url));
 const I18N_ENTRY = fileURLToPath(new URL('../src/i18n/cs.ts', import.meta.url));
@@ -166,6 +167,8 @@ export function presetPagesPlugin(): Plugin {
     async generateBundle(_options, bundle) {
       const index = bundle['index.html'];
       if (!index || index.type !== 'asset') throw new Error('karban-preset-pages: v buildu chybí index.html');
+      // Stránky musí být v bundlu dřív, než karban-sw sestaví precache a verzi (jinak by tiše chyběly offline).
+      if (bundle[SW_FILE]) throw new Error('karban-preset-pages musí ve vite.config.ts stát před karban-sw');
       const indexHtml = assetText(index.source);
       const { module: presets } = await runnerImport<PresetsApi>(PRESETS_ENTRY);
       const { module: i18n } = await runnerImport<I18nApi>(I18N_ENTRY);

@@ -98,6 +98,24 @@ describe('ProfileController — úložiště', () => {
     expect(store.get(STORAGE_KEYS.profile)).toBe('{rozbité');
   });
 
+  it('profil z novější verze hry: žádná záloha ani přepis, hra jede s profilem v paměti a ohlásí to', () => {
+    const problems: ProfileProblem[] = [];
+    const env = JSON.parse(serializeProfile(createProfile(NOW.toISOString()), NOW.toISOString())) as {
+      version: number;
+    };
+    env.version += 1;
+    const raw = JSON.stringify(env);
+    const store = memoryStore({ [STORAGE_KEYS.profile]: raw });
+    const pc = controller(store, { onProblem: (p) => problems.push(p) });
+    expect(problems).toEqual([{ kind: 'tooNew' }]);
+    expect(pc.persistent).toBe(false);
+    expect(store.keys().filter((k) => k.startsWith(PROFILE_BACKUP_PREFIX))).toEqual([]);
+    pc.updateSettings({ speed: 3 });
+    pc.newRun({ deckId: 'pub', stake: 1, seed: 'NOVEJSIA' });
+    expect(pc.save()).toBe(false);
+    expect(store.get(STORAGE_KEYS.profile)).toBe(raw);
+  });
+
   it('selhání zápisu ohlásí jednou', () => {
     const problems: ProfileProblem[] = [];
     const inner = memoryStore();

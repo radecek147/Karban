@@ -143,6 +143,16 @@ describe('plugin karban-preset-pages', () => {
     expect(files.get(`${PRESET_DIR}/nejsilnejsi/index.html`)).toContain('<base href="../../" />');
   });
 
+  it('karban-sw už proběhl (špatné pořadí pluginů) → build spadne, stránky by chyběly v precache', async () => {
+    const plugin = presetPagesPlugin();
+    const generate = plugin.generateBundle as (this: unknown, o: unknown, b: unknown) => Promise<void>;
+    const bundle = {
+      'index.html': { type: 'asset', fileName: 'index.html', source: INDEX },
+      'sw.js': { type: 'asset', fileName: 'sw.js', source: '' },
+    };
+    await expect(generate.call({ emitFile: () => '' }, {}, bundle)).rejects.toThrow(/karban-sw/);
+  });
+
   it('bez index.html v buildu build spadne', async () => {
     const plugin = presetPagesPlugin();
     const generate = plugin.generateBundle as (this: unknown, o: unknown, b: unknown) => Promise<void>;

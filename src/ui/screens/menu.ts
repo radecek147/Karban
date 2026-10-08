@@ -127,8 +127,9 @@ export const menuScreen: ScreenFactory = (app) => {
           if (!continueRun(app)) {
             // Run z novější verze hry není poškozený — hráč má aktualizovat (stejně jako u importu).
             const tooNew = GameController.savedRunError(app.store) === 'tooNew';
-            // Nečitelný run se nemaže bez zálohy (`karban.run.backup.<ms>`, jde do exportu).
-            const backup = GameController.backupSavedRun(app.store);
+            // Nečitelný run se nemaže bez zálohy (`karban.run.backup.<ms>`, jde do exportu). Run z novější verze
+            // zůstane na místě — novější verze ho za chvíli zase načte (docs/DECISIONS.md 2026-10-08).
+            const backup = tooNew ? null : GameController.backupSavedRun(app.store);
             const key = tooNew
               ? 'menu.continue.tooNew'
               : backup

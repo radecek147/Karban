@@ -87,13 +87,6 @@ describe('profil se nikdy neztratí', () => {
       savedAt: NOW_ISO,
       data: {},
     }),
-    'novější verze': JSON.stringify({
-      format: 'karban-save',
-      kind: 'profile',
-      version: 99,
-      savedAt: NOW_ISO,
-      data: {},
-    }),
     'verze 0 bez migrace': JSON.stringify({
       format: 'karban-save',
       kind: 'profile',
@@ -114,6 +107,23 @@ describe('profil se nikdy neztratí', () => {
       expect(storedProfile(store).stats.runs.played).toBe(0);
     });
   }
+
+  it('novější verze: data zůstanou nedotčená na místě (bez zálohy), hra jede s profilem jen v paměti', () => {
+    // Novější verze hry profil za chvíli zase přečte (docs/DECISIONS.md 2026-10-08, odkazy na sestavy).
+    const raw = JSON.stringify({
+      format: 'karban-save',
+      kind: 'profile',
+      version: 99,
+      savedAt: NOW_ISO,
+      data: {},
+    });
+    const store = memoryStore({ [STORAGE_KEYS.profile]: raw });
+    const res = restoreStoredProfile(store, NOW);
+    expect(res).toMatchObject({ status: 'corrupt', error: 'tooNew', writable: false, backupKey: null });
+    expect(store.get(STORAGE_KEYS.profile)).toBe(raw);
+    expect(store.keys().filter((k) => k.startsWith(PROFILE_BACKUP_PREFIX))).toEqual([]);
+    expect(res.profile.stats.runs.played).toBe(0);
+  });
 
   it('platná obálka bez klíčů (prázdná data) se načte a doplní, nezálohuje se', () => {
     const raw = JSON.stringify({

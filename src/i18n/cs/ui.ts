@@ -43,7 +43,7 @@ export const menu = {
     backedUp:
       'Rozehranou hru se nepodařilo načíst, asi ji někdo polil pivem. Schovali jsme ji do zálohy – najdeš ji v exportu uložení.',
     tooNew:
-      'Rozehraná hra je z novější verze Karbanu. Nejdřív aktualizuj, pak dohrávej – schovali jsme ji do zálohy v exportu uložení.',
+      'Rozehranou hru uložila novější verze Karbanu. Zavři všechny karty s hrou a otevři ji znovu – naskočí nová verze a dohraješ.',
   },
   challenges: {
     label: 'Výzvy',

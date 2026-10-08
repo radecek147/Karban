@@ -17,7 +17,7 @@ import './ui/styles/cards.css';
 import './ui/styles/game.css';
 import './ui/styles/tutorial.css';
 import { registry } from './content';
-import { JOKER_PRESETS, jokerPreset, normalizePresetId } from './content/presets';
+import { JOKER_PRESETS, jokerPreset } from './content/presets';
 import { t } from './i18n/cs';
 import type { ScreenId } from './ui/app';
 import { App } from './ui/app';
@@ -79,10 +79,7 @@ function installErrorHandlers(): void {
 
 function boot(): void {
   installErrorHandlers();
-  // Odkaz na sestavu nebo stránka 404 (kopie shellu): adresa se hned přepíše na kořen hry, ať ji tak vidí i zbytek
-  // startu (kotva #gallery, ?tutorial) a obnovení stránky pokračuje v rozehrané hře.
-  const route = linkRoute(location.href, document.baseURI);
-  if (route.cleanUrl !== null) history.replaceState(history.state, '', route.cleanUrl);
+  const route = applyLinkRoute();
   document.title = t('app.documentTitle');
   const root = qs('#app');
   mount(root, h('p', { class: 'boot-loading', role: 'status' }, t('app.loading')));
@@ -142,6 +139,25 @@ function boot(): void {
 }
 
 /**
+ * Adresa spuštění (src/ui/linkRoute.ts). Odkaz na sestavu nebo stránka 404 (kopie shellu): adresa se hned přepíše
+ * na kořen hry, ať ji tak vidí i zbytek startu (kotva #gallery, ?tutorial) a obnovení stránky pokračuje v rozehrané
+ * hře. Pak už `<base>` kopie shellu není potřeba (adresa stránky je kořen hry) — odebere se, ať se odkazy `#id`
+ * v kresbách (SVG `<use>`, `url(#…)`) počítají vůči stránce i v prohlížečích, které je jinak berou vůči `<base>`.
+ * Chyba tady start hry nezastaví.
+ */
+function applyLinkRoute(): LinkRoute {
+  try {
+    const route = linkRoute(location.href, document.baseURI);
+    if (route.cleanUrl !== null) history.replaceState(history.state, '', route.cleanUrl);
+    if (route.viaLinkPage) document.querySelector('base')?.remove();
+    return route;
+  } catch (err) {
+    console.warn('[karban] Adresu odkazu se nepodařilo přečíst', err);
+    return { presetId: null, notFound: false, viaLinkPage: false, cleanUrl: null };
+  }
+}
+
+/**
  * Sestava z odkazu: rovnou založí seedovaný run (Hospodský balíček, Desítka) s ukázkovou sestavou žolíků — přes
  * stejný start jako výzvy, takže se rozehraná hra bez potvrzení nepřepíše. Neznámá sestava a stránka 404 jen oznámí,
  * že tu nic není (hráč zůstane v menu).
@@ -154,8 +170,9 @@ function handleLinkRoute(app: App, route: LinkRoute): void {
   const id = route.presetId;
   const preset = jokerPreset(id);
   if (!preset) {
-    if (normalizePresetId(id) === '') return;
-    const shown = id.length > UNKNOWN_ID_MAX ? `${id.slice(0, UNKNOWN_ID_MAX)}…` : id;
+    // Po znacích, ne po UTF-16 jednotkách (emoji v id by se rozpůlilo).
+    const chars = [...id];
+    const shown = chars.length > UNKNOWN_ID_MAX ? `${chars.slice(0, UNKNOWN_ID_MAX).join('')}…` : id;
     const ids = JOKER_PRESETS.map((p) => p.id).join(', ');
     toast(t('newGame.preset.unknown', { id: shown, ids }), {
       kind: 'warning',

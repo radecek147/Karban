@@ -12,17 +12,15 @@ import { transformWithOxc, type Plugin } from 'vite';
 export const SW_FILE = 'sw.js';
 const SW_ENTRY = fileURLToPath(new URL('../src/sw/sw.ts', import.meta.url));
 
-/** Stránka pro neexistující adresy (scripts/preset-pages.ts) — prohlížeč ji nikdy nežádá pod jejím jménem. */
-const NOT_FOUND_FILE = '404.html';
-
 /**
- * Seznam souborů pro precache: všechno z buildu kromě source map, workeru samotného a `404.html`; každý
- * `index.html` se ukládá pod adresou svého adresáře (`./`, `sestava/nejsilnejsi/`), protože na ni se naviguje.
+ * Seznam souborů pro precache: všechno z buildu kromě source map a workeru samotného; každý `index.html` se ukládá
+ * pod adresou svého adresáře (`./`, `sestava/nejsilnejsi/`), protože na ni se naviguje. `404.html` (jen GitHub Pages,
+ * scripts/preset-pages.ts) zůstane pod svým jménem — worker ho vrátí offline místo chyby prohlížeče.
  * Cesty jsou relativní k rozsahu workeru (base).
  */
 export function precacheList(fileNames: readonly string[]): string[] {
   const list = fileNames
-    .filter((f) => !f.endsWith('.map') && f !== SW_FILE && f !== NOT_FOUND_FILE)
+    .filter((f) => !f.endsWith('.map') && f !== SW_FILE)
     .map((f) =>
       f === 'index.html' ? './' : f.endsWith('/index.html') ? f.slice(0, -'index.html'.length) : f,
     )

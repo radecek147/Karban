@@ -35,7 +35,7 @@ describe('plugin karban-sw', () => {
     expect(() => precacheList(['assets/a.js'])).toThrow(/index\.html/);
   });
 
-  it('precache: stránky odkazů na sestavy pod adresou adresáře, 404.html ne', () => {
+  it('precache: stránky odkazů na sestavy pod adresou adresáře, 404.html pod svým jménem', () => {
     const list = precacheList([
       'index.html',
       '404.html',
@@ -43,7 +43,7 @@ describe('plugin karban-sw', () => {
       'sestava/nejsilnejsi/index.html',
       'assets/index-AAAAAAAA.js',
     ]);
-    expect(list).toEqual(['./', 'assets/index-AAAAAAAA.js', 'sestava/', 'sestava/nejsilnejsi/']);
+    expect(list).toEqual(['./', '404.html', 'assets/index-AAAAAAAA.js', 'sestava/', 'sestava/nejsilnejsi/']);
   });
 
   it('název souboru se shoduje s registrací', () => {
@@ -236,6 +236,44 @@ describe('sw.js za běhu', () => {
     );
     expect(await w.request(req(`${SCOPE}ASSETS.md`, { mode: 'navigate' }))).toBe(`síť:${SCOPE}ASSETS.md`);
     expect(w.fetched).toHaveLength(2);
+  });
+
+  it('offline: neznámá navigace dostane uložené 404.html (kopie shellu), soubory buildu chybu jako dřív', async () => {
+    const storage = new FakeCacheStorage();
+    const w = await startWorker('v1', [...PRECACHE, '404.html'], storage);
+    await w.lifecycle('install');
+    const offline = vi.fn(() => Promise.reject(new TypeError('Failed to fetch')));
+    const code = await buildServiceWorker('v1', [...PRECACHE, '404.html']);
+    const listeners: Record<string, Listener> = {};
+    const self = {
+      registration: { scope: SCOPE },
+      clients: { claim: () => Promise.resolve() },
+      addEventListener: (type: string, fn: Listener) => (listeners[type] = fn),
+    };
+    new Function('self', 'caches', 'fetch', code)(self, storage, offline);
+    const ask = async (r: Request): Promise<string> => {
+      let res: Promise<Response> | null = null;
+      listeners['fetch']!({ request: r, respondWith: (p: Promise<Response>) => (res = p) });
+      return (await res!).text();
+    };
+    expect(await ask(req(`${SCOPE}sestava/fotograf`, { mode: 'navigate' }))).toBe(`síť:${SCOPE}404.html`);
+    await expect(ask(req(`${SCOPE}assets/neznamy-ZZZZZZZZ.js`))).rejects.toThrow(/Failed to fetch/);
+    // Bez 404.html v cache (relativní build) zůstane chyba prohlížeče.
+    const bare = await startWorker('v2', PRECACHE);
+    await bare.lifecycle('install');
+    const code2 = await buildServiceWorker('v2', PRECACHE);
+    const listeners2: Record<string, Listener> = {};
+    new Function('self', 'caches', 'fetch', code2)(
+      { ...self, addEventListener: (type: string, fn: Listener) => (listeners2[type] = fn) },
+      storage,
+      offline,
+    );
+    let res2: Promise<Response> | null = null;
+    listeners2['fetch']!({
+      request: req(`${SCOPE}sestava/fotograf`, { mode: 'navigate' }),
+      respondWith: (p: Promise<Response>) => (res2 = p),
+    });
+    await expect(res2!).rejects.toThrow(/Failed to fetch/);
   });
 
   it('cizí adresy, adresy mimo rozsah a POST nechá prohlížeči', async () => {

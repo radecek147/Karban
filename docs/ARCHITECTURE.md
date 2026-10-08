@@ -509,8 +509,10 @@ game.modifiers() })` a uložit profil i run; po pitvě / výhře / opuštění `
   (kopie shellu). Worker vrací z cache jen navigace na adresu hry, takže stránku sestavy pustí na síť a nová verze
   hry se načte i pod starým workerem (soubory s novými otisky v jeho cache nejsou). Hra si sestavu přečte z cesty
   nebo z `?sestava=`, adresu přepíše `history.replaceState` na kořen a oznámení o aktualizaci na takové stránce
-  potlačí. Precache ukládá každý `index.html` pod adresou adresáře, `404.html` vynechá; ostatní navigace hledá
-  v cache s `ignoreSearch`.
+  potlačí a `<base>` kopie odebere. Precache ukládá každý `index.html` pod adresou adresáře a `404.html` pod jeho
+  jménem; ostatní navigace hledá v cache s `ignoreSearch` a neznámou navigaci bez sítě obslouží uloženým `404.html`.
+  Profil či run z novější verze (`tooNew`) se nikdy nepřepíše ani nesmaže — viz pravidlo pro formát uložení
+  v docs/DECISIONS.md 2026-10-08.
 - Testy: `tests/unit/service-worker.test.ts` (plugin + chování nad falešnými `caches`/`fetch`),
   `tests/unit/preset-pages.test.ts` (kopie shellu, seznam sestav, plugin), `tests/unit/link-route.test.ts`,
   e2e `tests/e2e/offline.spec.ts` (načíst, `context.setOffline(true)`, reload → menu, sbírka, nový run); stejný test

@@ -11,7 +11,7 @@
  *  - activate: smaže cache starších verzí a převezme otevřené stránky,
  *  - fetch: navigace na hru → uložený index.html (app shell, i s `?seed=…`), ostatní navigace (stránky odkazů
  *    na sestavy) z cache bez ohledu na parametry, ostatní soubory buildu z cache, všechno ostatní (a cokoli,
- *    co v cache chybí) ze sítě,
+ *    co v cache chybí) ze sítě; neznámá navigace bez sítě dostane uložené 404.html (kopie shellu), je-li,
  *  - aktualizace: nový worker čeká, dokud běží stará verze (žádné `skipWaiting`) — rozehraná hra nikdy nedostane
  *    soubory jiné verze. Stránka hráči oznámí, že nová verze naskočí při příštím spuštění.
  *
@@ -46,6 +46,8 @@ const SCOPE = self.registration.scope;
 /** Klíč app shellu (index.html) v cache. */
 const SHELL_URL = new URL('./', SCOPE).href;
 const INDEX_URL = new URL('index.html', SCOPE).href;
+/** Stránka 404 (kopie app shellu, jen GitHub Pages): offline náhrada za neznámou adresu pod hrou. */
+const NOT_FOUND_URL = new URL('404.html', SCOPE).href;
 const PRECACHE_URLS = __SW_PRECACHE__.map((path) => new URL(path, SCOPE).href);
 /** Soubory s otiskem obsahu v názvu se nikdy nemění — při aktualizaci je lze převzít ze staré cache. */
 const HASHED_ASSET = /\/assets\/[^/]+-[\w-]{8,}\.\w+$/;
@@ -98,10 +100,21 @@ async function respond(request: Request): Promise<Response> {
   const cache = await caches.open(CACHE_NAME);
   // Ostatní navigace (stránky odkazů na sestavy `sestava/<id>/`) bez ohledu na parametry — chat a sociální sítě
   // přidávají `?fbclid=…` a podobně; offline by jinak odkaz nenašel stránku v cache.
+  const navigate = request.mode === 'navigate';
   const cached = isAppNavigation(request)
     ? await cache.match(SHELL_URL)
-    : await cache.match(request, { ignoreSearch: request.mode === 'navigate' });
-  return cached ?? fetch(request);
+    : await cache.match(request, { ignoreSearch: navigate });
+  if (cached) return cached;
+  if (!navigate) return fetch(request);
+  // Offline navigace na adresu, kterou cache nezná (`sestava/fotograf` bez lomítka, jiná velikost písmen):
+  // kopie shellu z 404.html si sestavu najde sama; bez ní (relativní build) chyba prohlížeče jako dřív.
+  try {
+    return await fetch(request);
+  } catch (err) {
+    const fallback = await cache.match(NOT_FOUND_URL);
+    if (fallback) return fallback;
+    throw err;
+  }
 }
 
 self.addEventListener('install', (e) => e.waitUntil(install()));

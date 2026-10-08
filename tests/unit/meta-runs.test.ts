@@ -425,6 +425,19 @@ describe('seedovaný run', () => {
     expect(p.history[0]).toMatchObject({ seeded: true, outcome: 'won' });
   });
 
+  it('značka sestavy se obnoví z runu, když ji starší verze hry z profilu zahodila', () => {
+    const p = createProfile(NOW);
+    const ctx = ctxOf(reg2);
+    const game = newGame({ presetJokers: ['fair_photographer'] });
+    startRun(p, game.state, { ...ctx, seeded: true });
+    // Starší verze (38648b3) při uložení profilu pole `preset` nezná a vynechá ho; seeded a counted zůstanou.
+    delete p.current!.preset;
+    act(p, game, { type: 'selectBlind' }, ctx);
+    expect(act(p, game, { type: 'play', cardIds: game.state.round!.hand.slice(0, 5) }, ctx)).toEqual([]);
+    expect(p.achievements.unlocked).toEqual({});
+    expect(p.current).toMatchObject({ preset: true, seeded: true, counted: false });
+  });
+
   it('run se sestavou se nezapočítá, ani když profil o jeho začátku neví (pokračování po importu)', () => {
     const p = createProfile(NOW);
     const ctx = ctxOf(reg2);

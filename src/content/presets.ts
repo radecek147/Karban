@@ -3,9 +3,9 @@
  * balíčku a Desítce s těmito žolíky ve slotech (pořadí = pořadí zleva). Seedovaný run se nepočítá do statistik,
  * odemykání ani achievementů. Sestavy a jejich síla: docs/SYNERGIE.md (laboratoř kombinací, 2026-10-08).
  *
- * Sdílí se odkaz `<hra>/sestava/<id>/` — stránku vygeneruje scripts/preset-pages.ts a ta přesměruje na
- * `<hra>/?sestava=<id>` (až po kontrole service workeru, viz src/sw/linkRedirect.ts). Názvy sestav jsou
- * v `newGame.preset.names.<id>` (src/i18n/cs/ui.ts).
+ * Sdílí se odkaz `<hra>/sestava/<id>/`: scripts/preset-pages.ts tam dá kopii app shellu s `<base>` na kořen hry
+ * (starý service worker ji pustí na síť, takže se načte nová verze) a hra si id přečte z cesty nebo z `?sestava=<id>`
+ * (src/ui/linkRoute.ts). Názvy sestav jsou v `newGame.preset.names.<id>` (src/i18n/cs/ui.ts).
  */
 export interface JokerPreset {
   /** Id v odkazu: malá písmena bez diakritiky, číslice a pomlčky. */

@@ -50,6 +50,7 @@ import type { KeyValueStore } from './storage';
 export type ProfileProblem =
   | { kind: 'corrupt'; backupKey: string; error?: SaveErrorCode }
   | { kind: 'corruptUnsaved'; error?: SaveErrorCode }
+  | { kind: 'tooNew' }
   | { kind: 'saveFailed' };
 
 export interface ProfileControllerOptions {
@@ -129,6 +130,14 @@ export function showProfileProblem(problem: ProfileProblem): void {
         testId: 'toast-profile-corrupt',
       });
       break;
+    case 'tooNew':
+      toast(t('meta.profile.tooNew'), {
+        kind: 'warning',
+        title: t('meta.profile.tooNewTitle'),
+        duration: 0,
+        testId: 'toast-profile-too-new',
+      });
+      break;
     case 'saveFailed':
       toast(t('meta.profile.saveFailed'), { kind: 'warning', testId: 'toast-profile-save' });
       break;
@@ -192,7 +201,9 @@ export class ProfileController implements RunObserver {
     this.loadStatus = res.status;
     this.backupKey = res.backupKey;
     this.saveFailedReported = false;
-    if (res.status === 'corrupt') {
+    if (res.status === 'corrupt' && res.error === 'tooNew') {
+      this.problemFn({ kind: 'tooNew' });
+    } else if (res.status === 'corrupt') {
       const error = res.error ? { error: res.error } : {};
       this.problemFn(
         res.backupKey

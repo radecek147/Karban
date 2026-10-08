@@ -75,8 +75,9 @@ test('stránka sestava/fotograf/ rovnou spustí hru se sestavou a adresu přepí
     'echo',
   ]);
   await expect(page.getByTestId('toast-preset')).toContainText(t('newGame.preset.names.fotograf'));
-  // Kopie shellu nese náhled odkazu; po startu hry je titulek zase hry.
+  // Kopie shellu nese náhled odkazu; po startu hry je titulek zase hry a <base> zmizí (adresa je kořen hry).
   await expect(page).toHaveTitle(t('app.documentTitle'));
+  expect(await page.evaluate(() => document.querySelector('base'))).toBeNull();
   expect(new URL(page.url()).searchParams.get('tutorial')).toBe('off');
   // Obnovení po přepsání adresy: kořen hry, žádný nový run.
   const seed = (await readRun(page)).seed;

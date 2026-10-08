@@ -58,6 +58,26 @@ describe('linkRoute', () => {
     expect(linkRoute(`${ROOT}sestava/%E0%A4%A/`, ROOT).presetId).toBe('%E0%A4%A');
   });
 
+  it('dvojité lomítko v ručně psaném odkazu nevadí', () => {
+    expect(linkRoute(`${ROOT}/sestava/nejsilnejsi/`, ROOT).presetId).toBe('nejsilnejsi');
+    expect(linkRoute(`${ROOT}sestava//nejsilnejsi/`, ROOT).presetId).toBe('nejsilnejsi');
+  });
+
+  it('prázdný nebo nepoužitelný parametr: odebere se a platí id z cesty; bez použitelného id „nenalezeno“', () => {
+    expect(linkRoute(`${ROOT}sestava/nejsilnejsi/?sestava=`, ROOT)).toMatchObject({
+      presetId: 'nejsilnejsi',
+      notFound: false,
+      cleanUrl: ROOT,
+    });
+    expect(linkRoute(`${ROOT}?sestava=!!!`, `${ROOT}?sestava=!!!`)).toEqual({
+      presetId: null,
+      notFound: false,
+      viaLinkPage: false,
+      cleanUrl: ROOT,
+    });
+    expect(linkRoute(`${ROOT}sestava/!!!/`, ROOT)).toMatchObject({ presetId: null, notFound: true });
+  });
+
   it('jiná neexistující adresa pod hrou: „nenalezeno“ a přepsání na kořen', () => {
     for (const href of [`${ROOT}neco/jineho`, `${ROOT}sestava/`, `${ROOT}favicon.ico`]) {
       expect(linkRoute(href, ROOT), href).toEqual({

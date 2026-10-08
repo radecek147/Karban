@@ -8,7 +8,7 @@
  * `jokerPreset`), příznak „nenalezeno“ a adresu, na kterou se má `history.replaceState` přepsat (kořen hry
  * s ostatními parametry a kotvou), ať obnovení stránky pokračuje v rozehrané hře a nezakládá novou.
  */
-import { PRESET_DIR, PRESET_PARAM } from '../content/presets';
+import { PRESET_DIR, PRESET_PARAM, normalizePresetId } from '../content/presets';
 
 export interface LinkRoute {
   /** Id sestavy z cesty nebo z parametru (surové), nebo null. */
@@ -30,22 +30,30 @@ function decode(segment: string): string {
   }
 }
 
+/** Id, ze kterého jde něco najít (po normalizaci aspoň jeden znak), jinak null. */
+function usable(id: string | null): string | null {
+  return id !== null && normalizePresetId(id) !== '' ? id : null;
+}
+
 export function linkRoute(href: string, baseUri: string): LinkRoute {
   const url = new URL(href);
   const root = new URL('./', baseUri);
-  let presetId = url.searchParams.get(PRESET_PARAM);
+  const query = url.searchParams.get(PRESET_PARAM);
+  // Prázdný parametr (`?sestava=`) se jen odebere; přednost má před cestou jen použitelné id.
+  let presetId = usable(query);
   let notFound = false;
   let viaLinkPage = false;
-  let changed = presetId !== null;
+  let changed = query !== null;
   url.searchParams.delete(PRESET_PARAM);
   const inside = url.origin === root.origin && url.pathname.startsWith(root.pathname);
   const rest = inside ? url.pathname.slice(root.pathname.length) : '';
   if (rest !== '' && rest !== 'index.html') {
     viaLinkPage = true;
     changed = true;
-    const [dir = '', id = ''] = rest.split('/');
-    if (dir.toLowerCase() === PRESET_DIR && id !== '') presetId ??= decode(id);
-    else notFound = true;
+    // Prázdné úseky (dvojité lomítko v ručně psaném odkazu) se přeskočí.
+    const [dir = '', id = ''] = rest.split('/').filter(Boolean);
+    if (dir.toLowerCase() === PRESET_DIR) presetId ??= usable(decode(id));
+    if (presetId === null) notFound = true;
     url.pathname = root.pathname;
   }
   return { presetId, notFound, viaLinkPage, cleanUrl: changed ? url.href : null };

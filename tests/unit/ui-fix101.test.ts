@@ -349,6 +349,20 @@ describe('poškozený autosave', () => {
     expect(store.get(backups[0]!)).toBe(raw);
   });
 
+  it('Pokračovat s runem z novější verze: run zůstane na místě (bez zálohy), hláška „zavři karty a otevři znovu“', () => {
+    saveRun(roundRun());
+    const env = JSON.parse(store.get(STORAGE_KEYS.run)!) as { version: number; data: { version: number } };
+    env.version += 1;
+    env.data.version += 1;
+    const raw = JSON.stringify(env);
+    store.set(STORAGE_KEYS.run, raw);
+    app.go('menu');
+    q<HTMLButtonElement>('[data-testid="menu-continue"]').click();
+    expect(store.get(STORAGE_KEYS.run)).toBe(raw);
+    expect(store.keys().filter((k) => k.startsWith(RUN_BACKUP_PREFIX))).toEqual([]);
+    expect(q('[data-testid="toast-continue-failed"]').textContent).toContain(t('menu.continue.tooNew'));
+  });
+
   it('záloha selže (plné úložiště) → run se nesmaže', () => {
     const full: KeyValueStore = {
       ...store,

@@ -15,6 +15,10 @@ export const meta = {
       'Profil je poškozený a zálohu se nepodařilo uložit, takže na něj nesaháme. Hraješ s dočasným profilem – postup se zatím neuloží.',
     saveFailed:
       'Profil se nepodařilo uložit. Prohlížeč asi nemá místo – postup z tohohle sezení se může ztratit. Zkus export uložení.',
+    /** Profil z novější verze hry (tahle verze ho nepřepíše, src/ui/settings.ts). */
+    tooNewTitle: 'Profil z novější verze',
+    tooNew:
+      'Tvůj profil uložila novější verze Karbanu a tahle starší na něj nesáhne. Zavři všechny karty s hrou a otevři ji znovu – naskočí nová verze i s postupem.',
   },
 
   /** Oznámení o odemčení a achievementech (toasty). */

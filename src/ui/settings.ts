@@ -38,8 +38,8 @@ export function saveStoredProfile(store: KeyValueStore, profile: Profile, now: D
 export interface StoredProfileResult {
   profile: Profile;
   /**
-   * Profil smí přepsat uložená data — false jen u poškozeného profilu, jehož zálohu se nepodařilo zapsat (pak se
-   * nesmí přepsat, aby se data neztratila; hra jede s profilem jen v paměti).
+   * Profil smí přepsat uložená data — false u poškozeného profilu, jehož zálohu se nepodařilo zapsat, a u profilu
+   * z novější verze hry (pak se nesmí přepsat, aby se data neztratila; hra jede s profilem jen v paměti).
    */
   writable: boolean;
   status: ProfileRestoreResult['status'];
@@ -71,6 +71,10 @@ export function restoreStoredProfile(store: KeyValueStore, now: Date = new Date(
     if (legacy !== null) store.remove(STORAGE_KEYS.settings);
     return out(true);
   }
+  // Profil z novější verze hry není poškozený: tahle (starší) verze ho nesmí zazálohovat a přepsat čistým — novější
+  // verze ho za chvíli zase přečte (odkaz na sestavu spustí novou verzi i pod starým service workerem, obnovení
+  // stránky pak může načíst starou, docs/DECISIONS.md 2026-10-08). Hraje se s profilem jen v paměti.
+  if (res.status === 'corrupt' && res.error === 'tooNew') return out(false);
   let backupKey: string | null = null;
   if (res.status === 'corrupt') {
     const key = res.backup === undefined ? null : writeProfileBackup(store, res.backup, now);
