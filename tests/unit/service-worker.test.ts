@@ -35,6 +35,17 @@ describe('plugin karban-sw', () => {
     expect(() => precacheList(['assets/a.js'])).toThrow(/index\.html/);
   });
 
+  it('precache: stránky odkazů na sestavy pod adresou adresáře, 404.html ne', () => {
+    const list = precacheList([
+      'index.html',
+      '404.html',
+      'sestava/index.html',
+      'sestava/nejsilnejsi/index.html',
+      'assets/index-AAAAAAAA.js',
+    ]);
+    expect(list).toEqual(['./', 'assets/index-AAAAAAAA.js', 'sestava/', 'sestava/nejsilnejsi/']);
+  });
+
   it('název souboru se shoduje s registrací', () => {
     expect(SW_FILE_PLUGIN).toBe(SW_FILE);
   });
@@ -178,6 +189,21 @@ describe('sw.js za běhu', () => {
     await w.lifecycle('install');
     await w.lifecycle('activate');
     expect([...storage.caches.keys()].sort()).toEqual(['jina-aplikace', 'karban-v1']);
+  });
+
+  it('fetch: stránka odkazu na sestavu jde z cache jako soubor, ne jako app shell', async () => {
+    const w = await startWorker('v1', [...PRECACHE, 'sestava/nejsilnejsi/']);
+    await w.lifecycle('install');
+    w.fetched.length = 0;
+    expect(await w.request(req(`${SCOPE}sestava/nejsilnejsi/`, { mode: 'navigate' }))).toBe(
+      `síť:${SCOPE}sestava/nejsilnejsi/`,
+    );
+    expect(w.fetched).toEqual([]);
+    // Neznámá sestava (stránka z novější verze) jde na síť.
+    expect(await w.request(req(`${SCOPE}sestava/nova/`, { mode: 'navigate' }))).toBe(
+      `síť:${SCOPE}sestava/nova/`,
+    );
+    expect(w.fetched).toHaveLength(1);
   });
 
   it('fetch: navigace na hru dostane app shell (i s parametry), soubory buildu jdou z cache', async () => {

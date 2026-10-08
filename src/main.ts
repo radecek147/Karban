@@ -17,7 +17,7 @@ import './ui/styles/cards.css';
 import './ui/styles/game.css';
 import './ui/styles/tutorial.css';
 import { registry } from './content';
-import { jokerPreset } from './content/presets';
+import { PRESET_PARAM, jokerPreset } from './content/presets';
 import { t } from './i18n/cs';
 import type { ScreenId } from './ui/app';
 import { App } from './ui/app';
@@ -45,8 +45,6 @@ const ERROR_TOAST_GAP_MS = 3000;
 /** Přednačtení obrazovek nejpozději po této době, i když prohlížeč nemá „volno“. */
 const IDLE_TIMEOUT_MS = 2000;
 const IDLE_FALLBACK_MS = 500;
-/** Parametr odkazu s ukázkovou sestavou žolíků (src/content/presets.ts). */
-const PRESET_PARAM = 'sestava';
 /** Ukázková sestava se hraje na základním balíčku a Desítce. */
 const PRESET_DECK = 'pub';
 const PRESET_STAKE = 1;
@@ -135,7 +133,8 @@ function boot(): void {
 /**
  * `?sestava=<id>`: rovnou založí seedovaný run (Hospodský balíček, Desítka) s ukázkovou sestavou žolíků — přes stejný
  * start jako výzvy, takže se rozehraná hra nepřepíše bez potvrzení. Parametr se z adresy hned odebere, ať obnovení
- * stránky pokračuje v rozehrané hře, místo aby zakládalo novou.
+ * stránky pokračuje v rozehrané hře, místo aby zakládalo novou. Sdílí se odkaz `sestava/<id>/` (scripts/preset-pages.ts),
+ * který sem přesměruje až po kontrole service workeru — tenhle parametr by u starého workeru načetl starou verzi.
  */
 function startPresetFromUrl(app: App): void {
   const url = new URL(location.href);
@@ -144,6 +143,7 @@ function startPresetFromUrl(app: App): void {
   url.searchParams.delete(PRESET_PARAM);
   history.replaceState(history.state, '', url.href);
   const preset = jokerPreset(id);
+  if (!preset && id.trim() === '') return;
   if (!preset) {
     toast(t('newGame.preset.unknown', { id }), { kind: 'warning', testId: 'toast-preset-unknown' });
     return;
@@ -160,7 +160,7 @@ function startPresetFromUrl(app: App): void {
     const jokers = preset.jokers.map((defId) => t(`jokers.${defId}.name`)).join(', ');
     toast(t('newGame.preset.started', { jokers }), {
       kind: 'success',
-      title: t('newGame.preset.title'),
+      title: t(`newGame.preset.names.${preset.id}`),
       testId: 'toast-preset',
     });
   });

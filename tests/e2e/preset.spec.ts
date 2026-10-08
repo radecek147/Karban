@@ -3,8 +3,10 @@ import { t } from '../../src/i18n/cs';
 import { expectCleanConsole, idle, newState, readRun, seedSavedRun, watchConsole } from './helpers';
 
 /**
- * Odkaz s ukázkovou sestavou žolíků (`?sestava=<id>`, src/main.ts, src/content/presets.ts): rovnou rozehraný
- * seedovaný run se sestavou ve slotech; parametr zmizí z adresy, rozehraná hra se bez potvrzení nepřepíše.
+ * Odkaz s ukázkovou sestavou žolíků (src/content/presets.ts): sdílená stránka `sestava/<id>/`
+ * (scripts/preset-pages.ts) přesměruje na `?sestava=<id>` (src/main.ts) a hra rovnou rozehraje seedovaný run se
+ * sestavou ve slotech; parametr zmizí z adresy, rozehraná hra se bez potvrzení nepřepíše. Starý service worker
+ * (odkaz z doby před aktualizací) ověřuje scénář se dvěma buildy v docs/DECISIONS.md 2026-10-08.
  */
 
 const screen = (page: Page) => page.locator('#app');
@@ -52,4 +54,53 @@ test('neznámá sestava jen oznámí, že ji tu neznají', async ({ page }) => {
   await expect(page.getByTestId('toast-preset-unknown')).toContainText('zlata-rybka');
   await expect(screen(page)).toHaveAttribute('data-screen', 'menu');
   expect(new URL(page.url()).searchParams.get('sestava')).toBeNull();
+});
+
+test('stránka sestava/fotograf/ přesměruje do hry se sestavou', async ({ page }) => {
+  const log = watchConsole(page);
+  await page.goto('/sestava/fotograf/');
+  await expect(screen(page)).toHaveAttribute('data-screen', 'game');
+  expect(new URL(page.url()).pathname).toBe('/');
+  expect(new URL(page.url()).searchParams.get('sestava')).toBeNull();
+  await idle(page);
+  expect((await readRun(page)).jokers.map((j) => j.defId)).toEqual([
+    'fair_photographer',
+    'recount_committee',
+    'football_fan',
+    'jukebox',
+    'echo',
+  ]);
+  await expect(page.getByTestId('toast-preset')).toContainText(t('newGame.preset.names.fotograf'));
+  expectCleanConsole(log);
+});
+
+test('s aktuálním service workerem jde odkaz přes cache a worker zůstane', async ({ page }) => {
+  await page.goto('/?tutorial=off');
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await page.reload();
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+  await page.goto('/sestava/nejsilnejsi/');
+  await expect(screen(page)).toHaveAttribute('data-screen', 'game');
+  // Odregistrovaný worker by stránku hry neovládal.
+  expect(await page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
+  expect(await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length)).toBe(1);
+  expect((await readRun(page)).jokers).toHaveLength(5);
+});
+
+test('seznam sestav vede na všechny sestavy', async ({ page }) => {
+  await page.goto('/sestava/');
+  const links = page.locator('li a');
+  await expect(links).toHaveCount(3);
+  await expect(links.first()).toHaveText(t('newGame.preset.names.nejsilnejsi'));
+  await links.nth(2).click();
+  await expect(screen(page)).toHaveAttribute('data-screen', 'game');
+  expect((await readRun(page)).jokers[0]?.defId).toBe('charles_bridge');
+});
+
+test('rozbitý odkaz z chatu (dvojtečka za id) sestavu pořád najde', async ({ page }) => {
+  await page.goto('/?sestava=fotograf:&tutorial=off');
+  await expect(screen(page)).toHaveAttribute('data-screen', 'game');
+  expect((await readRun(page)).jokers[0]?.defId).toBe('fair_photographer');
 });

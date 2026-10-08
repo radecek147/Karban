@@ -15,9 +15,10 @@ kreslené přímo v kódu, žádné obrázky z generátoru ani z cizích her.
 jde hra i offline.
 
 **Rovnou s rozbitou sestavou** (rozehraný seedovaný run na Desítce, do statistik se nepočítá):
-[nejsilnější pětice](https://radecek147.github.io/Karban/?sestava=nejsilnejsi) ·
-[Fotograf a opakování figur](https://radecek147.github.io/Karban/?sestava=fotograf) ·
-[nejlepší bez Fotografa](https://radecek147.github.io/Karban/?sestava=bez-fotografa). Proč jsou tak silné, popisuje
+[nejsilnější pětice](https://radecek147.github.io/Karban/sestava/nejsilnejsi/) ·
+[Fotograf a opakování figur](https://radecek147.github.io/Karban/sestava/fotograf/) ·
+[nejlepší bez Fotografa](https://radecek147.github.io/Karban/sestava/bez-fotografa/)
+([všechny sestavy](https://radecek147.github.io/Karban/sestava/)). Proč jsou tak silné, popisuje
 [docs/SYNERGIE.md](docs/SYNERGIE.md).
 
 <p align="center">

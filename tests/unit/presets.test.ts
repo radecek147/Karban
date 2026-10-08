@@ -1,10 +1,12 @@
 /**
- * Ukázkové sestavy žolíků z odkazu `?sestava=` (src/content/presets.ts) a `NewRunOptions.presetJokers` v enginu.
+ * Ukázkové sestavy žolíků z odkazu (src/content/presets.ts): tolerantní hledání podle id a `NewRunOptions.presetJokers`
+ * v enginu. Stránky odkazů a jejich skript: tests/unit/preset-pages.test.ts.
  */
 import { describe, expect, it } from 'vitest';
 import { registry } from '../../src/content';
-import { JOKER_PRESETS, jokerPreset } from '../../src/content/presets';
+import { JOKER_PRESETS, jokerPreset, normalizePresetId } from '../../src/content/presets';
 import { Game } from '../../src/engine';
+import { hasKey } from '../../src/i18n/cs';
 
 const REG = registry();
 
@@ -75,12 +77,36 @@ describe('ukázkové sestavy', () => {
     ]);
   });
 
-  it('hledání podle id: velikost písmen a mezery nevadí, neznámé nebo prázdné = undefined', () => {
+  it('hledání podle id je tolerantní: velikost písmen, diakritika, mezery, interpunkce z rozbitého odkazu', () => {
     expect(jokerPreset(' Nejsilnejsi ')?.id).toBe('nejsilnejsi');
+    expect(jokerPreset('Nejsilnější!')?.id).toBe('nejsilnejsi');
     expect(jokerPreset('BEZ-FOTOGRAFA')?.id).toBe('bez-fotografa');
-    expect(jokerPreset('photochad')).toBeUndefined();
+    expect(jokerPreset('bez fotografa')?.id).toBe('bez-fotografa');
+    expect(jokerPreset('bez_fotografa')?.id).toBe('bez-fotografa');
+    // Autolink v chatu může přibrat dvojtečku nebo hvězdičky z tučného písma.
+    expect(jokerPreset('fotograf:')?.id).toBe('fotograf');
+    expect(jokerPreset('**nejsilnejsi**')?.id).toBe('nejsilnejsi');
+    expect(jokerPreset('photochad')?.id).toBe('fotograf');
+    expect(jokerPreset('zlata-rybka')).toBeUndefined();
     expect(jokerPreset('')).toBeUndefined();
+    expect(jokerPreset('!!!')).toBeUndefined();
     expect(jokerPreset(null)).toBeUndefined();
+  });
+
+  it('normalizePresetId: tvar id v odkazu', () => {
+    expect(normalizePresetId('  Žluťoučký   kůň ')).toBe('zlutoucky-kun');
+    expect(normalizePresetId('--a__b--')).toBe('a-b');
+    expect(normalizePresetId('Nejsilnější pětice')).toBe('nejsilnejsi-petice');
+  });
+
+  it('id i jiná jména jsou už normalizovaná a neopakují se mezi sestavami', () => {
+    const all = JOKER_PRESETS.flatMap((p) => [p.id, ...(p.aliases ?? [])]);
+    for (const name of all) expect(normalizePresetId(name)).toBe(name);
+    expect(new Set(all).size).toBe(all.length);
+  });
+
+  it('každá sestava má název v textech', () => {
+    for (const p of JOKER_PRESETS) expect(hasKey(`newGame.preset.names.${p.id}`), p.id).toBe(true);
   });
 
   it('Napodobitel v nejsilnější sestavě kopíruje Šťastnou sedmičku', () => {

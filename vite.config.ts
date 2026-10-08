@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import { fileURLToPath } from 'node:url';
 import { defineConfig, runnerImport, type Plugin } from 'vite';
+import { presetPagesPlugin } from './scripts/preset-pages.ts';
 import { serviceWorkerPlugin } from './scripts/sw-plugin.ts';
 
 // GitHub Pages servíruje z /<repo>/ — base lze přepsat proměnnou BASE_PATH.
@@ -40,8 +41,9 @@ function i18nHtml(): Plugin {
 
 export default defineConfig({
   base,
+  // karban-preset-pages: stránky odkazů na sestavy a 404.html (scripts/preset-pages.ts);
   // karban-sw: offline režim (sw.js se seznamem souborů buildu, scripts/sw-plugin.ts).
-  plugins: [i18nHtml(), serviceWorkerPlugin()],
+  plugins: [i18nHtml(), presetPagesPlugin(), serviceWorkerPlugin()],
   build: {
     target: 'es2022',
     sourcemap: true,

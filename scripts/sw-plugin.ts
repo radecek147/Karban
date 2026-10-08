@@ -12,14 +12,20 @@ import { transformWithOxc, type Plugin } from 'vite';
 export const SW_FILE = 'sw.js';
 const SW_ENTRY = fileURLToPath(new URL('../src/sw/sw.ts', import.meta.url));
 
+/** Stránka pro neexistující adresy (scripts/preset-pages.ts) — prohlížeč ji nikdy nežádá pod jejím jménem. */
+const NOT_FOUND_FILE = '404.html';
+
 /**
- * Seznam souborů pro precache: všechno z buildu kromě source map a workeru samotného; index.html se ukládá pod
- * adresou adresáře (`./`), protože na ni hra naviguje. Cesty jsou relativní k rozsahu workeru (base).
+ * Seznam souborů pro precache: všechno z buildu kromě source map, workeru samotného a `404.html`; každý
+ * `index.html` se ukládá pod adresou svého adresáře (`./`, `sestava/nejsilnejsi/`), protože na ni se naviguje.
+ * Cesty jsou relativní k rozsahu workeru (base).
  */
 export function precacheList(fileNames: readonly string[]): string[] {
   const list = fileNames
-    .filter((f) => !f.endsWith('.map') && f !== SW_FILE)
-    .map((f) => (f === 'index.html' ? './' : f))
+    .filter((f) => !f.endsWith('.map') && f !== SW_FILE && f !== NOT_FOUND_FILE)
+    .map((f) =>
+      f === 'index.html' ? './' : f.endsWith('/index.html') ? f.slice(0, -'index.html'.length) : f,
+    )
     .sort();
   if (!list.includes('./')) throw new Error('karban-sw: v buildu chybí index.html');
   return list;

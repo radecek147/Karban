@@ -142,12 +142,34 @@ export const newGame = {
     confirm: 'Rozdat nové',
   },
   failed: 'Hru se nepodařilo založit. Karty se rozsypaly pod stůl.',
-  /** Ukázková sestava z odkazu `?sestava=` (src/content/presets.ts). */
+  /**
+   * Ukázkové sestavy z odkazu (src/content/presets.ts): oznámení ve hře (src/main.ts) a stránky odkazů
+   * `sestava/<id>/`, `sestava/` a `404.html` (scripts/preset-pages.ts).
+   */
   preset: {
     title: 'Ukázková sestava',
     started: 'Ve slotech čeká {jokers}. Předváděčka, ne rekord: do statistik ani odemykání se nepočítá.',
     unknown:
       'Sestavu „{id}“ tady neznají. Hospodský krčí rameny: zkus „nejsilnejsi“, „fotograf“ nebo „bez-fotografa“.',
+    names: {
+      nejsilnejsi: 'Nejsilnější pětice',
+      fotograf: 'Fotograf a opakování figur',
+      'bez-fotografa': 'Nejlepší bez Fotografa',
+    },
+    pageTitle: '{name} · Karban',
+    pageDescription: 'Rozehraný run na Desítce, ve slotech {jokers}.',
+    redirecting: 'Míchám karty a skládám sestavu…',
+    inSlots: 'Ve slotech: {jokers}.',
+    open: 'Otevřít hru se sestavou',
+    listTitle: 'Ukázkové sestavy · Karban',
+    listHeading: 'Ukázkové sestavy žolíků',
+    listIntro:
+      'Každý odkaz otevře rozehraný run na Desítce se sestavou rovnou ve slotech. Do statistik ani odemykání se nepočítá.',
+    backToGame: 'Do hry bez sestavy',
+    notFoundTitle: 'Nenalezeno · Karban',
+    notFoundHeading: 'Tady nic není',
+    notFound: 'Tuhle stránku nenašel ani hospodský, a ten najde i tácek pod stolem.',
+    notFoundBack: 'Zpátky do hospody',
   },
 };
 

@@ -3990,3 +3990,31 @@ z adresy, takže obnovení stránky pokračuje ve stejném runu.
 statistik, odemykání ani achievementů, takže předváděčka nic nepokazí v profilu. Sestava je v obsahu (data), ne
 v uloženém profilu, takže přibude další jedním řádkem. V `docs/SYNERGIE.md` opravena poznámka u nejlepší pětice:
 Napodobitel kopíruje Šťastnou sedmičku (nejdražší běžný/vzácný žolík), ne Komisi.
+
+## 2026-10-08 — Odkazy na sestavy a service worker
+
+**Problém:** odkaz `…/Karban/?sestava=nejsilnejsi` hráči „neotevřel“ sestavu. Service worker vrací adresu hry
+z cache a nová verze naskočí až po zavření všech karet se starou (záměrně bez `skipWaiting`). Kdo hru už někdy
+otevřel, dostal starou verzi, která parametr nezná, a skončil v menu. Na mobilu a ve vestavěném prohlížeči chatu se
+karty skoro nezavírají. Druhá chyba: odkaz napsaný v chatu s dvojtečkou za adresou mohl autolink přibrat
+(`?sestava=fotograf:`) a hra sestavu nepoznala.
+
+**Co:**
+
+- Sdílí se odkaz `…/Karban/sestava/<id>/`. Plugin `karban-preset-pages` (scripts/preset-pages.ts) vydá stránku pro
+  každou sestavu, seznam `sestava/` a na GitHub Pages i `404.html`. Stránka leží mimo adresu hry, takže ji žádná verze
+  workeru nevrátí jako hru z cache. Skript src/sw/linkRedirect.ts zkontroluje worker (`registration.update()`):
+  když čeká nebo se instaluje nová verze (nebo kontrola nedoběhne do 5 s), worker odregistruje, aby se hra načetla ze
+  sítě v nové verzi, která si ho hned zaregistruje znovu. Pak přesměruje na `?sestava=<id>`. Aktuální, chybějící
+  nebo offline worker nechá být (hra jde z cache, odkaz funguje i offline).
+- `404.html` chytí i pokažené odkazy pod `sestava/` (`sestava/Nejsilnější!/`, `sestava/fotograf:/`) a id předá hře.
+- Hra hledá sestavu tolerantně: bez diakritiky, mezer a interpunkce, s jinými jmény (`photochad` = `fotograf`).
+- Precache ukládá každý `index.html` pod adresou adresáře, takže stránky odkazů fungují i offline; `404.html` ne.
+
+**Proč ne jinak:** starý worker už u hráčů běží a jeho kód nezměníme, takže pomůže jen adresa, kterou nezachytí.
+`skipWaiting` pro všechny by porušil pravidlo, že rozehraná hra nikdy nedostane soubory jiné verze. Odregistrovat
+worker jen pro odkaz je bezpečné: ostatní karty se starou verzí zablokuje TabGuard a offline cache se po načtení nové
+verze obnoví na pozadí.
+
+**Ověření:** dva buildy (stará verze v cache, nová na serveru napodobujícím GitHub Pages) v Chromiu: starý worker
+s otevřenou starou kartou i bez ní, aktuální worker (zůstane), offline, záchrana přes 404, rozbité id, seznam sestav.
