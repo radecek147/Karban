@@ -59,7 +59,7 @@ const app = {
   loading: 'Míchám karty…',
   tipLabel: 'Štamgast radí',
   version: 'verze {version}',
-  footerNote: 'Při výrobě nebyl zraněn žádný žolík.',
+  footerNote: 'Dnes nebylo rozlito žádné pivo.',
   /** Service worker stáhl novou verzi (převezme ji při příštím spuštění, src/ui/serviceWorker.ts). */
   updateReady: 'Dorazila nová verze Karbanu. Naskočí při příštím spuštění, rozehranou hru ti nikdo nebere.',
   /** Neexistující adresa pod hrou (GitHub Pages vrátí 404.html = kopii hry, src/ui/linkRoute.ts). */
