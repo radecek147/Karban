@@ -4067,3 +4067,19 @@ bez nápisů a posekaný trávník. Kreslicí sada postav na to má nový motiv 
 
 **Proč:** přání hráče. Dres je obecný půlený vzor bez znaku, hvězdy a jména klubu, tribuna bez nápisů — žádná
 skutečná značka (CLAUDE.md kap. 5). Červený megafon sedí na bílé polovině, aby nesplynul s červenou.
+
+## 2026-10-08 — Objev tajné kombinace je vidět; odkaz odemkne vše
+
+**Co:**
+
+- Po objevu tajné kombinace (Pětice, Barevný full house, Barevná pětice) nabídne nejbližší Večerka její pranostiku
+  navíc, jednou za run a kombinaci (`RunState.flags.secretPranostikyOffered`; položka `extra`, přehození ji nechá,
+  nic se nelosuje). Hláška objevu jmenuje pranostiku („čeká v příští Večerce“).
+- „Odemknout vše“ odemkne i legendární žolíky, které jinak odemyká až objev (zápis do `unlocks.jokers`; objevy,
+  sbírka ani achievementy se nemění, takže se achievementy za objevy nerozdají zadarmo).
+- Odkaz na ukázkovou sestavu rovnou zavolá „Odemknout vše“ a oznámí počet odemčených položek.
+
+**Proč:** hráč hlásil, že se po odemčení Pětice „nezobrazí nové vylepšení té kombinace“. Pranostika se do losování
+přidala správně, ale nic to neukázalo a padala jen občas. Teď je objev odměněný a vidět. Runy z odkazu jsou
+seedované, takže objevy z nich se do sbírky nezapisují (pravidlo proti farmení), proto odkaz odemyká přímo.
+Odemčení přes odkaz si hráč výslovně přál.

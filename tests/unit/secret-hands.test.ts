@@ -165,6 +165,38 @@ describe('tajné kombinace – pranostiky až po objevu', () => {
     expect(after).not.toContain('lucy_night');
   });
 
+  it('po objevu nabídne nejbližší Večerka pranostiku navíc (přehození ji nechá), další Večerka už ne', () => {
+    const g = newGame('SECRETOFFER');
+    g.dispatch({ type: 'selectBlind' });
+    const slots = g.modifiers().shopCardSlots;
+    const cards = setupRound(g, 'KS KH KD KC KS');
+    winNextHand(g);
+    expect(play(g, cards).events).toContainEqual({ type: 'handDiscovered', hand: 'five' });
+    g.dispatch({ type: 'cashOut' });
+    const offer = () =>
+      g.state.shop!.items.filter(
+        (it) => it.extra && it.kind === 'consumable' && it.consumable.defId === 'candlemas',
+      );
+    expect(offer()).toHaveLength(1);
+    expect(g.state.shop!.items.filter((it) => !it.extra)).toHaveLength(slots);
+    expect(offer()[0]!.price).toBeGreaterThan(0);
+    g._core.state.money = 100;
+    expect(g.dispatch({ type: 'reroll' }).ok).toBe(true);
+    expect(offer()).toHaveLength(1);
+    expect(g.state.flags.secretPranostikyOffered).toEqual(['five']);
+    // Další Večerka už pranostiku navíc nedá (v losování zůstává).
+    g.dispatch({ type: 'leaveShop' });
+    toShop(g);
+    expect(offer()).toEqual([]);
+  });
+
+  it('bez objevu žádná pranostika navíc; běžná kombinace ji nedává', () => {
+    const g = newGame('SECRETNONE');
+    toShop(g);
+    expect(g.state.shop!.items.filter((it) => it.extra)).toEqual([]);
+    expect(g.state.flags.secretPranostikyOffered).toBeUndefined();
+  });
+
   it('obálky pranostik: tajné až po objevu', () => {
     const g = newGame('SECRETPACK');
     expect(boosterPranostiky(g, 40).filter((id) => SECRET_PRANOSTIKY.includes(id))).toEqual([]);

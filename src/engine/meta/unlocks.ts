@@ -303,7 +303,9 @@ export function unlockedByDiscovery(registry: ContentRegistry, jokerId: string):
 export function isJokerUnlocked(profile: Readonly<Profile>, registry: ContentRegistry, id: string): boolean {
   const def = registry.jokers[id];
   if (!def) return false;
-  if (unlockedByDiscovery(registry, id)) return profile.discovered.jokers.includes(id);
+  // Legendární bez podmínky odemkne objev, nebo „Odemknout vše“ (zápis do `unlocks.jokers`, objevy se nemění).
+  if (unlockedByDiscovery(registry, id))
+    return profile.discovered.jokers.includes(id) || profile.unlocks.jokers.includes(id);
   return !def.unlock || profile.unlocks.jokers.includes(id);
 }
 
@@ -439,9 +441,10 @@ export function refreshUnlocks(
 }
 
 /**
- * „Odemknout vše“ (Nastavení, přání hráče 2026-10-07): zapíše do profilu všechny balíčky, žolíky, kupóny a výzvy
- * s podmínkou a nejvyšší sílu piva u každého balíčku. Statistiky, achievementy, objevy (sbírka) ani „Nové“ nemění.
- * Vrací počet nově odemčených položek (síla piva = 1 za balíček). Mutuje profil.
+ * „Odemknout vše“ (Nastavení a odkaz na ukázkovou sestavu, přání hráče 2026-10-07 a 2026-10-08): zapíše do profilu
+ * všechny balíčky, žolíky (i legendární, které jinak odemyká až objev), kupóny a výzvy s podmínkou a nejvyšší sílu
+ * piva u každého balíčku. Statistiky, achievementy, objevy (sbírka) ani „Nové“ nemění — achievementy za objevy se tak
+ * zadarmo nerozdají. Vrací počet nově odemčených položek (síla piva = 1 za balíček). Mutuje profil.
  */
 export function unlockEverything(profile: Profile, registry: ContentRegistry): number {
   let added = 0;
@@ -449,7 +452,6 @@ export function unlockEverything(profile: Profile, registry: ContentRegistry): n
     const list = profile.unlocks[category];
     for (const id of idsOf(registry, category)) {
       if (list.includes(id) || isUnlocked(profile, registry, category, id)) continue;
-      if (category === 'jokers' && unlockedByDiscovery(registry, id)) continue;
       list.push(id);
       added++;
     }

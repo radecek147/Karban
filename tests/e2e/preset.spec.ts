@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { t } from '../../src/i18n/cs';
-import { expectCleanConsole, idle, newState, readRun, seedSavedRun, watchConsole } from './helpers';
+import { REG, expectCleanConsole, idle, newState, readRun, seedSavedRun, watchConsole } from './helpers';
 
 /**
  * Odkaz s ukázkovou sestavou žolíků (src/content/presets.ts): sdílená stránka `sestava/<id>/` je kopie app shellu
@@ -19,6 +19,14 @@ test('?sestava=nejsilnejsi založí run s nejsilnější sestavou', async ({ pag
   await idle(page);
   await expect(page.getByTestId('joker-count')).toHaveText('5/5');
   await expect(page.getByTestId('toast-preset')).toContainText(t('newGame.preset.names.nejsilnejsi'));
+  // Odkaz rovnou odemkne všechno včetně legendárních žolíků (objevy ani achievementy nemění).
+  await expect(page.getByTestId('toast-unlock-all')).toBeVisible();
+  const profile = await page.evaluate(() => JSON.parse(localStorage.getItem('karban.profile') ?? '{}'));
+  const legendary = Object.values(REG.jokers).filter((j) => j.rarity === 'legendary' && !j.unlock);
+  expect(legendary.length).toBeGreaterThan(0);
+  for (const j of legendary) expect(profile.data.unlocks.jokers).toContain(j.id);
+  expect(profile.data.discovered.jokers).toEqual([]);
+  expect(profile.data.achievements.unlocked).toEqual({});
   // Parametr sestavy z adresy zmizí, ostatní zůstanou.
   expect(new URL(page.url()).searchParams.get('sestava')).toBeNull();
   expect(new URL(page.url()).searchParams.get('tutorial')).toBe('off');

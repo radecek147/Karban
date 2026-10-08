@@ -18,6 +18,7 @@ import './ui/styles/game.css';
 import './ui/styles/tutorial.css';
 import { registry } from './content';
 import { JOKER_PRESETS, jokerPreset } from './content/presets';
+import { unlockEverything } from './engine/meta';
 import { t } from './i18n/cs';
 import type { ScreenId } from './ui/app';
 import { App } from './ui/app';
@@ -181,6 +182,10 @@ function handleLinkRoute(app: App, route: LinkRoute): void {
     return;
   }
   const name = t(`newGame.preset.names.${preset.id}`);
+  // Odkaz je předváděčka: rovnou odemkne všechny žolíky, balíčky, kupóny, výzvy a síly piva (přání hráče
+  // 2026-10-08, stejné jako „Odemknout vše“ v Nastavení — statistiky, achievementy ani sbírku nemění).
+  const unlocked = unlockEverything(app.profile, app.registry);
+  if (unlocked > 0) app.profiles.save();
   const req = {
     deckId: PRESET_DECK,
     stake: PRESET_STAKE,
@@ -201,6 +206,12 @@ function handleLinkRoute(app: App, route: LinkRoute): void {
       duration: PRESET_TOAST_MS,
       testId: 'toast-preset',
     });
+    if (unlocked > 0) {
+      toast(t('settings.unlockAll.done', { count: unlocked }), {
+        kind: 'success',
+        testId: 'toast-unlock-all',
+      });
+    }
   });
 }
 

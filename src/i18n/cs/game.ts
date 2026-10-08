@@ -373,6 +373,9 @@ export const game = {
     skippedTag: 'Útrata přeskočena. Štítek: {tag}.',
     leveled: '{hand} je teď na úrovni {level}.',
     discovered: 'Objev! {hand} je ve hře.',
+    /** Tajná kombinace s pranostikou — tu nabídne nejbližší Večerka navíc. */
+    discoveredPranostika:
+      'Objev! {hand} je ve hře. Pranostika „{pranostika}“ ji vylepší – čeká v příští Večerce.',
     ante: 'Patro {ante}. Cíle rostou, pivo dochází.',
     roundWon: 'Kolo vyhráno!',
     blocked: 'Ruka se nepočítá: {reason}',

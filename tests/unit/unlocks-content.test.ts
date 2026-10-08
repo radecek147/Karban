@@ -273,7 +273,7 @@ describe('odemčeno na startu (DESIGN 11.3)', () => {
 // ─────────────────────────── Platnost a splnitelnost ───────────────────────────
 
 describe('Odemknout vše (Nastavení)', () => {
-  it('odemkne všechny balíčky, žolíky, kupóny, výzvy a nejvyšší sílu piva; statistiky ani objevy nemění', () => {
+  it('odemkne všechny balíčky, žolíky (i legendární), kupóny, výzvy a nejvyšší sílu piva; statistiky ani objevy nemění', () => {
     const p = fresh();
     const before = structuredClone(p);
     const count = unlockEverything(p, reg);
@@ -285,11 +285,8 @@ describe('Odemknout vše (Nastavení)', () => {
     }
     for (const id of Object.keys(reg.vouchers)) expect(isVoucherUnlocked(p, reg, id), id).toBe(true);
     for (const id of Object.keys(reg.challenges)) expect(isChallengeUnlocked(p, reg, id), id).toBe(true);
-    for (const j of Object.values(reg.jokers)) {
-      // Legendární bez podmínky se odemykají objevem (sbírka) — v poolu jsou vždy.
-      if (j.rarity === 'legendary' && !j.unlock) continue;
-      expect(isJokerUnlocked(p, reg, j.id), j.id).toBe(true);
-    }
+    // Všichni žolíci včetně legendárních, které jinak odemyká až objev (objevy se přitom nemění, viz níž).
+    for (const j of Object.values(reg.jokers)) expect(isJokerUnlocked(p, reg, j.id), j.id).toBe(true);
     expect(unlockedPoolFor(p, reg, 'normal').jokers).toHaveLength(Object.keys(reg.jokers).length);
     expect(unlockedPoolFor(p, reg, 'normal').vouchers).toHaveLength(Object.keys(reg.vouchers).length);
     expect(p.stats).toEqual(before.stats);

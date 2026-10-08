@@ -287,7 +287,7 @@ export const settings = {
   },
   unlockAll: {
     label: 'Odemknout vše',
-    hint: 'Hned zpřístupní všechny balíčky, žolíky, kupóny, výzvy i všechny síly piva. Statistiky, achievementy a sbírka zůstanou, jak jsou.',
+    hint: 'Hned zpřístupní všechny balíčky, žolíky (i legendární), kupóny, výzvy i všechny síly piva. Statistiky, achievementy a sbírka zůstanou, jak jsou.',
     confirmTitle: 'Odemknout úplně všechno?',
     confirmMessage:
       'Přeskočíš odemykání: všechny balíčky, žolíci, kupóny, výzvy i síly piva budou k dispozici hned teď. Zpátky to vrátí jen smazání profilu.',

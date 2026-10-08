@@ -18,6 +18,7 @@ import type {
 } from '../types';
 import {
   compareIds,
+  consumableInRun,
   consumableKindInRun,
   pickConsumableDefId,
   pickJokerDefId,
@@ -378,6 +379,33 @@ export function voucherOffers(core: GameCore): ShopState['vouchers'] {
     .map((id) => ({ voucherId: id, price: voucherPrice(core, id), sold: false }));
 }
 
+/** `RunState.flags`: tajné kombinace, jejichž pranostiku už Večerka po objevení nabídla. */
+export const SECRET_PRANOSTIKA_FLAG = 'secretPranostikyOffered';
+
+/**
+ * Po objevení tajné kombinace (Pětice, Barevný full house, Barevná pětice) nabídne nejbližší Večerka její pranostiku
+ * navíc — jednou za run a kombinaci, ať je objev vidět (přání hráče 2026-10-08; jinak se pranostika jen přidá do
+ * losování). Položka je `extra`: přehození ji nemění a do slotů se nepočítá; nic se nelosuje, ostatní zboží zůstane.
+ */
+function secretPranostikaItem(core: GameCore): ShopItem | null {
+  const s = core.state;
+  const raw = s.flags[SECRET_PRANOSTIKA_FLAG];
+  const offered = Array.isArray(raw) ? raw.filter((x): x is string => typeof x === 'string') : [];
+  for (const hand of s.discoveredHands) {
+    if (!core.registry.handTypes[hand]?.secret || offered.includes(hand)) continue;
+    offered.push(hand);
+    s.flags[SECRET_PRANOSTIKA_FLAG] = [...offered];
+    const def = Object.values(core.registry.consumables)
+      .sort((a, b) => compareIds(a.id, b.id))
+      .find((d) => d.kind === 'pranostika' && d.hand === hand);
+    if (!def || def.noShop || !consumableInRun(core, def)) continue;
+    const consumable = newConsumableInstance(core, def.id);
+    const price = consumablePrice(core, consumable);
+    return { kind: 'consumable', consumable, consumableKind: 'pranostika', price, sold: false, extra: true };
+  }
+  return null;
+}
+
 /** Nová Večerka (při vstupu). `firstShop` = první Večerka runu (zaručená Žolíková obálka). */
 export function generateShop(core: GameCore, opts: { firstShop?: boolean } = {}): ShopState {
   const freeRerolls = typeof core.state.flags.freeRerolls === 'number' ? core.state.flags.freeRerolls : 0;
@@ -391,6 +419,8 @@ export function generateShop(core: GameCore, opts: { firstShop?: boolean } = {})
     paidRerolls: 0,
     freeRerolls,
   };
+  const secret = secretPranostikaItem(core);
+  if (secret) shop.items.push(secret);
   refreshShopPrices(core, shop);
   return shop;
 }

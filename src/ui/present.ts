@@ -671,9 +671,20 @@ async function presentEvent(
       return;
     case 'handLeveled':
       return presentLevelUp(view, e, batch);
-    case 'handDiscovered':
-      say(t('game.events.discovered', { hand: t(`hands.${e.hand}.name`) }), 'success');
+    case 'handDiscovered': {
+      // Tajná kombinace: hláška jmenuje i její pranostiku, kterou nabídne nejbližší Večerka (src/engine/shop/shop.ts).
+      const hand = t(`hands.${e.hand}.name`);
+      const pran = Object.values(view.controller.registry.consumables).find(
+        (d) => d.kind === 'pranostika' && d.hand === e.hand,
+      );
+      say(
+        pran
+          ? t('game.events.discoveredPranostika', { hand, pranostika: t(`consumables.${pran.id}.name`) })
+          : t('game.events.discovered', { hand }),
+        'success',
+      );
       return;
+    }
     case 'anteChanged':
       say(t('game.events.ante', { ante: e.ante }));
       return;
