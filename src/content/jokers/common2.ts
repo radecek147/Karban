@@ -584,6 +584,7 @@ export const COMMON2_JOKERS: JokerDef[] = [
       roundEndMoney: (ctx) => (ctx.state.round?.blind === 'boss' ? SALARY_MONEY : 0),
     },
     art: {
+      scene: 'j-thirteenth_salary',
       icon: 'money-stack',
       prop: 'trophy',
       bg: '#22333b',
@@ -849,6 +850,14 @@ export const COMMON2_JOKERS: JokerDef[] = [
         return mult > 0 ? { mult } : null;
       },
     },
-    art: { icon: 'cog', prop: 'scales', bg: '#495057', fg: '#f8f9fa', accent: '#fd7e14', pattern: 'grid' },
+    art: {
+      icon: 'cog',
+      scene: 'j-scrap_yard',
+      prop: 'scales',
+      bg: '#495057',
+      fg: '#f8f9fa',
+      accent: '#fd7e14',
+      pattern: 'grid',
+    },
   },
 ];

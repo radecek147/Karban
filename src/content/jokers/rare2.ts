@@ -514,6 +514,7 @@ export const RARE2_JOKERS: JokerDef[] = [
       passive: () => ({ straightGaps: true }),
     },
     art: {
+      scene: 'j-trodden_path',
       icon: 'footprint',
       prop: 'sunflower',
       bg: '#55702f',
@@ -543,6 +544,7 @@ export const RARE2_JOKERS: JokerDef[] = [
       roundEndMoney: (ctx) => num(ctx.self, 'bosses') * LOOT_MONEY,
     },
     art: {
+      scene: 'j-war_loot',
       icon: 'flail',
       prop: 'old-wagon',
       bg: '#5a4a2f',
@@ -625,6 +627,7 @@ export const RARE2_JOKERS: JokerDef[] = [
       },
     },
     art: {
+      scene: 'j-carbon_paper',
       icon: 'save',
       prop: 'papers',
       bg: '#1e3a6e',
@@ -695,6 +698,7 @@ export const RARE2_JOKERS: JokerDef[] = [
       onCardScored: (ctx) => (inBubble(ctx) ? { chips: BUBBLE_CHIPS } : null),
     },
     art: {
+      scene: 'j-social_bubble',
       icon: 'thumb-up',
       prop: 'fluffy-cloud',
       bg: '#2b5f8a',

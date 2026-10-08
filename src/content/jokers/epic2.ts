@@ -265,6 +265,7 @@ const voucherPrivatization: JokerDef = {
     },
   },
   art: {
+    scene: 'j-voucher_privatization',
     icon: 'factory',
     prop: 'post-stamp',
     bg: '#4b4f58',
@@ -456,6 +457,7 @@ const exchangeOffice: JokerDef = {
     },
   },
   art: {
+    scene: 'j-exchange_office',
     icon: 'banknote',
     prop: 'scales',
     bg: '#1e4d2b',

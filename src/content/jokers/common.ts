@@ -377,6 +377,7 @@ export const COMMON_JOKERS: JokerDef[] = [
       },
     },
     art: {
+      scene: 'j-svejk',
       icon: 'smoking-pipe',
       prop: 'card-discard',
       bg: '#5a6b3a',

@@ -164,6 +164,7 @@ export const EXTRA_JOKERS: JokerDef[] = [
       passive: () => ({ interestCap: SAVINGS_CAP }),
     },
     art: {
+      scene: 'j-building_savings',
       icon: 'bank',
       prop: 'house',
       bg: '#24496b',
