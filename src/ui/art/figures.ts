@@ -27,7 +27,17 @@ type Hat =
 type Hair = 'short' | 'part' | 'bald' | 'bob' | 'bun' | 'long' | 'curly' | 'none';
 type Beard = 'mustache' | 'walrus' | 'beard' | 'goatee';
 type Collar =
-  'shirt' | 'tie' | 'bow' | 'uniform' | 'apron' | 'cassock' | 'turtle' | 'vest' | 'plain' | 'vestHi';
+  | 'shirt'
+  | 'tie'
+  | 'bow'
+  | 'uniform'
+  | 'apron'
+  | 'cassock'
+  | 'turtle'
+  | 'vest'
+  | 'plain'
+  | 'vestHi'
+  | 'jersey';
 type Mood = 'smile' | 'grin' | 'flat' | 'o' | 'sly' | 'sad';
 type Motif =
   | 'street'
@@ -54,6 +64,7 @@ type Motif =
   | 'kitchen'
   | 'gallery'
   | 'screen'
+  | 'stadium'
   | 'none';
 
 export interface FigureSpec {
@@ -63,6 +74,10 @@ export interface FigureSpec {
   skin?: string;
   /** Barva oblečení. */
   body: string;
+  /** Pravá polovina oblečení jinou barvou (sešívaný dres — šev uprostřed kreslí límec `jersey`). */
+  body2?: string;
+  /** Šála kolem krku s koncem přes hruď: barva a pruhy. */
+  neckScarf?: { color: string; stripe: string };
   collar?: Collar;
   /** Kravata, motýlek, vesta, odznak. */
   accent?: string;
@@ -102,6 +117,81 @@ function shade(hex: string, t: number): string {
       )
       .join('')
   );
+}
+
+/** Barvy fanouškovského kotle (červená, bílá, tmavé bundy) — opakují se v hledišti stadionu. */
+const CROWD = ['#d7442c', '#f4ede0', '#2f3542', '#d7442c', '#f2b48e'] as const;
+
+/**
+ * Stadion za postavou: stožáry osvětlení, střecha, tribuna plná fanoušků (řady hlav po barvách, sem tam
+ * zvednutá šála), reklamní mantinely a posekaný trávník s postranní čarou.
+ */
+function stadiumOps(): SceneOp[] {
+  const ops: SceneOp[] = [
+    // Stožáry světel za střechou (níž, ať je nezakryje odznak vzácnosti ani rám karty).
+    ['l', 'M56,104 L56,62 M194,104 L194,62 M50,104 L56,94 L62,104 M188,104 L194,94 L200,104', 2],
+    ['f', '#f2c24a', rect(42, 46, 28, 16), 1.4],
+    ['f', '#f2c24a', rect(180, 46, 28, 16), 1.4],
+    ['l', 'M42,54 h28 M49,46 v16 M56,46 v16 M63,46 v16 M180,54 h28 M187,46 v16 M194,46 v16 M201,46 v16', 0.9],
+    // Střecha a tribuna.
+    ['f', '#3b4f78', 'M16,100 C80,90 170,90 234,100 L234,112 C170,103 80,103 16,112 Z', 1.6],
+    ['f', '#8796ad', 'M16,112 C80,103 170,103 234,112 L234,188 L16,188 Z', 1.4],
+    [
+      'l',
+      'M16,128 C80,120 170,120 234,128 M16,144 C80,137 170,137 234,144 M16,160 C80,154 170,154 234,160 M16,174 C80,169 170,169 234,174',
+      0.9,
+    ],
+  ];
+  // Hlavy fanoušků po řadách; barva podle místa, ať to vypadá jako kotel, ne jako šachovnice.
+  const heads = new Map<string, string[]>();
+  for (let row = 0; row < 7; row++) {
+    const y = 118 + row * 10;
+    for (let i = 0, x = 22 + (row % 2) * 4.5; x < 231; i++, x += 9) {
+      const color = CROWD[(i * 7 + row * 3) % CROWD.length]!;
+      const list = heads.get(color) ?? [];
+      list.push(c(x, y, 3.2));
+      heads.set(color, list);
+    }
+  }
+  for (const [color, list] of heads) ops.push(['f', color, list.join(' '), 0.6]);
+  // Zvednuté šály nad hlavami.
+  const scarves = [
+    [30, 122],
+    [66, 132],
+    [184, 128],
+    [212, 140],
+    [48, 156],
+    [198, 162],
+  ] as const;
+  ops.push([
+    'f',
+    '#d7442c',
+    scarves
+      .map(([x, y]) => `M${x - 9},${y - 2} L${x + 9},${y - 5} L${x + 9},${y + 1} L${x - 9},${y + 4} Z`)
+      .join(' '),
+    0.8,
+  ]);
+  ops.push([
+    'f',
+    '#f4ede0',
+    scarves
+      .map(([x, y]) => `M${x - 3},${y - 3} L${x + 3},${y - 4} L${x + 3},${y + 2} L${x - 3},${y + 3} Z`)
+      .join(' '),
+    0.6,
+  ]);
+  ops.push(
+    // Reklamní mantinely (bez nápisů).
+    ['f', '#f2c24a', rect(16, 188, 50, 9), 1.2],
+    ['f', '#f4ede0', rect(66, 188, 60, 9), 1.2],
+    ['f', '#3b4f78', rect(126, 188, 56, 9), 1.2],
+    ['f', '#d7442c', rect(182, 188, 52, 9), 1.2],
+    // Trávník s pruhy po sekání a postranní čarou.
+    ['f', '#6fae55', 'M16,197 H234 V284 H16 Z', 1.4],
+    ['f', '#5c9a45', 'M16,197 L34,197 L22,284 L16,284 Z M70,197 L92,197 L84,284 L58,284 Z', 0],
+    ['f', '#5c9a45', 'M158,197 L180,197 L192,284 L166,284 Z M216,197 L234,197 L234,284 L228,284 Z', 0],
+    ['s', '#f4ede0', 'M16,206 L234,206', 2.6],
+  );
+  return ops;
 }
 
 function motifOps(m: Motif, bg: string): SceneOp[] {
@@ -282,6 +372,9 @@ function motifOps(m: Motif, bg: string): SceneOp[] {
           1.2,
         ],
       );
+      break;
+    case 'stadium':
+      ops.push(...stadiumOps());
       break;
     case 'workshop':
       ops.push(
@@ -540,6 +633,14 @@ function collarOps(col: Collar, body: string, accent: string): SceneOp[] {
         ['f', accent, 'M74,284 L78,238 C82,224 90,216 100,212 L112,240 L112,284 Z', 1.8],
         ['f', accent, 'M176,284 L172,238 C168,224 160,216 150,212 L138,240 L138,284 Z', 1.8],
       ];
+    case 'jersey':
+      // Sešívaný dres: žebrovaný kulatý límec a šev uprostřed sešitý klikatým stehem (poloviny barví `body`
+      // a `body2`).
+      return [
+        ['f', accent, 'M102,210 C108,232 142,232 148,210 L140,210 C136,222 114,222 110,210 Z', 1.6],
+        ['l', 'M125,230 L125,284', 1.6],
+        ['l', 'M121,232 L129,238 L121,244 L129,250 L121,256 L129,262 L121,268 L129,274 L121,280', 0.9],
+      ];
     case 'vestHi':
       return [
         [
@@ -649,6 +750,17 @@ function hatOps(h: Hat | undefined, col: string, acc: string): SceneOp[] {
   }
 }
 
+/** Fanouškovská šála: omotaná kolem krku, jeden konec s pruhy a třásněmi visí přes hruď. */
+function neckScarfOps(color: string, stripe: string): SceneOp[] {
+  return [
+    ['f', stripe, 'M97,210 L117,214 L113,270 L93,266 Z', 1.8],
+    ['f', color, 'M96,226 L116,230 L115,241 L95,237 Z M94,250 L114,254 L113,263 L93,259 Z', 1.2],
+    ['l', 'M95,267 l-2,9 M100,268 l-2,9 M105,269 l-2,9 M110,270 l-2,9', 1.2],
+    ['f', color, 'M101,195 C110,206 140,206 149,195 L151,210 C140,223 110,223 99,210 Z', 1.8],
+    ['f', stripe, 'M113,203 L121,205 L121,219 L112,217 Z M129,205 L137,203 L138,217 L129,219 Z', 1],
+  ];
+}
+
 /** Sestaví portrét. */
 export function figure(f: FigureSpec): SceneOp[] {
   const skin = f.skin ?? SKIN;
@@ -658,9 +770,11 @@ export function figure(f: FigureSpec): SceneOp[] {
   const hood = f.hat === 'hood';
   if (!hood) ops.push(...hairBack(f.hair ?? 'short', hairCol));
   ops.push(['f', f.body, BUST, 2.4]);
+  if (f.body2) ops.push(['f', f.body2, 'M125,210 L150,210 C180,218 202,240 206,284 L125,284 Z', 2]);
   ops.push(['h', 'M150,210 C180,218 202,240 206,284 L178,284 C176,252 168,228 150,210 Z', 45]);
   ops.push(...collarOps(f.collar ?? 'plain', f.body, accent));
   ops.push(['f', skin, 'M110,182 L110,214 C116,220 134,220 140,214 L140,182 Z', 2]);
+  if (f.neckScarf) ops.push(...neckScarfOps(f.neckScarf.color, f.neckScarf.stripe));
   ops.push(['f', skin, 'M99,150 C91,144 89,164 100,166 Z', 1.8]);
   ops.push(['f', skin, 'M151,150 C159,144 161,164 150,166 Z', 1.8]);
   ops.push(['f', skin, c(125, 156, 26, 30), 2.4]);
@@ -1542,18 +1656,20 @@ const SPECS: Readonly<Record<string, FigureSpec>> = {
     prop: { icon: 'quill-ink', color: '#2f3542' },
   },
   football_fan: {
-    bg: '#bfe0c4',
-    motif: 'field',
-    body: '#1f6f43',
-    collar: 'vestHi',
-    accent: '#f4d35e',
+    bg: '#d3e3ee',
+    motif: 'stadium',
+    body: '#d7442c',
+    body2: '#f4ede0',
+    collar: 'jersey',
+    accent: '#f4ede0',
+    neckScarf: { color: '#d7442c', stripe: '#f4ede0' },
     hair: 'short',
     hairColor: '#5e3a20',
     beard: 'goatee',
     beardColor: '#5e3a20',
     hat: 'cap',
-    hatColor: '#1f6f43',
-    hatAccent: '#f4d35e',
+    hatColor: '#d7442c',
+    hatAccent: '#f4ede0',
     redNose: true,
     mood: 'o',
     prop: { icon: 'megaphone', color: '#e05d5d' },

@@ -4056,3 +4056,14 @@ buildy (stará verze 38648b3 v cache, nová na serveru napodobujícím GitHub Pa
 starý worker s otevřenou starou kartou i bez ní, pomalá síť (každá odpověď +400 ms, `sw.js` +12 s: hra za 2 s),
 aktuální worker (z cache) a skutečný výpadek sítě, záchrana přes 404, rozbité id a parametry, seznam sestav,
 mobil, obnovení pod starým workerem, bez oznámení o aktualizaci a bez achievementů.
+
+## 2026-10-08 — Fotbalový fanoušek v sešívaném dresu
+
+**Co:** portrét žolíka Fotbalový fanoušek (src/ui/art/figures.ts) dostal sešívaný dres (červená a bílá
+polovina se švem uprostřed sešitým klikatým stehem), červenobílou šálu kolem krku s třásněmi, červenou kšiltovku
+a místo pole stadion: stožáry osvětlení, střechu, tribunu plnou fanoušků se zvednutými šálami, reklamní mantinely
+bez nápisů a posekaný trávník. Kreslicí sada postav na to má nový motiv `stadium`, límec `jersey` a pole
+`body2` (pravá polovina oblečení) a `neckScarf`.
+
+**Proč:** přání hráče. Dres je obecný půlený vzor bez znaku, hvězdy a jména klubu, tribuna bez nápisů — žádná
+skutečná značka (CLAUDE.md kap. 5). Červený megafon sedí na bílé polovině, aby nesplynul s červenou.
