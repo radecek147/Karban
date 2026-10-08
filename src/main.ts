@@ -1,7 +1,8 @@
 /**
  * Vstupní bod aplikace: fonty a styly, aplikace (router, úložiště, profil hráče, registr obsahu), načtení ikon
  * (samostatný chunk), registrace obrazovek, tutoriál Štamgast (vypíná ho `?tutorial=off`), přepočet profilu,
- * globální ošetření chyb, první obrazovka (menu, nebo `#gallery`) a service worker (offline, jen produkční build).
+ * globální ošetření chyb, první obrazovka (menu, nebo `#gallery`), ukázková sestava z odkazu (`?sestava=`)
+ * a service worker (offline, jen produkční build).
  *
  * Code splitting: staticky se načítá jen menu; ostatní obrazovky jsou samostatné chunky (`registerLazy`)
  * a po zobrazení menu se v klidu načtou dopředu (`preloadScreens`), takže přechody zůstávají okamžité.
@@ -16,6 +17,7 @@ import './ui/styles/cards.css';
 import './ui/styles/game.css';
 import './ui/styles/tutorial.css';
 import { registry } from './content';
+import { jokerPreset } from './content/presets';
 import { t } from './i18n/cs';
 import type { ScreenId } from './ui/app';
 import { App } from './ui/app';
@@ -28,6 +30,8 @@ import { showMetaNotices } from './ui/profile';
 import { browserStore } from './ui/storage';
 import { TabGuard, watchStorageEvents } from './ui/tabGuard';
 import { installTabLock } from './ui/tabLock';
+import { startRunFlow } from './ui/runStart';
+import { randomSeed } from './ui/seed';
 import { registerServiceWorker } from './ui/serviceWorker';
 import { installTutorial } from './ui/tutorial';
 // „Šťáva“ (fáze 9) až za styly obrazovek a karet — přebíjí je při stejné specifičnosti.
@@ -41,6 +45,11 @@ const ERROR_TOAST_GAP_MS = 3000;
 /** Přednačtení obrazovek nejpozději po této době, i když prohlížeč nemá „volno“. */
 const IDLE_TIMEOUT_MS = 2000;
 const IDLE_FALLBACK_MS = 500;
+/** Parametr odkazu s ukázkovou sestavou žolíků (src/content/presets.ts). */
+const PRESET_PARAM = 'sestava';
+/** Ukázková sestava se hraje na základním balíčku a Desítce. */
+const PRESET_DECK = 'pub';
+const PRESET_STAKE = 1;
 
 /** Neošetřené chyby: do konzole celé, hráči vtipná hláška místo tichého zamrznutí. */
 function installErrorHandlers(): void {
@@ -112,6 +121,7 @@ function boot(): void {
     else if (app.screenId === GALLERY) app.go('menu');
   });
   app.go(location.hash === GALLERY_HASH ? GALLERY : 'menu');
+  startPresetFromUrl(app);
   // Ikony (~345 kB) a ostatní obrazovky se stahují až po vykreslení menu, ať nebrzdí první vykreslení — menu
   // ikony nepotřebuje; obrazovky s kartami na ně počkají (`withIcons`), kdyby hráč klikl dřív.
   // Chyba načtení ikon hru nezastaví (náhradní glyfy).
@@ -120,6 +130,40 @@ function boot(): void {
     void app.preloadScreens();
   });
   registerServiceWorker();
+}
+
+/**
+ * `?sestava=<id>`: rovnou založí seedovaný run (Hospodský balíček, Desítka) s ukázkovou sestavou žolíků — přes stejný
+ * start jako výzvy, takže se rozehraná hra nepřepíše bez potvrzení. Parametr se z adresy hned odebere, ať obnovení
+ * stránky pokračuje v rozehrané hře, místo aby zakládalo novou.
+ */
+function startPresetFromUrl(app: App): void {
+  const url = new URL(location.href);
+  const id = url.searchParams.get(PRESET_PARAM);
+  if (id === null) return;
+  url.searchParams.delete(PRESET_PARAM);
+  history.replaceState(history.state, '', url.href);
+  const preset = jokerPreset(id);
+  if (!preset) {
+    toast(t('newGame.preset.unknown', { id }), { kind: 'warning', testId: 'toast-preset-unknown' });
+    return;
+  }
+  const req = {
+    deckId: PRESET_DECK,
+    stake: PRESET_STAKE,
+    seed: randomSeed(),
+    seeded: true,
+    presetJokers: preset.jokers,
+  };
+  void startRunFlow(app, req, 'newGame.failed').then((started) => {
+    if (!started) return;
+    const jokers = preset.jokers.map((defId) => t(`jokers.${defId}.name`)).join(', ');
+    toast(t('newGame.preset.started', { jokers }), {
+      kind: 'success',
+      title: t('newGame.preset.title'),
+      testId: 'toast-preset',
+    });
+  });
 }
 
 /** Modul obrazovky, až budou načtené i ikony. */

@@ -73,6 +73,8 @@ export interface NewRunRequest {
   seeded?: boolean;
   challengeId?: string | null;
   daily?: boolean;
+  /** Ukázková sestava žolíků z odkazu `?sestava=` (`NewRunOptions.presetJokers`); patří jen k seedovanému runu. */
+  presetJokers?: readonly string[];
 }
 
 /** Druh poolu obsahu pro nový run (DESIGN 11.3, 11.6, 11.7). */
@@ -279,6 +281,7 @@ export class ProfileController implements RunObserver {
         challengeId: req.challengeId ?? null,
         daily: req.daily === true,
         unlockedPool: unlockedPoolFor(this.current, this.registry, poolModeFor(req)),
+        ...(seeded && req.presetJokers ? { presetJokers: req.presetJokers } : {}),
       },
       { registry: this.registry, store: this.store, observer: this, ...deps },
     );

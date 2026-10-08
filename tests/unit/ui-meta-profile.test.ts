@@ -167,6 +167,16 @@ describe('ProfileController — runy', () => {
     expect(pc.profile.history[0]).toMatchObject({ seed: 'NORMALRN', outcome: 'abandoned' });
   });
 
+  it('ukázková sestava (odkaz ?sestava=) jen u seedovaného runu; run se nepočítá', () => {
+    const pc = controller(memoryStore());
+    const jokers = ['fair_photographer', 'recount_committee'];
+    const s = pc.newRun({ deckId: 'pub', stake: 1, seed: 'SESTAVAA', seeded: true, presetJokers: jokers });
+    expect(s.state.jokers.map((j) => j.defId)).toEqual(jokers);
+    expect(pc.profile.current).toMatchObject({ seed: 'SESTAVAA', counted: false, seeded: true });
+    const n = pc.newRun({ deckId: 'pub', stake: 1, seed: 'SESTAVAB', presetJokers: jokers });
+    expect(n.state.jokers).toEqual([]);
+  });
+
   it('události akce jdou do statistik a oznámení až po doběhnutí animací', async () => {
     const store = memoryStore();
     const order: string[] = [];

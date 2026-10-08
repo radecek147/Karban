@@ -14,6 +14,12 @@ kreslené přímo v kódu, žádné obrázky z generátoru ani z cizích her.
 **Hraj v prohlížeči:** [radecek147.github.io/Karban](https://radecek147.github.io/Karban/). Po prvním načtení
 jde hra i offline.
 
+**Rovnou s rozbitou sestavou** (rozehraný seedovaný run na Desítce, do statistik se nepočítá):
+[nejsilnější pětice](https://radecek147.github.io/Karban/?sestava=nejsilnejsi) ·
+[Fotograf a opakování figur](https://radecek147.github.io/Karban/?sestava=fotograf) ·
+[nejlepší bez Fotografa](https://radecek147.github.io/Karban/?sestava=bez-fotografa). Proč jsou tak silné, popisuje
+[docs/SYNERGIE.md](docs/SYNERGIE.md).
+
 <p align="center">
   <img src="docs/media/karban.gif" alt="Výběr pěti karet, živý přepočet čipů × mult a animace skórování Full housu se žolíky" width="900">
 </p>

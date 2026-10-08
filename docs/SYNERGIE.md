@@ -89,16 +89,16 @@ Archivář, který je zkopíruje (musí stát hned napravo od nich).
 
 ### Nejlepší sestavy 3–5 žolíků (patro 8, bez legendárních)
 
-| Velikost | Sestava (v pořadí zleva)                                                                             | Síla |
-| -------: | ---------------------------------------------------------------------------------------------------- | ---: |
-|        3 | Fotograf z pouti, Šťastná sedmička, Kouzelník z pouti                                                |  ×74 |
-|        3 | Fotograf z pouti, Volební komise, Šťastná sedmička                                                   |  ×63 |
-|        3 | Fotograf z pouti, Hudební automat, Šťastná sedmička                                                  |  ×50 |
-|        4 | Fotograf z pouti, Šťastná sedmička, Kouzelník z pouti, Volební komise                                | ×305 |
-|        4 | Dechovka, Fotograf z pouti, Šťastná sedmička, Kouzelník z pouti                                      | ×219 |
-|        5 | Fotograf z pouti, Šťastná sedmička, Kouzelník z pouti, Volební komise, Napodobitel (kopíruje Komisi) | ×943 |
-|        5 | Hudební automat, Fotograf z pouti, Šťastná sedmička, Kouzelník z pouti, Kopírák                      | ×832 |
-|        5 | Fotograf z pouti, Šťastná sedmička, Kouzelník z pouti, Volební komise, Silvestr                      | ×635 |
+| Velikost | Sestava (v pořadí zleva)                                                                               | Síla |
+| -------: | ------------------------------------------------------------------------------------------------------ | ---: |
+|        3 | Fotograf z pouti, Šťastná sedmička, Kouzelník z pouti                                                  |  ×74 |
+|        3 | Fotograf z pouti, Volební komise, Šťastná sedmička                                                     |  ×63 |
+|        3 | Fotograf z pouti, Hudební automat, Šťastná sedmička                                                    |  ×50 |
+|        4 | Fotograf z pouti, Šťastná sedmička, Kouzelník z pouti, Volební komise                                  | ×305 |
+|        4 | Dechovka, Fotograf z pouti, Šťastná sedmička, Kouzelník z pouti                                        | ×219 |
+|        5 | Fotograf z pouti, Šťastná sedmička, Kouzelník z pouti, Volební komise, Napodobitel (kopíruje Sedmičku) | ×943 |
+|        5 | Hudební automat, Fotograf z pouti, Šťastná sedmička, Kouzelník z pouti, Kopírák                        | ×832 |
+|        5 | Fotograf z pouti, Šťastná sedmička, Kouzelník z pouti, Volební komise, Silvestr                        | ×635 |
 
 **Bez Fotografa** je nejlepší pětice Karlův most, Archivář, Silvestr, Dálnice D1, Směnárna se ×37 (trojice ×9,7,
 čtveřice ×19). Před zákazem kopírování Fotografa měla nejlepší pětice ×169 000.

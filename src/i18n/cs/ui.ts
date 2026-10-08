@@ -142,6 +142,13 @@ export const newGame = {
     confirm: 'Rozdat nové',
   },
   failed: 'Hru se nepodařilo založit. Karty se rozsypaly pod stůl.',
+  /** Ukázková sestava z odkazu `?sestava=` (src/content/presets.ts). */
+  preset: {
+    title: 'Ukázková sestava',
+    started: 'Ve slotech čeká {jokers}. Předváděčka, ne rekord: do statistik ani odemykání se nepočítá.',
+    unknown:
+      'Sestavu „{id}“ tady neznají. Hospodský krčí rameny: zkus „nejsilnejsi“, „fotograf“ nebo „bez-fotografa“.',
+  },
 };
 
 /** Nastavení (docs/DESIGN.md 13.4). */

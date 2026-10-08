@@ -136,6 +136,11 @@ export class Game {
       for (const v of ch.startingVouchers ?? []) this.redeemVoucher(v);
       ch.onRunStart?.(ctx);
     }
+    // Ukázková sestava z odkazu: žolíci jako z Večerky (`onAcquire` ano), bez nálepek, i nad limit slotů.
+    for (const defId of opts.presetJokers ?? []) {
+      if (!reg.jokers[defId]) continue;
+      addJokerInstance(core, newJokerInstance(core, defId), { ignoreSlots: true, acquire: true });
+    }
     core.invalidate();
     s.stats.minMoney = Math.min(s.stats.minMoney, s.money);
     s.stats.maxMoney = Math.max(s.stats.maxMoney, s.money);

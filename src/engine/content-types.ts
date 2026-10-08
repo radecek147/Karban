@@ -920,4 +920,10 @@ export interface NewRunOptions {
   challengeId?: string | null;
   daily?: boolean;
   unlockedPool?: RunState['unlockedPool'];
+  /**
+   * Žolíci navíc na startu (ukázková sestava z odkazu `?sestava=`, src/content/presets.ts): přidají se po balíčku
+   * a výzvě v zadaném pořadí jako koupení (`onAcquire` se volá — Napodobitel dostane duhovou), bez nálepek
+   * a i nad limit slotů. Neznámá id se přeskočí.
+   */
+  presetJokers?: readonly string[];
 }

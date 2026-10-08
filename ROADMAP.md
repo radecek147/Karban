@@ -554,6 +554,9 @@ Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba h
       (spropitné), Barvoslepý strýc (popisek)
 - [x] Balanc: Pozlacovač 1 ze 2, Defenestrace 2 figury / 4 Kč
 - [ ] Dál: sledovat Bazarníka, Kupónovou privatizaci, Meteorologa a Tramvajáka v dalších simulacích
+- [x] Odkaz s ukázkovou sestavou `?sestava=nejsilnejsi|fotograf|bez-fotografa` (src/content/presets.ts, src/main.ts,
+      `NewRunOptions.presetJokers`): rovnou rozehraný seedovaný run se sestavou ve slotech; testy
+      tests/unit/presets.test.ts a tests/e2e/preset.spec.ts
 
 ---
 

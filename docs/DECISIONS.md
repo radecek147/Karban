@@ -3974,3 +3974,19 @@ Ke sledování: Bazarník, Kupónová privatizace, Meteorolog, Tramvaják (horn�
 
 **Proč:** opravy berou zneužití, která nikdo nezamýšlel (klonování, obcházení ceny, exponent přes kopie), a dva
 peněžní žolíky stahují do rozumného pásma. Vrchol hry ale zůstává výbušný — tak, jak ho hráč chtěl.
+
+## 2026-10-08 — Odkaz s ukázkovou sestavou žolíků (`?sestava=`)
+
+**Co:** adresa hry s parametrem `?sestava=<id>` rovnou založí seedovaný run (Hospodský balíček, Desítka, náhodný seed)
+se sestavou žolíků ve slotech a otevře výběr útraty. Sestavy jsou v `src/content/presets.ts`: `nejsilnejsi` (Fotograf
+z pouti, Šťastná sedmička, Kouzelník z pouti, Volební komise, Napodobitel — ×943 z laboratoře kombinací),
+`fotograf` (Fotograf + Komise, Fanoušek, Automat, Ozvěna) a `bez-fotografa` (Karlův most, Archivář, Silvestr,
+Dálnice D1, Směnárna). Engine na to má volbu `NewRunOptions.presetJokers`: žolíci se přidají po balíčku a výzvě jako
+koupení (`onAcquire` se volá, Napodobitel a Archivář tak dostanou duhovou edici), bez nálepek, i nad limit slotů.
+Start jde přes `startRunFlow` jako u výzev (rozehraná hra se bez potvrzení nepřepíše) a parametr se hned odebere
+z adresy, takže obnovení stránky pokračuje ve stejném runu.
+
+**Proč:** hráč chtěl odkaz, kde je hra rozehraná s nejsilnější kombinací. Seedovaný run má celý obsah a nepočítá se do
+statistik, odemykání ani achievementů, takže předváděčka nic nepokazí v profilu. Sestava je v obsahu (data), ne
+v uloženém profilu, takže přibude další jedním řádkem. V `docs/SYNERGIE.md` opravena poznámka u nejlepší pětice:
+Napodobitel kopíruje Šťastnou sedmičku (nejdražší běžný/vzácný žolík), ne Komisi.
