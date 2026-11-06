@@ -5,7 +5,7 @@
 
 ## Aktuální stav
 
-_Aktualizováno: 2026-10-08 (1.0.2: patch „Pouť a volby“ + test synergií žolíků — sekce níže; hra běží na https://radecek147.github.io/Karban/)_
+_Aktualizováno: 2026-11-06 (hra běží na https://radecek147.github.io/Karban/, nasazuje se z větve `gh-pages`; poslední změny: mezera ve výběru útraty a sešívaný fanoušek u Červené a černé — červená vlevo, bílá vpravo)_
 
 **Verze 1.0.1 je hotová** (`package.json` 1.0.1): opravy UI, čitelnosti a logiky z testu 1.0, odlišení od Balatra a designové opravy (DECISIONS 2026-10-03 „Oprava UI po testu 1.0“, „Oprava logických chyb po testu 1.0“, „Odlišení od Balatra a designové opravy po testu 1.0“); všechny položky sekce „Opravy po testu 1.0 (1.0.1)“ jsou odškrtnuté. **Kalibrace obtížnosti je hotová** (DECISIONS 2026-10-03 „Kalibrace 1.0.1 (obtížnost po odlišení od
 Balatra)“, DESIGN 2.3, 4.3, 4.10, 8, 9, 10, 12.2): boti oceňují kupóny a štítky 1.0.1 (splátka Půjčky, tombola,
@@ -21,7 +21,7 @@ vítězů v patře 11. Body „→ kalibrace“ v sekci „Opravy po testu 1.0 (
 **Verze na GitHubu:** `release/1.0.0` (commit `47a2f64`) a `release/1.0.1` (commit `75cedfd`) jsou pevné větve
 vydání; vývoj pokračuje v `claude/clever-ride-anbk0m`. Tagy `v1.0.0` / `v1.0.1` jsou jen lokálně (push tagů
 z vývojového prostředí je zakázaný) — vytvoří je vlastník přes Releases.
-**Další krok:** deploy na GitHub Pages (níže, čeká na zapnutí Pages vlastníkem), pak obsahové patche.
+**Další krok:** obsahové patche (sekce „Obsahové patche (po 1.0)“) a otevřené body níže (tempo, balanc z playtestu, přístupnost).
 
 **Shrnutí (1.0):** fáze 0–10 jsou hotové, **verze 1.0.0** je hotová (tag `v1.0.0` zatím jen lokálně). Fáze 10 (DECISIONS „Fáze 10 (výkon,
 offline, přístupnost, bugfix)“, „Fáze 10: README, snímky a GIF, licence MIT“, „Fáze 10: balanc (silnější boti, cíle
@@ -29,10 +29,10 @@ patra 8, žolíci, balíčky)“ a „Fáze 10: korektura textů, předložka z/
 (service worker), Lighthouse > 90, README se snímky a GIFem, balanc (Desítka 31,2 %, Imperial 2,0 %, všech
 8 sil piva i 12 balíčků v pásmu), jazyková korektura (35 oprav, filtr `{n|z}` pro „z / ze“ před číslem), pokrytí
 enginu 97,6 % příkazů / 93 % větví, test minimálních počtů obsahu, `ASSETS.md` i s odvozeným písmem.
-**Zbývá deploy na GitHub Pages a tag na GitHubu:** workflow „Deploy to GitHub Pages“ (2026-10-02, ručně) prošel testy i buildem a spadl na `configure-pages`, protože Pages nejsou zapnuté — vlastník repozitáře musí jednorázově zapnout Pages (Settings → Pages →
-Source = GitHub Actions), pak stačí znovu spustit workflow „Deploy to GitHub Pages“ (ručně nebo pushem tagu);
-adresa bude https://radecek147.github.io/FM/.
-**Další krok:** po zapnutí Pages ověřit nasazení a odškrtnout ho; pak obsahové patche (sekce „Obsahové patche
+**Nasazení:** hra běží na https://radecek147.github.io/Karban/ (GitHub Pages z větve `gh-pages`, build s
+`BASE_PATH=/Karban/`). Zbývá jen tag `v1.0.0` na GitHubu (push tagů z vývojového prostředí je zakázaný — vytvoří ho
+vlastník přes Releases).
+**Další krok:** obsahové patche (sekce „Obsahové patche
 (po 1.0)“ níže, nápady v `docs/IDEAS.md`).
 Pozn.: e2e spouštět z jednoho procesu na port, souběžné běhy přes `KARBAN_E2E_PORT` (výchozí 4173). Simulace: `npm run simulate -- --runs 300
 --stake 1 --bot all --seed-prefix A` trvá ~25 min (run ~1 s na bota).
@@ -366,7 +366,7 @@ průměrném notebooku; kontroly zelené; commit `feat(ui): juice and audio`; f�
 - [x] `ASSETS.md` kompletní s licencemi, atribuce (game-icons.net, Pixelify Sans) i v Titulcích (`src/ui/screens/credits.ts`; doplněno odvozené písmo Karban Digits, OFL 1.1)
 - [x] README česky: popis, screenshoty, GIF, jak spustit, „inspirováno hrou Balatro“, licence (`README.md`, `LICENSE` = MIT, snímky a GIF v `docs/media/` ze skriptu `scripts/readme-media.ts`; DECISIONS „Fáze 10: README, snímky a GIF, licence MIT“)
 - [x] Hra funguje offline po prvním načtení: ručně psaný service worker s precache buildu (`src/sw/sw.ts`, plugin `scripts/sw-plugin.ts`), bezpečná aktualizace; e2e `offline.spec.ts` i pod `BASE_PATH=/FM/` (ARCHITECTURE 8.2)
-- [ ] Deploy na GitHub Pages (`base`)
+- [x] Deploy na GitHub Pages (`base`): https://radecek147.github.io/Karban/ z větve `gh-pages` (`BASE_PATH=/Karban/`)
 - [x] Testy a e2e zelené, pokrytí enginu ≥ 80 % (příkazy 97,6 %, větve 93,0 %, funkce 99,1 %, řádky 99,2 %; 79 souborů a 3 803 unit testů, 71 e2e zelených)
 - [x] Kontrola definice hotovo v1.0 (`CLAUDE.md` kap. 10): dohratelnost na všech balíčcích (simulace + `ui-walkthrough`), minimální počty obsahu hlídá `tests/unit/content-minimums.test.ts`, texty jen v `src/i18n` (test `index.html` a `t()`), offline (`offline.spec.ts`), konzole bez chyb (e2e), `ASSETS.md`, žádný převzatý obsah (audity názvů ve fázích 7 a 10)
 - [ ] Tag `v1.0.0` na GitHubu — verze 1.0.0 je v `package.json`, tag je vytvořený lokálně na commitu vydání, ale push tagů z vývojového prostředí je zakázaný (HTTP 403); vytvoří ho vlastník (GitHub → Releases → Draft a new release → tag `v1.0.0`)
@@ -566,7 +566,8 @@ Náhledy stylů A–I a variant E1–E4 jsou ve scratchpadu (ne v repu); volba h
 - [x] Objev tajné kombinace nabídne její pranostiku v příští Večerce; „Odemknout vše“ i s legendárními žolíky;
       odkaz na sestavu odemkne vše
 - [x] Mezera mezi nadpisem „Kam dneska?“ a kartami útrat (zvednutá aktuální karta už nenaléhá na podnadpis)
-- [x] Červená a černá: sešívaný fanoušek (dres, kulich, šála, vlajka; bez hvězdy a znaku, DECISIONS 2026-10-16)
+- [x] Červená a černá: sešívaný fanoušek (dres, kulich, šála, vlajka; bez hvězdy a znaku, DECISIONS 2026-10-16);
+      červená vlevo, bílá vpravo jako u Fotbalového fanouška (DECISIONS 2026-11-06)
 
 ---
 
