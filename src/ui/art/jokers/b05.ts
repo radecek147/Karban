@@ -698,8 +698,8 @@ function tvShirt(cx: number, y: number, side?: 'left' | 'right'): string {
 
 /**
  * Půlená vlaječka na tvář (červená u žerdi vlevo, bílá vlající doprava), levý horní roh x, y, 11 × 8. Červená je
- * napůl předsunutá proti soutisku a kratší (po tisku zaplní žerďovou půlku a nepřeteče pod dolní lem), bílá
- * papírem přes ni ořízne, co přeteče doprava.
+ * předsunutá proti soutisku jen o tolik, kolik schová obrys (papír pod ní nevykoukne na tvář), a kratší (nepřeteče
+ * pod dolní lem); bílá papírem přes ni ořízne, co přeteče doprava.
  */
 function cheekFlag(x: number, y: number): SceneOp[] {
   const fly =
@@ -707,9 +707,9 @@ function cheekFlag(x: number, y: number): SceneOp[] {
     `L${r1(x + 11)},${y + 8} C${r1(x + 9.2)},${y + 9} ${r1(x + 7.3)},${y + 7} ${r1(x + 5.5)},${y + 8} Z`;
   const hoist = `M${x},${y} H${x + 5.5} V${y + 8} H${x} Z`;
   return [
-    ['f', RED, `M${r1(x - 1.4)},${y - 1} H${r1(x + 4.1)} V${r1(y + 6.4)} H${r1(x - 1.4)} Z`, 0],
+    ['f', RED, `M${r1(x - 0.6)},${r1(y - 0.6)} H${r1(x + 4.1)} V${r1(y + 6.4)} H${r1(x - 0.6)} Z`, 0],
     ['f', 'paper', fly, 0],
-    ['l', `${hoist} ${fly}`, 1.2],
+    ['l', `${hoist} ${fly}`, 1],
   ];
 }
 
@@ -727,7 +727,7 @@ const DERBY_FANS: Partial<FigureSpec> = {
   body: RED,
   body2: CREAM,
   collar: 'jersey',
-  accent: '#b8302a',
+  accent: RED,
   neckScarf: undefined,
   hair: 'short',
   hairColor: '#2f2a26',
@@ -745,7 +745,6 @@ const DERBY_FANS: Partial<FigureSpec> = {
     ['f', 'dark', c(56, 87, 1.8), 0],
     ['f', RED, 'M29,98 H56 V140 H29 Z', 1.8],
     ['f', CREAM, 'M56,98 H83 V140 H56 Z', 1.8],
-    ['l', 'M29,98 H83 M29,140 H83', 1.8],
     ...stitchedSeam(56, 100, 138, 3, 5),
     [
       'l',
@@ -761,8 +760,9 @@ const DERBY_FANS: Partial<FigureSpec> = {
     ['f', '#5d9a3e', rect(169, 93, 40, 26), 1.2],
     ['l', 'M189,93 V119 M169,106 H173 M207,106 H209', 0.9],
     ['f', SKIN, `${c(180, 96.5, 2.8)} ${c(199, 97.5, 2.8)}`, 0.9],
-    // Červená půlka napůl předsunutá proti soutisku (malá plocha, jinak by z ní zbyl jen proužek).
-    ['f', RED, place(tvShirt(180, 100, 'left'), -1.4, -1), 0],
+    // Červená půlka předsunutá proti soutisku jen o tolik, kolik schová obrys (malá plocha, jinak by z ní zbyl
+    // jen proužek; papír pod ní nesmí vykouknout na trávník).
+    ['f', RED, place(tvShirt(180, 100, 'left'), -0.6, -0.6), 0],
     ['f', 'paper', tvShirt(180, 100, 'right'), 0],
     ['l', `${tvShirt(180, 100)} M180,100 L180,113`, 0.9],
     ['f', 'dark', tvShirt(199, 101), 0],
@@ -784,10 +784,10 @@ const DERBY_FANS: Partial<FigureSpec> = {
     ],
   ],
   outfit: [
-    // Límec a šev znovu navrch (přes bílou pravou půlku).
-    ['f', '#b8302a', 'M102,210 C108,232 142,232 148,210 L140,210 C136,222 114,222 110,210 Z', 1.6],
+    // Žebrovaný límec v barvách poloviny (žádná červená na bílé), šev dotažený až k němu.
+    ['f', RED, 'M102,210 C105,221 115,226.5 125,226.5 L125,219 C118.5,219 112,216 110,210 Z', 1.6],
+    ['f', CREAM, 'M125,226.5 C135,226.5 145,221 148,210 L140,210 C138,216 131.5,219 125,219 Z', 1.6],
     ['l', 'M125,226 L125,284', 1.6],
-    ...stitchedSeam(125, 232, 280, 4, 6),
     // Rukávy obráceně: bílý na červené půlce, červený na bílé.
     ['f', CREAM, 'M44,284 C47.2,248.8 61.9,227.7 83,216.5 C75,234 68,258 66,284 Z', 2.4],
     // Červený rukáv přesně přes stínování základní postavy (tečky rastru nezůstanou na bílé).
@@ -815,7 +815,6 @@ const DERBY_FANS: Partial<FigureSpec> = {
     ['f', CREAM, 'M125,93 C142,93 156,105 154,131 L125,131 Z', 2.2],
     ['f', RED, 'M93,121 H125 V135 H93 Z', 1.8],
     ['f', CREAM, 'M125,121 H157 V135 H125 Z', 1.8],
-    ['l', 'M93,121 H157 M93,135 H157', 1.8],
     ['l', 'M105,123 v10 M115,123 v10 M135,123 v10 M145,123 v10', 1.1],
     ...stitchedSeam(125, 96, 133, 3, 5),
     ['f', '#fffaf0', c(125, 89, 7), 1.6],

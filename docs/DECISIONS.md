@@ -4117,8 +4117,8 @@ a schopnost (skórující karty červené i černé barvy) dál sedí. Kreslicí
 
 **Proč:** přání hráče („předělej ho, ať je sešívaný jako slavista“). Stejně jako u Fotbalového fanouška
 (2026-10-08) je to obecný půlený vzor bez hvězdy, znaku a jména klubu a bez nápisů: hvězda je dnes přímo logo
-skutečného klubu (CLAUDE.md kap. 5). Fotbalový fanoušek měl poloviny obráceně (červená vlevo); nechal jsem ho,
-dokud si hráč neřekne.
+skutečného klubu (CLAUDE.md kap. 5). Fotbalový fanoušek má červenou vlevo; nechal jsem ho, dokud si hráč
+neřekne (2026-11-06 se k němu Červená a černá přidala).
 
 ## 2026-11-06 — Sešívaný: červená vlevo, bílá vpravo
 
@@ -4127,7 +4127,8 @@ vlevo, bílá vpravo (z pohledu diváka) u dresu, kulicha i lemu, šály, vlajky
 hráče v televizi; rukávy dál obráceně (bílý na červené půlce, červený na bílé). Je to stejné jako u Fotbalového
 fanouška, takže oba sešívaní fanoušci teď sedí. Pomocný proužek `seamFill` zmizel: bílá půlka se kreslí až po
 červené a papírem pod sebou zakryje, co červená při tisku přeteče přes šev. Malé červené plochy (vlaječky, dres
-v televizi) jsou napůl předsunuté proti soutisku, jinak by z nich zbyl jen proužek.
+v televizi) jsou předsunuté proti soutisku o tolik, kolik schová obrys, jinak by z nich zbyl jen proužek. Límec
+pod šálou je rozdělený v barvách polovin, takže na bílé půlce není žádná červená kromě obráceného rukávu.
 
 **Proč:** hráč na otázku, kterou půlku dát kam, odpověděl „sešívaný fanoušek je červená a bílá, oprav to“, tedy
 v tomhle pořadí, zleva doprava. Jméno žolíka (Červená a černá) a jeho schopnost (červené i černé karty) zůstávají:
